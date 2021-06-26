@@ -9,6 +9,10 @@ export class Vector {
         this.y = y;
     }
 
+    public clone() : Vector {
+        return new Vector(this.x, this.y);
+    }
+
     public add(a : Vector) : Vector {
         return new Vector(this.x + a.x, this.y + a.y);
     }

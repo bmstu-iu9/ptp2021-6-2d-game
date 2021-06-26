@@ -10,6 +10,9 @@ define("Geom", ["require", "exports"], function (require, exports) {
             this.x = x;
             this.y = y;
         }
+        Vector.prototype.clone = function () {
+            return new Vector(this.x, this.y);
+        };
         Vector.prototype.add = function (a) {
             return new Vector(this.x + a.x, this.y + a.y);
         };
@@ -35,19 +38,57 @@ define("Geom", ["require", "exports"], function (require, exports) {
     }());
     exports.Vector = Vector;
 });
-define("Main", ["require", "exports", "Geom"], function (require, exports, geom) {
+define("Draw", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var a = new geom.Vector(3, 4);
-    var b = new geom.Vector(3, -4);
-    console.log(a);
-    console.log(b);
-    console.log(a.add(b));
-    console.log(a.sub(b));
-    console.log(a.mul(2));
-    console.log(a.abs());
-    console.log(a.norm());
-    console.log(a.rotate(Math.PI / 2));
+    exports.Draw = exports.Camera = void 0;
+    var Camera = (function () {
+        function Camera() {
+        }
+        return Camera;
+    }());
+    exports.Camera = Camera;
+    var Draw = (function () {
+        function Draw(canvas, size) {
+            this.cam = new Camera();
+            this.canvas = canvas;
+            canvas.width = size.x;
+            canvas.height = size.y;
+            this.ctx = canvas.getContext("2d");
+            this.cam.scale = 1;
+            this.cam.pos = size.mul(1 / 2);
+            this.cam.center = size.mul(1 / 2);
+        }
+        Draw.prototype.loadImage = function (src) {
+            var image = new Image();
+            image.src = src;
+            return image;
+        };
+        Draw.prototype.image = function (image, pos, box, angle) {
+            if (angle === void 0) { angle = 0; }
+            var posNew = pos.clone();
+            posNew = posNew.sub(this.cam.pos);
+            posNew = posNew.mul(this.cam.scale);
+            posNew = posNew.add(this.cam.center);
+            var boxNew = box.mul(this.cam.scale);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        };
+        return Draw;
+    }());
+    exports.Draw = Draw;
+});
+define("Main", ["require", "exports", "Geom", "Draw"], function (require, exports, geom, dr) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var canvas = document.getElementById('gameCanvas');
+    var draw = new dr.Draw(canvas, new geom.Vector(320, 320));
+    var img = draw.loadImage("textures/img.png");
+    function t() {
+        console.log(1);
+        draw.image(img, new geom.Vector(0, 0), new geom.Vector(100, 100));
+    }
+    setInterval(t, 2000);
 });
 define("Test", ["require", "exports"], function (require, exports) {
     "use strict";

@@ -1,12 +1,13 @@
 import * as geom from "./Geom"
+import * as dr from "./Draw"
 
-let a = new geom.Vector(3, 4);
-let b = new geom.Vector(3, -4);
-console.log(a);
-console.log(b);
-console.log(a.add(b));
-console.log(a.sub(b));
-console.log(a.mul(2));
-console.log(a.abs());
-console.log(a.norm());
-console.log(a.rotate(Math.PI / 2));
+let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+let draw = new dr.Draw(canvas, new geom.Vector(320, 320));
+let img = draw.loadImage("textures/img.png");
+
+function t() {
+    console.log(1);
+    draw.image(img, new geom.Vector(0, 0), new geom.Vector(100, 100));
+}
+
+setInterval(t, 2000);
