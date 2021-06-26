@@ -1,7 +1,12 @@
-import { Test } from "./Test"
-import * as geom from "ts-2d-geometry"
+import * as geom from "./Geom"
 
-let a = new geom.Vector(1, 2);
-let b = new geom.Vector(3, 4);
-let c = a.plus(b);
-console.log(a, b, c);
+let a = new geom.Vector(3, 4);
+let b = new geom.Vector(3, -4);
+console.log(a);
+console.log(b);
+console.log(a.add(b));
+console.log(a.sub(b));
+console.log(a.mul(2));
+console.log(a.abs());
+console.log(a.norm());
+console.log(a.rotate(Math.PI / 2));
