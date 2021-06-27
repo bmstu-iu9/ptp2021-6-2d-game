@@ -1,4 +1,4 @@
-import * as geom from "./Geom"
+import * as geom from "./Geom";
 
 export class Body {
     public center : geom.Vector;
