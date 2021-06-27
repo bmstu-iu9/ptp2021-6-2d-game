@@ -202,30 +202,15 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, dr) {
         }
         Tile.prototype.setColision = function (colision) {
             this.colision = colision;
-            if (colision == 0) {
-                this.image = dr.Draw.loadImage("textures/Empty.png");
-            }
-            if (colision == 1) {
-                this.image = dr.Draw.loadImage("textures/CornerUL.png");
-            }
-            if (colision == 2) {
-                this.image = dr.Draw.loadImage("textures/CornerUR.png");
-            }
-            if (colision == 3) {
-                this.image = dr.Draw.loadImage("textures/CornerDL.png");
-            }
-            if (colision == 4) {
-                this.image = dr.Draw.loadImage("textures/CornerDR.png");
-            }
-            if (colision == 5) {
-                this.image = dr.Draw.loadImage("textures/Full.png");
-            }
+        };
+        Tile.prototype.setImage = function (image) {
+            this.image = image;
         };
         return Tile;
     }());
     exports.Tile = Tile;
 });
-define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], function (require, exports, bodyClass, geom, personClass, controlClass) {
+define("Game", ["require", "exports", "Body", "Geom", "Person", "Control", "Tile"], function (require, exports, bodyClass, geom, personClass, controlClass, tileClass) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -234,9 +219,18 @@ define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], func
             this.tile_size = 50;
             this.bodies = [];
             this.people = [];
-            this.map = [[]];
+            this.map = [];
             controlClass.Control.init();
             this.draw = draw;
+            var sizeX = 10;
+            var sizeY = 10;
+            for (var x = 0; x < sizeX; x++) {
+                this.map[x] = [];
+            }
+            this.map[0][0] = new tileClass.Tile(tileClass.ColisionType.Full);
+            this.map[1][1] = new tileClass.Tile(tileClass.ColisionType.CornerUL);
+            this.map[0][1] = new tileClass.Tile(tileClass.ColisionType.Full);
+            this.map[1][0] = new tileClass.Tile(tileClass.ColisionType.Full);
         }
         Game.prototype.make_body = function (coordinates, radius) {
             return this.bodies[this.bodies.length] = new bodyClass.Body(coordinates, radius);
@@ -245,6 +239,11 @@ define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], func
             return this.people[this.people.length] = new personClass.Person(body);
         };
         Game.prototype.step = function () {
+            for (var i = 0; i < this.map.length; i++) {
+                for (var j = 0; j < this.map[i].length; j++) {
+                    this.draw.image(this.map[i][j].image, new geom.Vector(this.tile_size * i, this.tile_size * j), new geom.Vector(this.tile_size, this.tile_size));
+                }
+            }
             for (var i = 0; i < this.people.length; i++) {
                 this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
             }
