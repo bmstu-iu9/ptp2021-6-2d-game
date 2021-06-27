@@ -94,21 +94,18 @@ define("Animation", ["require", "exports", "Draw"], function (require, exports, 
     }());
     exports.Animation = Animation;
 });
-define("Body", ["require", "exports"], function (require, exports) {
+define("Person", ["require", "exports", "Animation"], function (require, exports, Animation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Body = void 0;
-    var Body = (function () {
-        function Body(center, radius) {
-            this.center = center;
-            this.radius = radius;
+    exports.Person = void 0;
+    var Person = (function () {
+        function Person(body) {
+            this.body = body;
+            this.animation = new Animation_1.Animation();
         }
-        Body.prototype.move = function (a) {
-            this.center = this.center.add(a);
-        };
-        return Body;
+        return Person;
     }());
-    exports.Body = Body;
+    exports.Person = Person;
 });
 define("Control", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -151,19 +148,6 @@ define("Control", ["require", "exports"], function (require, exports) {
     }());
     exports.Control = Control;
 });
-define("Person", ["require", "exports", "Animation"], function (require, exports, Animation_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Person = void 0;
-    var Person = (function () {
-        function Person(body) {
-            this.body = body;
-            this.animation = new Animation_1.Animation();
-        }
-        return Person;
-    }());
-    exports.Person = Person;
-});
 define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -179,6 +163,7 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
     })(ColisionType = exports.ColisionType || (exports.ColisionType = {}));
     var Tile = (function () {
         function Tile(colision) {
+            if (colision === void 0) { colision = 0; }
             this.colision = ColisionType.Empty;
             this.colision = colision;
             if (colision == 0) {
@@ -216,66 +201,96 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
     exports.Game = void 0;
     var Game = (function () {
         function Game(draw) {
-            this.tile_size = 50;
+            this.tile_size = 1;
             this.bodies = [];
             this.people = [];
-            this.map = [];
+            this.grid = [];
             Control_1.Control.init();
             this.draw = draw;
             var sizeX = 10;
             var sizeY = 10;
             for (var x = 0; x < sizeX; x++) {
-                this.map[x] = [];
+                this.grid[x] = [];
+                for (var y = 0; y < sizeY; y++) {
+                    this.grid[x][y] = new Tile_1.Tile();
+                }
             }
-            this.map[0][0] = new Tile_1.Tile(Tile_1.ColisionType.Full);
-            this.map[1][1] = new Tile_1.Tile(Tile_1.ColisionType.CornerUL);
-            this.map[0][1] = new Tile_1.Tile(Tile_1.ColisionType.Full);
-            this.map[1][0] = new Tile_1.Tile(Tile_1.ColisionType.Full);
+            this.grid[0][0] = new Tile_1.Tile(Tile_1.ColisionType.Full);
+            this.grid[1][1] = new Tile_1.Tile(Tile_1.ColisionType.CornerUL);
+            this.grid[0][1] = new Tile_1.Tile(Tile_1.ColisionType.Full);
+            this.grid[1][0] = new Tile_1.Tile(Tile_1.ColisionType.Full);
         }
         Game.prototype.make_body = function (coordinates, radius) {
-            return this.bodies[this.bodies.length] = new Body_1.Body(coordinates, radius);
+            var body = new Body_1.Body(coordinates, radius);
+            body.game = this;
+            return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.make_person = function (body) {
             return this.people[this.people.length] = new Person_1.Person(body);
         };
         Game.prototype.step = function () {
             if (this.people.length != 0) {
+                var vel = 0.01;
                 if (Control_1.Control.isKeyDown(Control_1.Keys.UpArrow)) {
-                    this.people[0].body.move(new geom.Vector(0, -1));
+                    this.people[0].body.move(new geom.Vector(0, -vel));
                 }
                 if (Control_1.Control.isKeyDown(Control_1.Keys.DownArrow)) {
-                    this.people[0].body.move(new geom.Vector(0, 1));
+                    this.people[0].body.move(new geom.Vector(0, vel));
                 }
                 if (Control_1.Control.isKeyDown(Control_1.Keys.RightArrow)) {
-                    this.people[0].body.move(new geom.Vector(1, 0));
+                    this.people[0].body.move(new geom.Vector(vel, 0));
                 }
                 if (Control_1.Control.isKeyDown(Control_1.Keys.LeftArrow)) {
-                    this.people[0].body.move(new geom.Vector(-1, 0));
+                    this.people[0].body.move(new geom.Vector(-vel, 0));
                 }
             }
         };
         Game.prototype.display = function () {
-            for (var i = 0; i < this.people.length; i++) {
-                this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
-            }
-            for (var i = 0; i < this.map.length; i++) {
-                for (var j = 0; j < this.map[i].length; j++) {
-                    this.draw.image(this.map[i][j].image, new geom.Vector(this.tile_size * i, this.tile_size * j), new geom.Vector(this.tile_size, this.tile_size));
+            this.draw.cam.pos = new geom.Vector(0, 0);
+            this.draw.cam.scale = 100;
+            for (var i = 0; i < this.grid.length; i++) {
+                for (var j = 0; j < this.grid[i].length; j++) {
+                    var size = new geom.Vector(this.tile_size, this.tile_size);
+                    this.draw.image(this.grid[i][j].image, (new geom.Vector(this.tile_size * i, this.tile_size * j)).add(size.mul(1 / 2)), size);
                 }
             }
             for (var i = 0; i < this.people.length; i++) {
-                this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
+                this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(1, 1));
             }
         };
         return Game;
     }());
     exports.Game = Game;
 });
+define("Body", ["require", "exports", "Geom"], function (require, exports, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Body = void 0;
+    var Body = (function () {
+        function Body(center, radius) {
+            this.center = center;
+            this.radius = radius;
+        }
+        Body.prototype.check_wall = function (pos) {
+            var posRound = new geom.Vector(Math.floor(pos.x), Math.floor(pos.y));
+            if (posRound.x < 0 || posRound.y < 0 || posRound.x >= this.game.grid.length || posRound.y >= this.game.grid[0].length)
+                return false;
+            return this.game.grid[posRound.x][posRound.y].colision > 0;
+        };
+        Body.prototype.move = function (a) {
+            var posNew = this.center.add(a);
+            if (!this.check_wall(posNew))
+                this.center = posNew;
+        };
+        return Body;
+    }());
+    exports.Body = Body;
+});
 define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, Draw_3, Game_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_3.Draw(canvas, new geom.Vector(320, 320));
+    var draw = new Draw_3.Draw(canvas, new geom.Vector(640, 640));
     var game = new Game_1.Game(draw);
     game.make_person(game.make_body(new geom.Vector(0, 0), 100));
     function t() {

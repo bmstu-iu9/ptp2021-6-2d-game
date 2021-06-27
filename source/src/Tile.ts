@@ -14,7 +14,7 @@ export class Tile {
     public colision = ColisionType.Empty;
     public image : HTMLImageElement;
     
-    constructor(colision : ColisionType) {
+    constructor(colision : ColisionType = 0) {
         this.colision = colision;
         if (colision == 0) {
             this.image = Draw.loadImage("textures/Empty.png");
