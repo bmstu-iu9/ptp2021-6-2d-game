@@ -36,9 +36,7 @@ export class Game {
         //             new geom.Vector(this.tile_size * i, this.tile_size * j), new geom.Vector(this.tile_size, this.tile_size));
         //    }
         //}
-        for (let i = 0; i < this.people.length; i++) {
-            this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
-        }
+        
         if (this.people.length != 0) {
             if(controlClass.Control.isKeyDown(controlClass.Keys.UpArrow)) {
                 this.people[0].body.move(new geom.Vector(0, -1));
@@ -52,6 +50,12 @@ export class Game {
             if(controlClass.Control.isKeyDown(controlClass.Keys.LeftArrow)) {
                 this.people[0].body.move(new geom.Vector(-1, 0));
             }
+        }
+    }
+
+    public display() {
+        for (let i = 0; i < this.people.length; i++) {
+            this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
         }
     }
 }

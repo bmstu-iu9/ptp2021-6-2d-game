@@ -245,9 +245,6 @@ define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], func
             return this.people[this.people.length] = new personClass.Person(body);
         };
         Game.prototype.step = function () {
-            for (var i = 0; i < this.people.length; i++) {
-                this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
-            }
             if (this.people.length != 0) {
                 if (controlClass.Control.isKeyDown(controlClass.Keys.UpArrow)) {
                     this.people[0].body.move(new geom.Vector(0, -1));
@@ -263,6 +260,11 @@ define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], func
                 }
             }
         };
+        Game.prototype.display = function () {
+            for (var i = 0; i < this.people.length; i++) {
+                this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
+            }
+        };
         return Game;
     }());
     exports.Game = Game;
@@ -275,9 +277,9 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     var game = new gameClass.Game(draw);
     game.make_person(game.make_body(new geom.Vector(0, 0), 100));
     function t() {
-        console.log(1);
         draw.clear();
         game.step();
+        game.display();
     }
     setInterval(t, 5);
 });
