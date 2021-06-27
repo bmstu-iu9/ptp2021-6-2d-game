@@ -1,19 +1,19 @@
-import * as bodyClass from "./Body"
-import * as geom from "./Geom"
-import * as personClass from "./Person"
-import * as controlClass from "./Control"
-import * as dr from "./Draw"
-import * as tileClass from "./Tile"
+import * as geom from "./Geom";
+import {Body} from "./Body";
+import {Person} from "./Person";
+import {Control, Keys} from "./Control";
+import {Draw} from "./Draw";
+import { Tile, ColisionType } from "./Tile";
 
 export class Game {
     private tile_size = 50
-    private draw : dr.Draw;
-    private bodies : bodyClass.Body [] = [];
-    private people : personClass.Person [] = [];
-    private map : tileClass.Tile [][] = [];
+    private draw : Draw;
+    private bodies : Body [] = [];
+    private people : Person [] = [];
+    private map : Tile [][] = [];
 
-    constructor(draw : dr.Draw) {
-        controlClass.Control.init();
+    constructor(draw : Draw) {
+        Control.init();
         this.draw = draw;
 
         let sizeX = 10;
@@ -22,47 +22,50 @@ export class Game {
             this.map[x] = [];
         }
 
-        this.map[0][0] = new tileClass.Tile(tileClass.ColisionType.Full);
-        this.map[1][1] = new tileClass.Tile(tileClass.ColisionType.CornerUL);
-        this.map[0][1] = new tileClass.Tile(tileClass.ColisionType.Full);
-        this.map[1][0] = new tileClass.Tile(tileClass.ColisionType.Full);
+        this.map[0][0] = new Tile(ColisionType.Full);
+        this.map[1][1] = new Tile(ColisionType.CornerUL);
+        this.map[0][1] = new Tile(ColisionType.Full);
+        this.map[1][0] = new Tile(ColisionType.Full);
     }
 
-    public make_body(coordinates : geom.Vector, radius : number) : bodyClass.Body {
-        return this.bodies[this.bodies.length] = new bodyClass.Body(coordinates, radius);
+    public make_body(coordinates : geom.Vector, radius : number) : Body {
+        return this.bodies[this.bodies.length] = new Body(coordinates, radius);
     }
 
-    public make_person(body : bodyClass.Body) {
-        return this.people[this.people.length] = new personClass.Person(body);
+    public make_person(body : Body) {
+        return this.people[this.people.length] = new Person(body);
     }
 
     public step() {
-        for (let i = 0; i < this.map.length; i++) {
-            for (let j = 0; j < this.map[i].length; j++) {
-                this.draw.image(this.map[i][j].image,
-                     new geom.Vector(this.tile_size * i, this.tile_size * j), new geom.Vector(this.tile_size, this.tile_size));
-            }
-        }
-        for (let i = 0; i < this.people.length; i++) {
-            this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
-        }
         if (this.people.length != 0) {
-            if(controlClass.Control.isKeyDown(controlClass.Keys.UpArrow)) {
+            if(Control.isKeyDown(Keys.UpArrow)) {
                 this.people[0].body.move(new geom.Vector(0, -1));
             }
-            if(controlClass.Control.isKeyDown(controlClass.Keys.DownArrow)) {
+            if(Control.isKeyDown(Keys.DownArrow)) {
                 this.people[0].body.move(new geom.Vector(0, 1));
             }
-            if(controlClass.Control.isKeyDown(controlClass.Keys.RightArrow)) {
+            if(Control.isKeyDown(Keys.RightArrow)) {
                 this.people[0].body.move(new geom.Vector(1, 0));
             }
-            if(controlClass.Control.isKeyDown(controlClass.Keys.LeftArrow)) {
+            if(Control.isKeyDown(Keys.LeftArrow)) {
                 this.people[0].body.move(new geom.Vector(-1, 0));
             }
         }
     }
 
     public display() {
+        // People
+        for (let i = 0; i < this.people.length; i++) {
+            this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
+        }
+
+        // Tiles
+        for (let i = 0; i < this.map.length; i++) {
+            for (let j = 0; j < this.map[i].length; j++) {
+                this.draw.image(this.map[i][j].image,
+                    new geom.Vector(this.tile_size * i, this.tile_size * j), new geom.Vector(this.tile_size, this.tile_size));
+            }
+        }
         for (let i = 0; i < this.people.length; i++) {
             this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
         }

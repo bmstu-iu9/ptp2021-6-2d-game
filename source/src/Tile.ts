@@ -1,5 +1,5 @@
 import { Keys } from "./Control";
-import * as dr from "./Draw"
+import { Draw } from "./Draw";
 
 export enum ColisionType {
     Empty = 0,
@@ -17,22 +17,22 @@ export class Tile {
     constructor(colision : ColisionType) {
         this.colision = colision;
         if (colision == 0) {
-            this.image = dr.Draw.loadImage("textures/Empty.png");
+            this.image = Draw.loadImage("textures/Empty.png");
         }
         if (colision == 1) {
-            this.image = dr.Draw.loadImage("textures/CornerUL.png");
+            this.image = Draw.loadImage("textures/CornerUL.png");
         }
         if (colision == 2) {
-            this.image = dr.Draw.loadImage("textures/CornerUR.png");
+            this.image = Draw.loadImage("textures/CornerUR.png");
         }
         if (colision == 3) {
-            this.image = dr.Draw.loadImage("textures/CornerDL.png");
+            this.image = Draw.loadImage("textures/CornerDL.png");
         }
         if (colision == 4) {
-            this.image = dr.Draw.loadImage("textures/CornerDR.png");
+            this.image = Draw.loadImage("textures/Cornerpng");
         }
         if (colision == 5) {
-            this.image = dr.Draw.loadImage("textures/Full.png");
+            this.image = Draw.loadImage("textures/Full.png");
         }
     }
 

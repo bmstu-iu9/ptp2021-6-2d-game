@@ -1,13 +1,13 @@
-import * as bodyClass from "./Body"
-import * as geom from "./Geom"
-import * as animationClass from "./Animation"
+import * as geom from "./Geom";
+import { Body } from "./Body";
+import { Animation } from "./Animation";
 
 export class Person {
-    public body : bodyClass.Body;
-    public animation : animationClass.Animation;
+    public body : Body;
+    public animation : Animation;
     
-    constructor(body : bodyClass.Body) {
+    constructor(body : Body) {
         this.body = body;
-        this.animation = new animationClass.Animation();
+        this.animation = new Animation();
     }
 }
