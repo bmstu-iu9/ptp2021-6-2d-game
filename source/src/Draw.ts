@@ -19,7 +19,7 @@ export class Draw {
         this.cam.pos = size.mul(1 / 2);
         this.cam.center = size.mul(1 / 2);
     }
-    public loadImage(src : string) : HTMLImageElement {
+    public static loadImage(src : string) : HTMLImageElement {
         let image = new Image();
         image.src = src;
         return image;
@@ -32,5 +32,8 @@ export class Draw {
         let boxNew = box.mul(this.cam.scale);
         posNew = posNew.sub(boxNew.mul(1 / 2));
         this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+    }
+    public clear() {
+        this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
 }

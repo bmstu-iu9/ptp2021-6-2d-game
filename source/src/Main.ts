@@ -1,16 +1,19 @@
 import * as geom from "./Geom"
 import * as dr from "./Draw"
+import * as gameClass from "./Game"
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new dr.Draw(canvas, new geom.Vector(320, 320));
-let img = draw.loadImage("textures/img.png");
+let game = new gameClass.Game(draw);
+game.make_person(game.make_body(new geom.Vector(0, 0), 100));
 
 function t() {
     console.log(1);
-    draw.image(img, new geom.Vector(0, 0), new geom.Vector(100, 100));
+    draw.clear();
+    game.step();
 }
 
-setInterval(t, 2000);
+setInterval(t, 5);
 /*
 import * as gameClass from "./Game"
 

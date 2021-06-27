@@ -38,7 +38,6 @@ define("Geom", ["require", "exports"], function (require, exports) {
     }());
     exports.Vector = Vector;
 });
-<<<<<<< HEAD
 define("Draw", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -60,7 +59,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.cam.pos = size.mul(1 / 2);
             this.cam.center = size.mul(1 / 2);
         }
-        Draw.prototype.loadImage = function (src) {
+        Draw.loadImage = function (src) {
             var image = new Image();
             image.src = src;
             return image;
@@ -75,22 +74,26 @@ define("Draw", ["require", "exports"], function (require, exports) {
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
+        Draw.prototype.clear = function () {
+            this.ctx.clearRect(-1000, -1000, 10000, 10000);
+        };
         return Draw;
     }());
     exports.Draw = Draw;
 });
-define("Main", ["require", "exports", "Geom", "Draw"], function (require, exports, geom, dr) {
+define("Animation", ["require", "exports", "Draw"], function (require, exports, dr) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var canvas = document.getElementById('gameCanvas');
-    var draw = new dr.Draw(canvas, new geom.Vector(320, 320));
-    var img = draw.loadImage("textures/img.png");
-    function t() {
-        console.log(1);
-        draw.image(img, new geom.Vector(0, 0), new geom.Vector(100, 100));
-    }
-    setInterval(t, 2000);
-=======
+    exports.Animation = void 0;
+    var Animation = (function () {
+        function Animation() {
+            this.stateMachine = [];
+            this.current_state = dr.Draw.loadImage("textures/img.png");
+        }
+        return Animation;
+    }());
+    exports.Animation = Animation;
+});
 define("Body", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -148,47 +151,20 @@ define("Control", ["require", "exports"], function (require, exports) {
     }());
     exports.Control = Control;
 });
-define("Person", ["require", "exports"], function (require, exports) {
+define("Person", ["require", "exports", "Animation"], function (require, exports, animationClass) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Person = void 0;
     var Person = (function () {
         function Person(body) {
             this.body = body;
+            this.animation = new animationClass.Animation();
         }
         return Person;
     }());
     exports.Person = Person;
 });
-define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], function (require, exports, bodyClass, geom, personClass, controlClass) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Game = void 0;
-    var Game = (function () {
-        function Game() {
-            this.person = new personClass.Person(new bodyClass.Body(new geom.Vector(0, 0), 1));
-            controlClass.Control.init();
-        }
-        Game.prototype.step = function () {
-            console.log(controlClass.Control.isKeyDown(controlClass.Keys.UpArrow));
-            if (controlClass.Control.isKeyDown(controlClass.Keys.UpArrow))
-                this.person.body.move(new geom.Vector(1, 0));
-            console.log(this.person.body.center);
-        };
-        return Game;
-    }());
-    exports.Game = Game;
-});
-define("Main", ["require", "exports", "Game"], function (require, exports, gameClass) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var game = new gameClass.Game();
-    var autoSaveInterval = setInterval(function () {
-        game.step();
-    }, 5000);
->>>>>>> c39b934d3b17be1ec570df5cbf55e0f2533e5a97
-});
-define("Tile", ["require", "exports"], function (require, exports) {
+define("Tile", ["require", "exports", "Draw"], function (require, exports, dr) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Tile = exports.ColisionType = void 0;
@@ -205,9 +181,104 @@ define("Tile", ["require", "exports"], function (require, exports) {
         function Tile(colision) {
             this.colision = ColisionType.Empty;
             this.colision = colision;
+            if (colision == 0) {
+                this.image = dr.Draw.loadImage("textures/Empty.png");
+            }
+            if (colision == 1) {
+                this.image = dr.Draw.loadImage("textures/CornerUL.png");
+            }
+            if (colision == 2) {
+                this.image = dr.Draw.loadImage("textures/CornerUR.png");
+            }
+            if (colision == 3) {
+                this.image = dr.Draw.loadImage("textures/CornerDL.png");
+            }
+            if (colision == 4) {
+                this.image = dr.Draw.loadImage("textures/CornerDR.png");
+            }
+            if (colision == 5) {
+                this.image = dr.Draw.loadImage("textures/Full.png");
+            }
         }
+        Tile.prototype.setColision = function (colision) {
+            this.colision = colision;
+            if (colision == 0) {
+                this.image = dr.Draw.loadImage("textures/Empty.png");
+            }
+            if (colision == 1) {
+                this.image = dr.Draw.loadImage("textures/CornerUL.png");
+            }
+            if (colision == 2) {
+                this.image = dr.Draw.loadImage("textures/CornerUR.png");
+            }
+            if (colision == 3) {
+                this.image = dr.Draw.loadImage("textures/CornerDL.png");
+            }
+            if (colision == 4) {
+                this.image = dr.Draw.loadImage("textures/CornerDR.png");
+            }
+            if (colision == 5) {
+                this.image = dr.Draw.loadImage("textures/Full.png");
+            }
+        };
         return Tile;
     }());
     exports.Tile = Tile;
+});
+define("Game", ["require", "exports", "Body", "Geom", "Person", "Control"], function (require, exports, bodyClass, geom, personClass, controlClass) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Game = void 0;
+    var Game = (function () {
+        function Game(draw) {
+            this.tile_size = 50;
+            this.bodies = [];
+            this.people = [];
+            this.map = [[]];
+            controlClass.Control.init();
+            this.draw = draw;
+        }
+        Game.prototype.make_body = function (coordinates, radius) {
+            return this.bodies[this.bodies.length] = new bodyClass.Body(coordinates, radius);
+        };
+        Game.prototype.make_person = function (body) {
+            return this.people[this.people.length] = new personClass.Person(body);
+        };
+        Game.prototype.step = function () {
+            for (var i = 0; i < this.people.length; i++) {
+                this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
+            }
+            if (this.people.length != 0) {
+                if (controlClass.Control.isKeyDown(controlClass.Keys.UpArrow)) {
+                    this.people[0].body.move(new geom.Vector(0, -1));
+                }
+                if (controlClass.Control.isKeyDown(controlClass.Keys.DownArrow)) {
+                    this.people[0].body.move(new geom.Vector(0, 1));
+                }
+                if (controlClass.Control.isKeyDown(controlClass.Keys.RightArrow)) {
+                    this.people[0].body.move(new geom.Vector(1, 0));
+                }
+                if (controlClass.Control.isKeyDown(controlClass.Keys.LeftArrow)) {
+                    this.people[0].body.move(new geom.Vector(-1, 0));
+                }
+            }
+        };
+        return Game;
+    }());
+    exports.Game = Game;
+});
+define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, dr, gameClass) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var canvas = document.getElementById('gameCanvas');
+    var draw = new dr.Draw(canvas, new geom.Vector(320, 320));
+    var game = new gameClass.Game(draw);
+    game.make_person(game.make_body(new geom.Vector(0, 0), 100));
+    function t() {
+        console.log(1);
+        draw.clear();
+        game.step();
+    }
+    setInterval(t, 5);
 });
 //# sourceMappingURL=build.js.map
