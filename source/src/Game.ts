@@ -61,4 +61,10 @@ export class Game {
             }
         }
     }
+
+    public display() {
+        for (let i = 0; i < this.people.length; i++) {
+            this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(100, 100));
+        }
+    }
 }
