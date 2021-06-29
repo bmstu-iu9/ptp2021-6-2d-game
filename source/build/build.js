@@ -94,20 +94,7 @@ define("Animation", ["require", "exports", "Draw"], function (require, exports, 
     }());
     exports.Animation = Animation;
 });
-define("Person", ["require", "exports", "Animation"], function (require, exports, Animation_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Person = void 0;
-    var Person = (function () {
-        function Person(body) {
-            this.body = body;
-            this.animation = new Animation_1.Animation();
-        }
-        return Person;
-    }());
-    exports.Person = Person;
-});
-define("Control", ["require", "exports"], function (require, exports) {
+define("Control", ["require", "exports", "Geom"], function (require, exports, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Control = exports.Keys = void 0;
@@ -127,9 +114,17 @@ define("Control", ["require", "exports"], function (require, exports) {
             }
             window.addEventListener("keydown", Control.onKeyDown);
             window.addEventListener("keyup", Control.onKeyUp);
+            window.addEventListener("click", Control.onClick);
         };
         Control.isKeyDown = function (key) {
             return Control._keys[key];
+        };
+        Control.isMouseClicked = function () {
+            return this.clicked;
+        };
+        Control.lastMouseCoordinates = function () {
+            this.clicked = false;
+            return this.mouseCoordinates;
         };
         Control.onKeyDown = function (event) {
             Control._keys[event.keyCode] = true;
@@ -143,10 +138,81 @@ define("Control", ["require", "exports"], function (require, exports) {
             event.stopPropagation();
             return false;
         };
+        Control.onClick = function (event) {
+            Control.clicked = true;
+            Control.mouseCoordinates = new geom.Vector(event.x, event.y);
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        };
         Control._keys = [];
+        Control.clicked = false;
+        Control.mouseCoordinates = new geom.Vector(0, 0);
         return Control;
     }());
     exports.Control = Control;
+});
+define("Brain", ["require", "exports", "Control", "Geom"], function (require, exports, Control_1, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Brain = void 0;
+    var Brain = (function () {
+        function Brain(game, personID) {
+            this.game = game;
+            this.personID = personID;
+        }
+        Brain.prototype.bodyControl = function () {
+            if (this.personID == this.game.playerID) {
+                var vel = 0.01;
+                if (Control_1.Control.isKeyDown(Control_1.Keys.UpArrow)) {
+                    this.game.people[this.personID].body.move(new geom.Vector(0, -vel));
+                }
+                if (Control_1.Control.isKeyDown(Control_1.Keys.DownArrow)) {
+                    this.game.people[this.personID].body.move(new geom.Vector(0, vel));
+                }
+                if (Control_1.Control.isKeyDown(Control_1.Keys.RightArrow)) {
+                    this.game.people[this.personID].body.move(new geom.Vector(vel, 0));
+                }
+                if (Control_1.Control.isKeyDown(Control_1.Keys.LeftArrow)) {
+                    this.game.people[this.personID].body.move(new geom.Vector(-vel, 0));
+                }
+                if (Control_1.Control.isMouseClicked()) {
+                    console.log("clicked", this.game.draw.cam.center, this.game.draw.cam.pos, this.game.draw.cam.scale);
+                    var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
+                    console.log(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
+                    coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
+                    var infectionRadius = 100;
+                    for (var i = 0; i < this.game.people.length; i++) {
+                        var centerDistance = this.game.people[this.personID].body.center.sub(this.game.people[i].body.center).abs();
+                        var isMouseOn = this.game.people[i].body.center.sub(coords).abs();
+                        console.log("cords: ", coords, "isMouseOn: ", isMouseOn, "MyCenter: ", this.game.people[this.personID].body.center);
+                        if ((centerDistance < infectionRadius) && (isMouseOn < this.game.people[i].body.radius) && (i != this.personID)) {
+                            this.game.playerID = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+            }
+        };
+        return Brain;
+    }());
+    exports.Brain = Brain;
+});
+define("Person", ["require", "exports", "Animation"], function (require, exports, Animation_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Person = void 0;
+    var Person = (function () {
+        function Person(body, brain) {
+            this.brain = brain;
+            this.body = body;
+            this.animation = new Animation_1.Animation();
+        }
+        return Person;
+    }());
+    exports.Person = Person;
 });
 define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_2) {
     "use strict";
@@ -195,7 +261,7 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
     }());
     exports.Tile = Tile;
 });
-define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile"], function (require, exports, geom, Body_1, Person_1, Control_1, Tile_1) {
+define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile", "Brain"], function (require, exports, geom, Body_1, Person_1, Control_2, Tile_1, Brain_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -203,9 +269,11 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
         function Game(draw) {
             this.tile_size = 1;
             this.bodies = [];
+            this.brains = [];
             this.people = [];
             this.grid = [];
-            Control_1.Control.init();
+            this.playerID = 0;
+            Control_2.Control.init();
             this.draw = draw;
             var sizeX = 10;
             var sizeY = 10;
@@ -225,24 +293,16 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
             body.game = this;
             return this.bodies[this.bodies.length] = body;
         };
-        Game.prototype.make_person = function (body) {
-            return this.people[this.people.length] = new Person_1.Person(body);
+        Game.prototype.make_brain = function () {
+            var brain = new Brain_1.Brain(this, this.brains.length);
+            return this.brains[this.brains.length] = brain;
+        };
+        Game.prototype.make_person = function (body, brain) {
+            return this.people[this.people.length] = new Person_1.Person(body, brain);
         };
         Game.prototype.step = function () {
-            if (this.people.length != 0) {
-                var vel = 0.01;
-                if (Control_1.Control.isKeyDown(Control_1.Keys.UpArrow)) {
-                    this.people[0].body.move(new geom.Vector(0, -vel));
-                }
-                if (Control_1.Control.isKeyDown(Control_1.Keys.DownArrow)) {
-                    this.people[0].body.move(new geom.Vector(0, vel));
-                }
-                if (Control_1.Control.isKeyDown(Control_1.Keys.RightArrow)) {
-                    this.people[0].body.move(new geom.Vector(vel, 0));
-                }
-                if (Control_1.Control.isKeyDown(Control_1.Keys.LeftArrow)) {
-                    this.people[0].body.move(new geom.Vector(-vel, 0));
-                }
+            for (var i = 0; i < this.people.length; i++) {
+                this.people[i].brain.bodyControl();
             }
         };
         Game.prototype.display = function () {
@@ -292,7 +352,8 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_3.Draw(canvas, new geom.Vector(640, 640));
     var game = new Game_1.Game(draw);
-    game.make_person(game.make_body(new geom.Vector(0, 0), 100));
+    game.make_person(game.make_body(new geom.Vector(0, 0), 1), game.make_brain());
+    game.make_person(game.make_body(new geom.Vector(0, 0), 1), game.make_brain());
     function t() {
         draw.clear();
         game.step();

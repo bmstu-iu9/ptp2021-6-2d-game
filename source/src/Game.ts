@@ -4,13 +4,16 @@ import {Person} from "./Person";
 import {Control, Keys} from "./Control";
 import {Draw} from "./Draw";
 import { Tile, ColisionType } from "./Tile";
+import { Brain } from "./Brain";
 
 export class Game {
     private tile_size = 1
-    private draw : Draw;
+    public draw : Draw;
     private bodies : Body [] = [];
-    private people : Person [] = [];
+    private brains : Brain [] = [];
+    public people : Person [] = [];
     public grid : Tile [][] = [];
+    public playerID = 0;
 
     constructor(draw : Draw) {
         Control.init();
@@ -37,25 +40,18 @@ export class Game {
         return this.bodies[this.bodies.length] = body;
     }
 
-    public make_person(body : Body) {
-        return this.people[this.people.length] = new Person(body);
+    public make_brain() {
+        let brain = new Brain(this, this.brains.length);
+        return this.brains[this.brains.length] = brain;
+    }
+
+    public make_person(body : Body, brain : Brain) {
+        return this.people[this.people.length] = new Person(body, brain);
     }
 
     public step() {
-        if (this.people.length != 0) {
-            let vel = 0.01;
-            if(Control.isKeyDown(Keys.UpArrow)) {
-                this.people[0].body.move(new geom.Vector(0, -vel));
-            }
-            if(Control.isKeyDown(Keys.DownArrow)) {
-                this.people[0].body.move(new geom.Vector(0, vel));
-            }
-            if(Control.isKeyDown(Keys.RightArrow)) {
-                this.people[0].body.move(new geom.Vector(vel, 0));
-            }
-            if(Control.isKeyDown(Keys.LeftArrow)) {
-                this.people[0].body.move(new geom.Vector(-vel, 0));
-            }
+        for (let i = 0; i < this.people.length; i++) {
+            this.people[i].brain.bodyControl();
         }
     }
 
