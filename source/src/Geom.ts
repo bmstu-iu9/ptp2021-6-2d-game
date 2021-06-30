@@ -40,4 +40,8 @@ export class Vector {
         return new Vector(this.x * Math.cos(angle) - this.y * Math.sin(angle),
         this.x * Math.sin(angle) + this.y * Math.cos(angle));
     }
+
+    public dot(v : Vector) : number {
+        return this.x * v.x + this.y * v.y;
+    }
 }

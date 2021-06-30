@@ -56,7 +56,7 @@ export class Game {
     }
 
     // Checks if pos is in wall
-    public check_wall(pos : geom.Vector) : boolean {
+    public check_wall(pos : geom.Vector) : number {
         let posRound = new geom.Vector(
             Math.floor(pos.x / this.tileSize), 
             Math.floor(pos.y / this.tileSize)
@@ -66,20 +66,20 @@ export class Game {
         if (posRound.x < 0 || posRound.y < 0 || 
             posRound.x >= this.grid.length || 
             posRound.y >= this.grid[0].length)
-            return false;
+            return 0;
 
-        // Different collision types
-        let collisionType = this.grid[posRound.x][posRound.y].colision;
-        if (collisionType == CollisionType.Full)
-            return true;
-
+        let collisionType = this.grid[posRound.x][posRound.y].colision;    
         // Coordinates in particular grid cell
         let posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
-        return (collisionType == CollisionType.CornerUR && posIn.y < posIn.x ||
+        // Different collision types
+        if (collisionType == CollisionType.Full ||
+            collisionType == CollisionType.CornerUR && posIn.y < posIn.x ||
             collisionType == CollisionType.CornerDL && posIn.y > posIn.x ||
             collisionType == CollisionType.CornerDR && posIn.y > 1 - posIn.x ||
             collisionType == CollisionType.CornerUL && posIn.y < 1 - posIn.x
-            );
+            )
+            return collisionType;
+        return CollisionType.Empty;
     }
 
     public display() {

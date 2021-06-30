@@ -34,6 +34,9 @@ define("Geom", ["require", "exports"], function (require, exports) {
         Vector.prototype.rotate = function (angle) {
             return new Vector(this.x * Math.cos(angle) - this.y * Math.sin(angle), this.x * Math.sin(angle) + this.y * Math.cos(angle));
         };
+        Vector.prototype.dot = function (v) {
+            return this.x * v.x + this.y * v.y;
+        };
         return Vector;
     }());
     exports.Vector = Vector;
@@ -327,15 +330,16 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
             if (posRound.x < 0 || posRound.y < 0 ||
                 posRound.x >= this.grid.length ||
                 posRound.y >= this.grid[0].length)
-                return false;
+                return 0;
             var collisionType = this.grid[posRound.x][posRound.y].colision;
-            if (collisionType == Tile_1.CollisionType.Full)
-                return true;
             var posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
-            return (collisionType == Tile_1.CollisionType.CornerUR && posIn.y < posIn.x ||
+            if (collisionType == Tile_1.CollisionType.Full ||
+                collisionType == Tile_1.CollisionType.CornerUR && posIn.y < posIn.x ||
                 collisionType == Tile_1.CollisionType.CornerDL && posIn.y > posIn.x ||
                 collisionType == Tile_1.CollisionType.CornerDR && posIn.y > 1 - posIn.x ||
-                collisionType == Tile_1.CollisionType.CornerUL && posIn.y < 1 - posIn.x);
+                collisionType == Tile_1.CollisionType.CornerUL && posIn.y < 1 - posIn.x)
+                return collisionType;
+            return Tile_1.CollisionType.Empty;
         };
         Game.prototype.display = function () {
             this.draw.cam.pos = new geom.Vector(0, 0);
@@ -354,7 +358,7 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
     }());
     exports.Game = Game;
 });
-define("Body", ["require", "exports"], function (require, exports) {
+define("Body", ["require", "exports", "Geom", "Tile"], function (require, exports, geom, Tile_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Body = void 0;
@@ -363,10 +367,24 @@ define("Body", ["require", "exports"], function (require, exports) {
             this.center = center;
             this.radius = radius;
         }
-        Body.prototype.move = function (a) {
-            var posNew = this.center.add(a);
-            if (!this.game.check_wall(posNew))
-                this.center = posNew;
+        Body.prototype.move = function (delta) {
+            var collision = this.game.check_wall(this.center.add(delta));
+            if (collision == Tile_2.CollisionType.Full)
+                delta = new geom.Vector();
+            else if (collision != Tile_2.CollisionType.Empty) {
+                var norm = void 0;
+                if (collision == Tile_2.CollisionType.CornerDL)
+                    norm = new geom.Vector(1, -1);
+                if (collision == Tile_2.CollisionType.CornerDR)
+                    norm = new geom.Vector(-1, -1);
+                if (collision == Tile_2.CollisionType.CornerUL)
+                    norm = new geom.Vector(1, 1);
+                if (collision == Tile_2.CollisionType.CornerUR)
+                    norm = new geom.Vector(-1, 1);
+                delta = delta.sub(norm.mul(delta.dot(norm) / norm.dot(norm))).add(norm.mul(1 / 10000));
+            }
+            var posNew = this.center.add(delta);
+            this.center = posNew;
         };
         return Body;
     }());
