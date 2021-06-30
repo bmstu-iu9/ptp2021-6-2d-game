@@ -36,21 +36,21 @@ export class Draw {
         image.src = src;
         return image;
     }
-    // TODO: transformation
-    public image(image : HTMLImageElement, pos : geom.Vector, box : geom.Vector, angle = 0) {
+    private transform(pos : geom.Vector) : geom.Vector {
         let posNew = pos.clone();
         posNew = posNew.sub(this.cam.pos);
         posNew = posNew.mul(this.cam.scale);
         posNew = posNew.add(this.cam.center);
+        return posNew;
+    }
+    public image(image : HTMLImageElement, pos : geom.Vector, box : geom.Vector, angle = 0) {
+        let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale);
         posNew = posNew.sub(boxNew.mul(1 / 2));
         this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
     public fillRect(pos : geom.Vector, box : geom.Vector, color : Color) {
-        let posNew = pos.clone();
-        posNew = posNew.sub(this.cam.pos);
-        posNew = posNew.mul(this.cam.scale);
-        posNew = posNew.add(this.cam.center);
+        let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale);
         posNew = posNew.sub(boxNew.mul(1 / 2));
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";

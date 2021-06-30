@@ -73,21 +73,22 @@ define("Draw", ["require", "exports"], function (require, exports) {
             image.src = src;
             return image;
         };
-        Draw.prototype.image = function (image, pos, box, angle) {
-            if (angle === void 0) { angle = 0; }
+        Draw.prototype.transform = function (pos) {
             var posNew = pos.clone();
             posNew = posNew.sub(this.cam.pos);
             posNew = posNew.mul(this.cam.scale);
             posNew = posNew.add(this.cam.center);
+            return posNew;
+        };
+        Draw.prototype.image = function (image, pos, box, angle) {
+            if (angle === void 0) { angle = 0; }
+            var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
         Draw.prototype.fillRect = function (pos, box, color) {
-            var posNew = pos.clone();
-            posNew = posNew.sub(this.cam.pos);
-            posNew = posNew.mul(this.cam.scale);
-            posNew = posNew.add(this.cam.center);
+            var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
