@@ -2,12 +2,12 @@ import * as geom from "./Geom";
 import {Body} from "./Body";
 import {Person} from "./Person";
 import {Control, Keys} from "./Control";
-import {Draw} from "./Draw";
-import { Tile, ColisionType } from "./Tile";
+import {Draw, Color} from "./Draw";
+import { Tile, CollisionType } from "./Tile";
 import { Brain } from "./Brain";
 
 export class Game {
-    private tile_size = 1
+    public tileSize = 1
     public draw : Draw;
     private bodies : Body [] = [];
     private brains : Brain [] = [];
@@ -28,10 +28,10 @@ export class Game {
             }
         }
 
-        this.grid[0][0] = new Tile(ColisionType.Full);
-        this.grid[1][1] = new Tile(ColisionType.CornerUL);
-        this.grid[0][1] = new Tile(ColisionType.Full);
-        this.grid[1][0] = new Tile(ColisionType.Full);
+        this.grid[0][0] = new Tile(CollisionType.CornerDR);
+        this.grid[1][1] = new Tile(CollisionType.CornerUL);
+        this.grid[0][1] = new Tile(CollisionType.CornerUR);
+        this.grid[1][0] = new Tile(CollisionType.CornerDL);
     }
 
     public make_body(coordinates : geom.Vector, radius : number) : Body {
@@ -55,15 +55,42 @@ export class Game {
         }
     }
 
+    // Checks if pos is in wall
+    public check_wall(pos : geom.Vector) : boolean {
+        let posRound = new geom.Vector(
+            Math.floor(pos.x / this.tileSize), 
+            Math.floor(pos.y / this.tileSize)
+        );
+
+        // If out of bounds
+        if (posRound.x < 0 || posRound.y < 0 || 
+            posRound.x >= this.grid.length || 
+            posRound.y >= this.grid[0].length)
+            return false;
+
+        // Different collision types
+        let collisionType = this.grid[posRound.x][posRound.y].colision;
+        if (collisionType == CollisionType.Full)
+            return true;
+
+        // Coordinates in particular grid cell
+        let posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
+        return (collisionType == CollisionType.CornerUR && posIn.y < posIn.x ||
+            collisionType == CollisionType.CornerDL && posIn.y > posIn.x ||
+            collisionType == CollisionType.CornerDR && posIn.y > 1 - posIn.x ||
+            collisionType == CollisionType.CornerUL && posIn.y < 1 - posIn.x
+            );
+    }
+
     public display() {
         this.draw.cam.pos = new geom.Vector(0, 0);
         this.draw.cam.scale = 100;
         // Tiles
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[i].length; j++) {
-                let size = new geom.Vector(this.tile_size, this.tile_size);
+                let size = new geom.Vector(this.tileSize, this.tileSize);
                 this.draw.image(this.grid[i][j].image,
-                    (new geom.Vector(this.tile_size * i, this.tile_size * j)).add(size.mul(1 / 2)), size);
+                    (new geom.Vector(this.tileSize * i, this.tileSize * j)).add(size.mul(1 / 2)), size);
             }
         }
 

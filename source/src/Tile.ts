@@ -1,7 +1,7 @@
 import { Keys } from "./Control";
 import { Draw } from "./Draw";
 
-export enum ColisionType {
+export enum CollisionType {
     Empty = 0,
     CornerUL,
     CornerUR,
@@ -11,10 +11,10 @@ export enum ColisionType {
 }
 
 export class Tile {
-    public colision = ColisionType.Empty;
+    public colision = CollisionType.Empty;
     public image : HTMLImageElement;
     
-    constructor(colision : ColisionType = 0) {
+    constructor(colision : CollisionType = 0) {
         this.colision = colision;
         if (colision == 0) {
             this.image = Draw.loadImage("textures/Empty.png");
@@ -29,14 +29,14 @@ export class Tile {
             this.image = Draw.loadImage("textures/CornerDL.png");
         }
         if (colision == 4) {
-            this.image = Draw.loadImage("textures/Cornerpng");
+            this.image = Draw.loadImage("textures/CornerDR.png");
         }
         if (colision == 5) {
             this.image = Draw.loadImage("textures/Full.png");
         }
     }
 
-    public setColision(colision : ColisionType) {
+    public setColision(colision : CollisionType) {
         this.colision = colision;
     }
 

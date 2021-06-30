@@ -41,13 +41,22 @@ define("Geom", ["require", "exports"], function (require, exports) {
 define("Draw", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Draw = exports.Camera = void 0;
+    exports.Draw = exports.Color = exports.Camera = void 0;
     var Camera = (function () {
         function Camera() {
         }
         return Camera;
     }());
     exports.Camera = Camera;
+    var Color = (function () {
+        function Color(r, g, b) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+        return Color;
+    }());
+    exports.Color = Color;
     var Draw = (function () {
         function Draw(canvas, size) {
             this.cam = new Camera();
@@ -73,6 +82,16 @@ define("Draw", ["require", "exports"], function (require, exports) {
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        };
+        Draw.prototype.fillRect = function (pos, box, color) {
+            var posNew = pos.clone();
+            posNew = posNew.sub(this.cam.pos);
+            posNew = posNew.mul(this.cam.scale);
+            posNew = posNew.add(this.cam.center);
+            var boxNew = box.mul(this.cam.scale);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
@@ -177,15 +196,12 @@ define("Brain", ["require", "exports", "Control", "Geom"], function (require, ex
                     this.game.people[this.personID].body.move(new geom.Vector(-vel, 0));
                 }
                 if (Control_1.Control.isMouseClicked()) {
-                    console.log("clicked", this.game.draw.cam.center, this.game.draw.cam.pos, this.game.draw.cam.scale);
                     var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
-                    console.log(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
                     coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
                     var infectionRadius = 100;
                     for (var i = 0; i < this.game.people.length; i++) {
                         var centerDistance = this.game.people[this.personID].body.center.sub(this.game.people[i].body.center).abs();
                         var isMouseOn = this.game.people[i].body.center.sub(coords).abs();
-                        console.log("cords: ", coords, "isMouseOn: ", isMouseOn, "MyCenter: ", this.game.people[this.personID].body.center);
                         if ((centerDistance < infectionRadius) && (isMouseOn < this.game.people[i].body.radius) && (i != this.personID)) {
                             this.game.playerID = i;
                             break;
@@ -217,20 +233,20 @@ define("Person", ["require", "exports", "Animation"], function (require, exports
 define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Tile = exports.ColisionType = void 0;
-    var ColisionType;
-    (function (ColisionType) {
-        ColisionType[ColisionType["Empty"] = 0] = "Empty";
-        ColisionType[ColisionType["CornerUL"] = 1] = "CornerUL";
-        ColisionType[ColisionType["CornerUR"] = 2] = "CornerUR";
-        ColisionType[ColisionType["CornerDL"] = 3] = "CornerDL";
-        ColisionType[ColisionType["CornerDR"] = 4] = "CornerDR";
-        ColisionType[ColisionType["Full"] = 5] = "Full";
-    })(ColisionType = exports.ColisionType || (exports.ColisionType = {}));
+    exports.Tile = exports.CollisionType = void 0;
+    var CollisionType;
+    (function (CollisionType) {
+        CollisionType[CollisionType["Empty"] = 0] = "Empty";
+        CollisionType[CollisionType["CornerUL"] = 1] = "CornerUL";
+        CollisionType[CollisionType["CornerUR"] = 2] = "CornerUR";
+        CollisionType[CollisionType["CornerDL"] = 3] = "CornerDL";
+        CollisionType[CollisionType["CornerDR"] = 4] = "CornerDR";
+        CollisionType[CollisionType["Full"] = 5] = "Full";
+    })(CollisionType = exports.CollisionType || (exports.CollisionType = {}));
     var Tile = (function () {
         function Tile(colision) {
             if (colision === void 0) { colision = 0; }
-            this.colision = ColisionType.Empty;
+            this.colision = CollisionType.Empty;
             this.colision = colision;
             if (colision == 0) {
                 this.image = Draw_2.Draw.loadImage("textures/Empty.png");
@@ -245,7 +261,7 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
                 this.image = Draw_2.Draw.loadImage("textures/CornerDL.png");
             }
             if (colision == 4) {
-                this.image = Draw_2.Draw.loadImage("textures/Cornerpng");
+                this.image = Draw_2.Draw.loadImage("textures/CornerDR.png");
             }
             if (colision == 5) {
                 this.image = Draw_2.Draw.loadImage("textures/Full.png");
@@ -267,7 +283,7 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
     exports.Game = void 0;
     var Game = (function () {
         function Game(draw) {
-            this.tile_size = 1;
+            this.tileSize = 1;
             this.bodies = [];
             this.brains = [];
             this.people = [];
@@ -283,10 +299,10 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
                     this.grid[x][y] = new Tile_1.Tile();
                 }
             }
-            this.grid[0][0] = new Tile_1.Tile(Tile_1.ColisionType.Full);
-            this.grid[1][1] = new Tile_1.Tile(Tile_1.ColisionType.CornerUL);
-            this.grid[0][1] = new Tile_1.Tile(Tile_1.ColisionType.Full);
-            this.grid[1][0] = new Tile_1.Tile(Tile_1.ColisionType.Full);
+            this.grid[0][0] = new Tile_1.Tile(Tile_1.CollisionType.CornerDR);
+            this.grid[1][1] = new Tile_1.Tile(Tile_1.CollisionType.CornerUL);
+            this.grid[0][1] = new Tile_1.Tile(Tile_1.CollisionType.CornerUR);
+            this.grid[1][0] = new Tile_1.Tile(Tile_1.CollisionType.CornerDL);
         }
         Game.prototype.make_body = function (coordinates, radius) {
             var body = new Body_1.Body(coordinates, radius);
@@ -305,13 +321,28 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
                 this.people[i].brain.bodyControl();
             }
         };
+        Game.prototype.check_wall = function (pos) {
+            var posRound = new geom.Vector(Math.floor(pos.x / this.tileSize), Math.floor(pos.y / this.tileSize));
+            if (posRound.x < 0 || posRound.y < 0 ||
+                posRound.x >= this.grid.length ||
+                posRound.y >= this.grid[0].length)
+                return false;
+            var collisionType = this.grid[posRound.x][posRound.y].colision;
+            if (collisionType == Tile_1.CollisionType.Full)
+                return true;
+            var posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
+            return (collisionType == Tile_1.CollisionType.CornerUR && posIn.y < posIn.x ||
+                collisionType == Tile_1.CollisionType.CornerDL && posIn.y > posIn.x ||
+                collisionType == Tile_1.CollisionType.CornerDR && posIn.y > 1 - posIn.x ||
+                collisionType == Tile_1.CollisionType.CornerUL && posIn.y < 1 - posIn.x);
+        };
         Game.prototype.display = function () {
             this.draw.cam.pos = new geom.Vector(0, 0);
             this.draw.cam.scale = 100;
             for (var i = 0; i < this.grid.length; i++) {
                 for (var j = 0; j < this.grid[i].length; j++) {
-                    var size = new geom.Vector(this.tile_size, this.tile_size);
-                    this.draw.image(this.grid[i][j].image, (new geom.Vector(this.tile_size * i, this.tile_size * j)).add(size.mul(1 / 2)), size);
+                    var size = new geom.Vector(this.tileSize, this.tileSize);
+                    this.draw.image(this.grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j)).add(size.mul(1 / 2)), size);
                 }
             }
             for (var i = 0; i < this.people.length; i++) {
@@ -322,7 +353,7 @@ define("Game", ["require", "exports", "Geom", "Body", "Person", "Control", "Tile
     }());
     exports.Game = Game;
 });
-define("Body", ["require", "exports", "Geom"], function (require, exports, geom) {
+define("Body", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Body = void 0;
@@ -331,15 +362,9 @@ define("Body", ["require", "exports", "Geom"], function (require, exports, geom)
             this.center = center;
             this.radius = radius;
         }
-        Body.prototype.check_wall = function (pos) {
-            var posRound = new geom.Vector(Math.floor(pos.x), Math.floor(pos.y));
-            if (posRound.x < 0 || posRound.y < 0 || posRound.x >= this.game.grid.length || posRound.y >= this.game.grid[0].length)
-                return false;
-            return this.game.grid[posRound.x][posRound.y].colision > 0;
-        };
         Body.prototype.move = function (a) {
             var posNew = this.center.add(a);
-            if (!this.check_wall(posNew))
+            if (!this.game.check_wall(posNew))
                 this.center = posNew;
         };
         return Body;
