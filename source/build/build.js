@@ -109,10 +109,31 @@ define("Animation", ["require", "exports", "Draw"], function (require, exports, 
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Animation = void 0;
     var Animation = (function () {
-        function Animation() {
+        function Animation(person, states) {
             this.stateMachine = [];
-            this.current_state = Draw_1.Draw.loadImage("textures/img.png");
+            this.count = 0;
+            this.person = person;
+            this.states = states;
+            this.mnimik = false;
+            this.current_state = Draw_1.Draw.loadImage("textures/" + this.person + "/right/all/" + this.count % this.states + ".png");
         }
+        Animation.prototype.step = function (string) {
+            this.count++;
+            if (this.count > 1000 && this.mnimik) {
+                this.current_state = Draw_1.Draw.loadImage("textures/" + this.person + "/" + string + "/legs/" + this.count % this.states + ".png");
+                return;
+            }
+            if (this.count > 500 && this.mnimik) {
+                this.current_state = Draw_1.Draw.loadImage("textures/" + this.person + "/" + string + "/Headless/" + this.count % this.states + ".png");
+                return;
+            }
+            this.current_state = Draw_1.Draw.loadImage("textures/" + this.person + "/" + string + "/all/" + this.count % this.states + ".png");
+            return;
+        };
+        Animation.prototype.unitmnimik = function (bool) {
+            this.count = this.count % this.states;
+            this.mnimik = bool;
+        };
         return Animation;
     }());
     exports.Animation = Animation;
@@ -189,15 +210,19 @@ define("Brain", ["require", "exports", "Control", "Geom"], function (require, ex
                 var vel = 0.01;
                 if (Control_1.Control.isKeyDown(Control_1.Keys.UpArrow)) {
                     this.game.people[this.personID].body.move(new geom.Vector(0, -vel));
+                    this.game.people[this.personID].animation.step("top");
                 }
                 if (Control_1.Control.isKeyDown(Control_1.Keys.DownArrow)) {
                     this.game.people[this.personID].body.move(new geom.Vector(0, vel));
+                    this.game.people[this.personID].animation.step("down");
                 }
                 if (Control_1.Control.isKeyDown(Control_1.Keys.RightArrow)) {
                     this.game.people[this.personID].body.move(new geom.Vector(vel, 0));
+                    this.game.people[this.personID].animation.step("right");
                 }
                 if (Control_1.Control.isKeyDown(Control_1.Keys.LeftArrow)) {
                     this.game.people[this.personID].body.move(new geom.Vector(-vel, 0));
+                    this.game.people[this.personID].animation.step("left");
                 }
                 if (Control_1.Control.isMouseClicked()) {
                     var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
@@ -228,7 +253,8 @@ define("Person", ["require", "exports", "Animation"], function (require, exports
         function Person(body, brain) {
             this.brain = brain;
             this.body = body;
-            this.animation = new Animation_1.Animation();
+            this.animation = new Animation_1.Animation("igor", 3);
+            this.animation.unitmnimik(true);
         }
         return Person;
     }());

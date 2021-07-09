@@ -18,15 +18,19 @@ export class Brain {
             let vel = 0.01;
             if(Control.isKeyDown(Keys.UpArrow)) {
                 this.game.people[this.personID].body.move(new geom.Vector(0, -vel));
+                this.game.people[this.personID].animation.step("top"); //куда движемся? (top,down,left,right)
             }
             if(Control.isKeyDown(Keys.DownArrow)) {
                 this.game.people[this.personID].body.move(new geom.Vector(0, vel));
+                this.game.people[this.personID].animation.step("down"); //куда движемся? (top,down,left,right)
             }
             if(Control.isKeyDown(Keys.RightArrow)) {
                 this.game.people[this.personID].body.move(new geom.Vector(vel, 0));
+                this.game.people[this.personID].animation.step("right"); //куда движемся? (top,down,left,right)
             }
             if(Control.isKeyDown(Keys.LeftArrow)) {
                this.game.people[this.personID].body.move(new geom.Vector(-vel, 0));
+                this.game.people[this.personID].animation.step("left"); //куда движемся? (top,down,left,right)
             }
             if(Control.isMouseClicked()) {
                 //console.log("clicked", this.game.draw.cam.center, this.game.draw.cam.pos, this.game.draw.cam.scale);

@@ -11,6 +11,7 @@ export class Person {
     constructor(body : Body, brain : Brain) {
         this.brain = brain;
         this.body = body;
-        this.animation = new Animation();
+        this.animation = new Animation("igor",3); // создание персонажа
+        this.animation.unitmnimik(true); //включить режим мнимика
     }
 }
