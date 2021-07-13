@@ -359,27 +359,23 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     var Animation = (function () {
         function Animation(person, states) {
             this.stateMachine = [];
-            this.count = 0;
-            this.person = person;
+            this.counter = 0;
+            this.name = person;
             this.states = states;
             this.mnimik = false;
-            this.current_state = Draw_2.Draw.loadImage("textures/" + this.person + "/right/all/" + this.count % this.states + ".png");
+            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right/all/" + this.counter % this.states + ".png");
         }
-        Animation.prototype.step = function (string) {
-            this.count++;
-            if (this.count > 1000 && this.mnimik) {
-                this.current_state = Draw_2.Draw.loadImage("textures/" + this.person + "/" + string + "/legs/" + this.count % this.states + ".png");
-                return;
-            }
-            if (this.count > 500 && this.mnimik) {
-                this.current_state = Draw_2.Draw.loadImage("textures/" + this.person + "/" + string + "/Headless/" + this.count % this.states + ".png");
-                return;
-            }
-            this.current_state = Draw_2.Draw.loadImage("textures/" + this.person + "/" + string + "/all/" + this.count % this.states + ".png");
-            return;
+        Animation.prototype.step = function (string, mode) {
+            this.counter++;
+            var frame = this.counter % this.states;
+            this.current_state = Draw_2.Draw.loadImage("textures/" +
+                this.name + "/" +
+                string + "/" +
+                mode + "/" +
+                frame + ".png");
         };
         Animation.prototype.unitmnimik = function (bool) {
-            this.count = this.count % this.states;
+            this.counter = this.counter % this.states;
             this.mnimik = bool;
         };
         return Animation;
