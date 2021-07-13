@@ -1,9 +1,9 @@
-import * as geom from "./Geom";
-import { Brain } from "./Brain";
-import { Body } from "./Body";
-import { Animation } from "./Animation";
+import * as geom from "../Geom";
+import { Brain } from "./EntityAttributes/Brain";
+import { Body } from "./EntityAttributes/Body";
+import { Animation } from "./EntityAttributes/Animation";
 
-export class Person {
+export class Entity {
     public body : Body;
     public brain : Brain;
     public animation : Animation;

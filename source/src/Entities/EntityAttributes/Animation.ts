@@ -1,4 +1,4 @@
-import { Draw } from "./Draw";
+import { Draw } from "../../Draw";
 
 export class Animation {
     public current_state : HTMLImageElement;
@@ -15,7 +15,7 @@ export class Animation {
         this.mnimik = false;
         this.current_state = Draw.loadImage("textures/"+this.person+"/right/all/"+this.count%this.states+".png"); //начальное положение
     }
-    public step(string : string) { //шаг смены анимации
+    public step(string : string) { // шаг смены анимации
             this.count++
         if (this.count > 1000 && this.mnimik) { //отвалилось 2 раза
             this.current_state = Draw.loadImage("textures/"+this.person+"/" + string + "/legs/" + this.count % this.states + ".png");
