@@ -19,17 +19,21 @@ export class Mimic {
     }
 
     public step() {
-        if(Control.isMouseClicked()) {
-            //console.log("clicked", this.game.draw.cam.center, this.game.draw.cam.pos, this.game.draw.cam.scale);
+        if (Control.isMouseClicked()) { // Если мышка нажата, мы производим переселение
+            // Пересчитываем координаты на экране в игровые координаты (Мб стоит сделать функцию трансформации в game?)
             let coords = new geom.Vector(Control.lastMouseCoordinates().x / this.game.draw.cam.scale,
             Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
-            //console.log(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
             coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
+
+            // Проверяем соседние entity
             for (let i = 0; i < this.game.entities.length; i++) {
+                // Расстояние между сущностями
                 let centerDistance = this.game.entities[this.currentID].body.center.sub(this.game.entities[i].body.center).abs();
-                let isMouseOn = this.game.entities[i].body.center.sub(coords).abs();
-                //console.log("cords: ", coords, "isMouseOn: ", isMouseOn, "MyCenter: ", this.game.people[this.personID].body.center);
-                if ((centerDistance < this.infectionRadius) && (isMouseOn < this.game.entities[i].body.radius) && (i != this.currentID)) {
+                // Расстояние от мышки до цели
+                let mouseDistance = this.game.entities[i].body.center.sub(coords).abs();
+                if ((centerDistance < this.infectionRadius) && // Цель в радиусе поражения
+                    (mouseDistance < this.game.entities[i].body.radius) && // На цель навелись мышкой
+                    (i != this.currentID)) { // Нельзя переселяться в себя самого
                     this.takeControl(i);   
                     break;
                 }
