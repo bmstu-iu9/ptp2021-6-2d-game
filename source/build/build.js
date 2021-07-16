@@ -316,7 +316,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
     }());
     exports.Body = Body;
 });
-define("Entities/EntityAttributes/Brain", ["require", "exports", "Control", "Geom"], function (require, exports, Control_1, geom) {
+define("Entities/EntityAttributes/Brain", ["require", "exports", "Control"], function (require, exports, Control_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Brain = void 0;
@@ -334,19 +334,7 @@ define("Entities/EntityAttributes/Brain", ["require", "exports", "Control", "Geo
             this.commands = Control_1.Control.commands;
         };
         Brain.prototype.step = function () {
-            var vel = this.game.entities[this.entityID].body.velocity;
-            if (this.commands["MoveUp"]) {
-                this.game.entities[this.entityID].body.move(new geom.Vector(0, -vel));
-            }
-            if (this.commands["MoveDown"]) {
-                this.game.entities[this.entityID].body.move(new geom.Vector(0, vel));
-            }
-            if (this.commands["MoveRight"]) {
-                this.game.entities[this.entityID].body.move(new geom.Vector(vel, 0));
-            }
-            if (this.commands["MoveLeft"]) {
-                this.game.entities[this.entityID].body.move(new geom.Vector(-vel, 0));
-            }
+            this.game.entities[this.entityID].commands = this.commands;
         };
         return Brain;
     }());
@@ -362,7 +350,6 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.counter = 0;
             this.name = person;
             this.states = states;
-            this.mnimik = false;
             this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right/all/" + this.counter % this.states + ".png");
         }
         Animation.prototype.step = function (string, mode) {
@@ -374,25 +361,36 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
                 mode + "/" +
                 frame + ".png");
         };
-        Animation.prototype.unitmnimik = function (bool) {
-            this.counter = this.counter % this.states;
-            this.mnimik = bool;
-        };
         return Animation;
     }());
     exports.Animation = Animation;
 });
-define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Animation"], function (require, exports, Animation_1) {
+define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation"], function (require, exports, geom, Animation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
     var Entity = (function () {
-        function Entity(body, brain) {
+        function Entity(game, body, brain) {
+            this.game = game;
             this.brain = brain;
             this.body = body;
             this.animation = new Animation_1.Animation("igor", 3);
-            this.animation.unitmnimik(true);
         }
+        Entity.prototype.step = function () {
+            var vel = this.body.velocity;
+            if (this.commands["MoveUp"]) {
+                this.body.move(new geom.Vector(0, -vel));
+            }
+            if (this.commands["MoveDown"]) {
+                this.body.move(new geom.Vector(0, vel));
+            }
+            if (this.commands["MoveRight"]) {
+                this.body.move(new geom.Vector(vel, 0));
+            }
+            if (this.commands["MoveLeft"]) {
+                this.body.move(new geom.Vector(-vel, 0));
+            }
+        };
         return Entity;
     }());
     exports.Entity = Entity;
@@ -419,8 +417,10 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
                 coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
                 for (var i = 0; i < this.game.entities.length; i++) {
                     var centerDistance = this.game.entities[this.currentID].body.center.sub(this.game.entities[i].body.center).abs();
-                    var isMouseOn = this.game.entities[i].body.center.sub(coords).abs();
-                    if ((centerDistance < this.infectionRadius) && (isMouseOn < this.game.entities[i].body.radius) && (i != this.currentID)) {
+                    var mouseDistance = this.game.entities[i].body.center.sub(coords).abs();
+                    if ((centerDistance < this.infectionRadius) &&
+                        (mouseDistance < this.game.entities[i].body.radius) &&
+                        (i != this.currentID)) {
                         this.takeControl(i);
                         break;
                     }
@@ -470,13 +470,12 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.brains[this.brains.length] = brain;
         };
         Game.prototype.make_person = function (body, brain) {
-            return this.entities[this.entities.length] = new Entity_1.Entity(body, brain);
+            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, brain);
         };
         Game.prototype.step = function () {
             this.mimic.step();
-            for (var i = 0; i < this.entities.length; i++) {
-                this.entities[i].brain.step();
-            }
+            this.entities.forEach(function (entity) { return entity.brain.step(); });
+            this.entities.forEach(function (entity) { return entity.step(); });
         };
         Game.prototype.check_wall = function (pos) {
             var posRound = new geom.Vector(Math.floor(pos.x / this.tileSize), Math.floor(pos.y / this.tileSize));

@@ -26,18 +26,6 @@ export class Brain {
     }
 
     public step() {
-        let vel = this.game.entities[this.entityID].body.velocity;
-        if(this.commands["MoveUp"]) {
-            this.game.entities[this.entityID].body.move(new geom.Vector(0, -vel));
-        }
-        if(this.commands["MoveDown"]) {
-            this.game.entities[this.entityID].body.move(new geom.Vector(0, vel));
-        }
-        if(this.commands["MoveRight"]) {
-            this.game.entities[this.entityID].body.move(new geom.Vector(vel, 0));
-        }
-        if(this.commands["MoveLeft"]) {
-            this.game.entities[this.entityID].body.move(new geom.Vector(-vel, 0));
-        }   
+        this.game.entities[this.entityID].commands = this.commands;
     }
 }

@@ -15,7 +15,7 @@ export class Game {
     public entities : Entity [] = [];
     public grid : Tile [][] = [];
     public playerID = 0;
-    public mimic : Mimic
+    public mimic : Mimic;
 
     constructor(draw : Draw) {
         console.log("im here!!");
@@ -52,14 +52,16 @@ export class Game {
     }
 
     public make_person(body : Body, brain : Brain) {
-        return this.entities[this.entities.length] = new Entity(body, brain);
+        return this.entities[this.entities.length] = new Entity(this, body, brain);
     }
 
     public step() {
         this.mimic.step();
-        for (let i = 0; i < this.entities.length; i++) {
-            this.entities[i].brain.step();
-        }
+        // Processing brains
+        this.entities.forEach(entity => entity.brain.step());
+
+        // Processing entities
+        this.entities.forEach(entity => entity.step());
     }
 
     // Checks if pos is in wall
