@@ -1,5 +1,4 @@
 import * as geom from "../Geom";
-import { Brain } from "./EntityAttributes/Brain";
 import { Body } from "./EntityAttributes/Body";
 import { Animation } from "./EntityAttributes/Animation";
 import { Game } from "../Game";
@@ -7,19 +6,20 @@ import { Game } from "../Game";
 export class Entity {
     public game : Game;
     public body : Body;
-    public brain : Brain;
     public animation : Animation;
-    public commands : Map<string, boolean>;
+    private AIcommands : Map<string, boolean> = null;
+    public commands : Map<string, boolean> = null;
     
-    constructor(game : Game, body : Body, brain : Brain) {
+    constructor(game : Game, body : Body) {
         this.game = game;
-        this.brain = brain;
         this.body = body;
         this.animation = new Animation("igor",3); // создание анимации персонажа
     }
 
     public step() {
         let vel = this.body.velocity;
+        if (!this.commands)
+            return;
         if(this.commands["MoveUp"]) {
             this.body.move(new geom.Vector(0, -vel));
         }
@@ -31,6 +31,9 @@ export class Entity {
         }
         if(this.commands["MoveLeft"]) {
             this.body.move(new geom.Vector(-vel, 0));
-        }   
+        }
+
+        // Восстанавливаем комманды
+        this.commands = this.AIcommands;
     }
 }

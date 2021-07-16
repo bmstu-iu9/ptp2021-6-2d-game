@@ -316,30 +316,6 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
     }());
     exports.Body = Body;
 });
-define("Entities/EntityAttributes/Brain", ["require", "exports", "Control"], function (require, exports, Control_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Brain = void 0;
-    var Brain = (function () {
-        function Brain(game, entityID) {
-            this.game = game;
-            this.entityID = entityID;
-            this.AIcommands = new Map();
-            this.commands = this.AIcommands;
-        }
-        Brain.prototype.AIcontrol = function () {
-            this.commands = this.AIcommands;
-        };
-        Brain.prototype.PlayerControl = function () {
-            this.commands = Control_1.Control.commands;
-        };
-        Brain.prototype.step = function () {
-            this.game.entities[this.entityID].commands = this.commands;
-        };
-        return Brain;
-    }());
-    exports.Brain = Brain;
-});
 define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], function (require, exports, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -370,14 +346,17 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
     var Entity = (function () {
-        function Entity(game, body, brain) {
+        function Entity(game, body) {
+            this.AIcommands = null;
+            this.commands = null;
             this.game = game;
-            this.brain = brain;
             this.body = body;
             this.animation = new Animation_1.Animation("igor", 3);
         }
         Entity.prototype.step = function () {
             var vel = this.body.velocity;
+            if (!this.commands)
+                return;
             if (this.commands["MoveUp"]) {
                 this.body.move(new geom.Vector(0, -vel));
             }
@@ -390,38 +369,39 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             if (this.commands["MoveLeft"]) {
                 this.body.move(new geom.Vector(-vel, 0));
             }
+            this.commands = this.AIcommands;
         };
         return Entity;
     }());
     exports.Entity = Entity;
 });
-define("Mimic", ["require", "exports", "Geom", "Control"], function (require, exports, geom, Control_2) {
+define("Mimic", ["require", "exports", "Geom", "Control"], function (require, exports, geom, Control_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
     var Mimic = (function () {
         function Mimic(game) {
-            this.currentID = 0;
+            this.controlledEntity = null;
             this.infectionRadius = 100;
             this.game = game;
         }
-        Mimic.prototype.takeControl = function (newID) {
-            this.game.entities[this.currentID].brain.AIcontrol();
-            this.game.playerID = newID;
-            this.currentID = newID;
-            this.game.entities[this.currentID].brain.PlayerControl();
+        Mimic.prototype.takeControl = function (entity) {
+            console.log("biba", entity);
+            this.controlledEntity = entity;
         };
         Mimic.prototype.step = function () {
-            if (Control_2.Control.isMouseClicked()) {
-                var coords = new geom.Vector(Control_2.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_2.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
+            this.controlledEntity.commands = Control_1.Control.commands;
+            if (Control_1.Control.isMouseClicked()) {
+                var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
                 coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
                 for (var i = 0; i < this.game.entities.length; i++) {
-                    var centerDistance = this.game.entities[this.currentID].body.center.sub(this.game.entities[i].body.center).abs();
-                    var mouseDistance = this.game.entities[i].body.center.sub(coords).abs();
+                    var target = this.game.entities[i];
+                    var centerDistance = this.controlledEntity.body.center.sub(target.body.center).abs();
+                    var mouseDistance = target.body.center.sub(coords).abs();
                     if ((centerDistance < this.infectionRadius) &&
-                        (mouseDistance < this.game.entities[i].body.radius) &&
-                        (i != this.currentID)) {
-                        this.takeControl(i);
+                        (mouseDistance < target.body.radius) &&
+                        (this.controlledEntity != target)) {
+                        this.takeControl(target);
                         break;
                     }
                 }
@@ -431,7 +411,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
     }());
     exports.Mimic = Mimic;
 });
-define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Entity", "Control", "Tile", "Entities/EntityAttributes/Brain", "Mimic"], function (require, exports, geom, Body_1, Entity_1, Control_3, Tile_2, Brain_1, Mimic_1) {
+define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Entity", "Control", "Tile", "Mimic"], function (require, exports, geom, Body_1, Entity_1, Control_2, Tile_2, Mimic_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -439,12 +419,11 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
         function Game(draw) {
             this.tileSize = 1;
             this.bodies = [];
-            this.brains = [];
             this.entities = [];
             this.grid = [];
             this.playerID = 0;
             console.log("im here!!");
-            Control_3.Control.init();
+            Control_2.Control.init();
             this.draw = draw;
             var sizeX = 10;
             var sizeY = 10;
@@ -465,16 +444,11 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             body.game = this;
             return this.bodies[this.bodies.length] = body;
         };
-        Game.prototype.make_brain = function () {
-            var brain = new Brain_1.Brain(this, this.brains.length);
-            return this.brains[this.brains.length] = brain;
-        };
-        Game.prototype.make_person = function (body, brain) {
-            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, brain);
+        Game.prototype.make_person = function (body) {
+            return this.entities[this.entities.length] = new Entity_1.Entity(this, body);
         };
         Game.prototype.step = function () {
             this.mimic.step();
-            this.entities.forEach(function (entity) { return entity.brain.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
         };
         Game.prototype.check_wall = function (pos) {
@@ -516,9 +490,9 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_3.Draw(canvas, new geom.Vector(640, 640));
     var game = new Game_1.Game(draw);
-    game.make_person(game.make_body(new geom.Vector(0, 0), 1), game.make_brain());
-    game.make_person(game.make_body(new geom.Vector(0, 0), 1), game.make_brain());
-    game.mimic.takeControl(0);
+    game.make_person(game.make_body(new geom.Vector(0, 0), 1));
+    game.make_person(game.make_body(new geom.Vector(0, 0), 1));
+    game.mimic.takeControl(game.entities[0]);
     function step() {
         draw.clear();
         game.step();

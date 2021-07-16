@@ -4,14 +4,12 @@ import {Entity} from "./Entities/Entity";
 import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
-import { Brain } from "./Entities/EntityAttributes/Brain";
 import { Mimic } from "./Mimic";
 
 export class Game {
     public tileSize = 1
     public draw : Draw;
     private bodies : Body [] = [];
-    private brains : Brain [] = [];
     public entities : Entity [] = [];
     public grid : Tile [][] = [];
     public playerID = 0;
@@ -46,19 +44,12 @@ export class Game {
         return this.bodies[this.bodies.length] = body;
     }
 
-    public make_brain() {
-        let brain = new Brain(this, this.brains.length);
-        return this.brains[this.brains.length] = brain;
-    }
-
-    public make_person(body : Body, brain : Brain) {
-        return this.entities[this.entities.length] = new Entity(this, body, brain);
+    public make_person(body : Body) {
+        return this.entities[this.entities.length] = new Entity(this, body);
     }
 
     public step() {
         this.mimic.step();
-        // Processing brains
-        this.entities.forEach(entity => entity.brain.step());
 
         // Processing entities
         this.entities.forEach(entity => entity.step());
