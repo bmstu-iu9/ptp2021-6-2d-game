@@ -9,11 +9,13 @@ export class Entity {
     public animation : Animation;
     private AIcommands : Map<string, boolean> = null;
     public commands : Map<string, boolean> = null;
+    private mod : string; //маркер состояния (переименовать по необходимости)
     
-    constructor(game : Game, body : Body) {
+    constructor(game : Game, body : Body,mod : string) {
         this.game = game;
         this.body = body;
         this.animation = new Animation("igor",3); // создание анимации персонажа
+        this.mod=mod; //Маркер состояния
     }
 
     public step() {
@@ -21,15 +23,19 @@ export class Entity {
         if (!this.commands)
             return;
         if(this.commands["MoveUp"]) {
+            this.animation.step("top",this.mod)
             this.body.move(new geom.Vector(0, -vel));
         }
         if(this.commands["MoveDown"]) {
+            this.animation.step("down",this.mod)
             this.body.move(new geom.Vector(0, vel));
         }
         if(this.commands["MoveRight"]) {
+            this.animation.step("right",this.mod)
             this.body.move(new geom.Vector(vel, 0));
         }
         if(this.commands["MoveLeft"]) {
+            this.animation.step("left",this.mod)
             this.body.move(new geom.Vector(-vel, 0));
         }
 

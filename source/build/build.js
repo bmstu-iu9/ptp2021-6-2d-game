@@ -346,27 +346,32 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
     var Entity = (function () {
-        function Entity(game, body) {
+        function Entity(game, body, mod) {
             this.AIcommands = null;
             this.commands = null;
             this.game = game;
             this.body = body;
             this.animation = new Animation_1.Animation("igor", 3);
+            this.mod = mod;
         }
         Entity.prototype.step = function () {
             var vel = this.body.velocity;
             if (!this.commands)
                 return;
             if (this.commands["MoveUp"]) {
+                this.animation.step("top", this.mod);
                 this.body.move(new geom.Vector(0, -vel));
             }
             if (this.commands["MoveDown"]) {
+                this.animation.step("down", this.mod);
                 this.body.move(new geom.Vector(0, vel));
             }
             if (this.commands["MoveRight"]) {
+                this.animation.step("right", this.mod);
                 this.body.move(new geom.Vector(vel, 0));
             }
             if (this.commands["MoveLeft"]) {
+                this.animation.step("left", this.mod);
                 this.body.move(new geom.Vector(-vel, 0));
             }
             this.commands = this.AIcommands;
@@ -445,7 +450,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.make_person = function (body) {
-            return this.entities[this.entities.length] = new Entity_1.Entity(this, body);
+            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, "all");
         };
         Game.prototype.step = function () {
             this.mimic.step();
