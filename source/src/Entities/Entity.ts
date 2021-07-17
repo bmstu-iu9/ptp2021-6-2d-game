@@ -21,6 +21,7 @@ export class Entity {
     public step() {
         let vel = this.body.velocity;
         if (!this.commands)
+            this.animation.step("stand",this.mod)
             return;
         if(this.commands["MoveUp"]) {
             this.animation.step("top",this.mod)
