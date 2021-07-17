@@ -1,11 +1,12 @@
-import * as geom from "./Geom";
-import { Game } from "./Game";
-import {Tile, CollisionType} from "./Tile";
+import * as geom from "./../../Geom";
+import { Game } from "./../../Game";
+import {Tile, CollisionType} from "./../../Tile";
 
 export class Body {
     public center : geom.Vector;
     public radius : number;
     public game : Game;
+    public velocity = 0.01
 
     constructor(center : geom.Vector, radius:number) {
         this.center = center;

@@ -1,21 +1,23 @@
 import * as geom from "./Geom";
-import {Body} from "./Body";
-import {Person} from "./Person";
+import {Body} from "./Entities/EntityAttributes/Body";
+import {Entity} from "./Entities/Entity";
 import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
-import { Brain } from "./Brain";
+import { Mimic } from "./Mimic";
 
 export class Game {
     public tileSize = 1
     public draw : Draw;
     private bodies : Body [] = [];
-    private brains : Brain [] = [];
-    public people : Person [] = [];
+    public entities : Entity [] = [];
     public grid : Tile [][] = [];
     public playerID = 0;
+    public mimic : Mimic;
 
     constructor(draw : Draw) {
+        console.log("im here!!");
+        
         Control.init();
         this.draw = draw;
 
@@ -27,6 +29,8 @@ export class Game {
                 this.grid[x][y] = new Tile();
             }
         }
+
+        this.mimic = new Mimic(this);
 
         this.grid[0][0] = new Tile(CollisionType.CornerDR);
         this.grid[1][1] = new Tile(CollisionType.CornerUL);
@@ -40,19 +44,15 @@ export class Game {
         return this.bodies[this.bodies.length] = body;
     }
 
-    public make_brain() {
-        let brain = new Brain(this, this.brains.length);
-        return this.brains[this.brains.length] = brain;
-    }
-
-    public make_person(body : Body, brain : Brain) {
-        return this.people[this.people.length] = new Person(body, brain);
+    public make_person(body : Body) {
+        return this.entities[this.entities.length] = new Entity(this, body);
     }
 
     public step() {
-        for (let i = 0; i < this.people.length; i++) {
-            this.people[i].brain.bodyControl();
-        }
+        this.mimic.step();
+
+        // Processing entities
+        this.entities.forEach(entity => entity.step());
     }
 
     // Checks if pos is in wall
@@ -95,8 +95,8 @@ export class Game {
         }
 
         // People
-        for (let i = 0; i < this.people.length; i++) {
-            this.draw.image(this.people[i].animation.current_state, this.people[i].body.center, new geom.Vector(1, 1));
+        for (let i = 0; i < this.entities.length; i++) {
+            this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
         }
     }
 }
