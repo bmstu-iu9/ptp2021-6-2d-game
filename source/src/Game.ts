@@ -45,7 +45,7 @@ export class Game {
     }
 
     public make_person(body : Body) {
-        return this.entities[this.entities.length] = new Entity(this, body);
+        return this.entities[this.entities.length] = new Entity(this, body,"all");//последнее - маркер состояния
     }
 
     public step() {
