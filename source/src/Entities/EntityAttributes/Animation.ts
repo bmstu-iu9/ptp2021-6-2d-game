@@ -11,15 +11,16 @@ export class Animation {
         this.counter = 0;
         this.name = person;
         this.states=states;
-        this.current_state = Draw.loadImage("textures/"+this.name+"/right/all/"+this.counter%this.states+".png"); //начальное положение
+        this.current_state = Draw.loadImage("textures/"+this.name+"/right_all_"+this.counter%this.states+".png"); //начальное положение
+
     }
     public step(string : string, mode : string) { // шаг смены анимации
         this.counter++
         let frame = this.counter % this.states; // номер текущего кадра
         this.current_state = Draw.loadImage("textures/" + 
             this.name + "/" + 
-            string + "/" + 
-            mode + "/" + 
+            string + "_" +
+            mode + "_" +
             frame + ".png");
     }
 }

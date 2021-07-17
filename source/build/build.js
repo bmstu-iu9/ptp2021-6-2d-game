@@ -326,15 +326,15 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.counter = 0;
             this.name = person;
             this.states = states;
-            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right/all/" + this.counter % this.states + ".png");
+            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_all_" + this.counter % this.states + ".png");
         }
         Animation.prototype.step = function (string, mode) {
             this.counter++;
             var frame = this.counter % this.states;
             this.current_state = Draw_2.Draw.loadImage("textures/" +
                 this.name + "/" +
-                string + "/" +
-                mode + "/" +
+                string + "_" +
+                mode + "_" +
                 frame + ".png");
         };
         return Animation;
