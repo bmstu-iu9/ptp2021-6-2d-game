@@ -14,8 +14,8 @@ export class Animation {
         this.counter = 0;
         this.name = person;
         this.states=states;
-        this.current_state = Draw.loadImage("textures/"+this.name+"/right_all_"+this.counter%this.states+".png"); //начальное положение
-        this.mode="all";
+        this.current_state = Draw.loadImage("textures/"+this.name+"/right_fine_"+this.counter%this.states+".png"); //начальное положение
+        this.mode="fine";
         this.direction="right"
 
     }

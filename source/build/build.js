@@ -326,8 +326,8 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.counter = 0;
             this.name = person;
             this.states = states;
-            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_all_" + this.counter % this.states + ".png");
-            this.mode = "all";
+            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
+            this.mode = "fine";
             this.direction = "right";
         }
         Animation.prototype.changedirection = function (string, mode) {
@@ -477,7 +477,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.make_person = function (body) {
-            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, "all");
+            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, "fine");
         };
         Game.prototype.step = function () {
             this.mimic.step();
