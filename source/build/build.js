@@ -361,26 +361,46 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.animation = new Animation_1.Animation("igor", 3);
             this.mod = mod;
         }
+        Entity.prototype.changedirection = function (x, y) {
+            if (x == 0 && y == 0) {
+                this.animation.changedirection("stand", this.mod);
+            }
+            if (x == 1 && y == 0) {
+                this.animation.changedirection("right", this.mod);
+            }
+            if (x == -1 && y == 0) {
+                this.animation.changedirection("left", this.mod);
+            }
+            if (x == 0 && y == 1) {
+                this.animation.changedirection("top", this.mod);
+            }
+            if (x == 0 && y == -1) {
+                this.animation.changedirection("down", this.mod);
+            }
+        };
         Entity.prototype.step = function () {
+            var x = 0;
+            var y = 0;
             var vel = this.body.velocity;
             if (!this.commands)
                 return;
             if (this.commands["MoveUp"]) {
-                this.animation.changedirection("top", this.mod);
+                y++;
                 this.body.move(new geom.Vector(0, -vel));
             }
             if (this.commands["MoveDown"]) {
-                this.animation.changedirection("down", this.mod);
+                y--;
                 this.body.move(new geom.Vector(0, vel));
             }
             if (this.commands["MoveRight"]) {
-                this.animation.changedirection("right", this.mod);
+                x++;
                 this.body.move(new geom.Vector(vel, 0));
             }
             if (this.commands["MoveLeft"]) {
-                this.animation.changedirection("left", this.mod);
+                x--;
                 this.body.move(new geom.Vector(-vel, 0));
             }
+            this.changedirection(x, y);
             this.commands = this.AIcommands;
         };
         return Entity;
