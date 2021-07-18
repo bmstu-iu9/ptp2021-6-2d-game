@@ -24,19 +24,19 @@ export class Entity {
             //this.animation.step("stand",this.mod)
             return;
         if(this.commands["MoveUp"]) {
-            this.animation.step("top",this.mod)
+            this.animation.changedirection("top",this.mod)
             this.body.move(new geom.Vector(0, -vel));
         }
         if(this.commands["MoveDown"]) {
-            this.animation.step("down",this.mod)
+            this.animation.changedirection("down",this.mod)
             this.body.move(new geom.Vector(0, vel));
         }
         if(this.commands["MoveRight"]) {
-            this.animation.step("right",this.mod)
+            this.animation.changedirection("right",this.mod)
             this.body.move(new geom.Vector(vel, 0));
         }
         if(this.commands["MoveLeft"]) {
-            this.animation.step("left",this.mod)
+            this.animation.changedirection("left",this.mod)
             this.body.move(new geom.Vector(-vel, 0));
         }
 

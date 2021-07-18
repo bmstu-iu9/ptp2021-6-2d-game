@@ -327,15 +327,22 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.name = person;
             this.states = states;
             this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_all_" + this.counter % this.states + ".png");
+            this.mode = "all";
+            this.direction = "right";
         }
-        Animation.prototype.step = function (string, mode) {
+        Animation.prototype.changedirection = function (string, mode) {
+            this.direction = string;
+            this.mode = mode;
+        };
+        Animation.prototype.step = function () {
             this.counter++;
             var frame = this.counter % this.states;
             this.current_state = Draw_2.Draw.loadImage("textures/" +
                 this.name + "/" +
-                string + "_" +
-                mode + "_" +
+                this.direction + "_" +
+                this.mode + "_" +
                 frame + ".png");
+            this.direction = "stand";
         };
         return Animation;
     }());
@@ -359,19 +366,19 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             if (!this.commands)
                 return;
             if (this.commands["MoveUp"]) {
-                this.animation.step("top", this.mod);
+                this.animation.changedirection("top", this.mod);
                 this.body.move(new geom.Vector(0, -vel));
             }
             if (this.commands["MoveDown"]) {
-                this.animation.step("down", this.mod);
+                this.animation.changedirection("down", this.mod);
                 this.body.move(new geom.Vector(0, vel));
             }
             if (this.commands["MoveRight"]) {
-                this.animation.step("right", this.mod);
+                this.animation.changedirection("right", this.mod);
                 this.body.move(new geom.Vector(vel, 0));
             }
             if (this.commands["MoveLeft"]) {
-                this.animation.step("left", this.mod);
+                this.animation.changedirection("left", this.mod);
                 this.body.move(new geom.Vector(-vel, 0));
             }
             this.commands = this.AIcommands;
@@ -454,6 +461,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
         };
         Game.prototype.step = function () {
             this.mimic.step();
+            this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
         };
         Game.prototype.check_wall = function (pos) {
