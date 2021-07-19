@@ -16,46 +16,51 @@ export class Control {
     private static commandsCounter : Map<string, number>;
     public static commands : Map<string, boolean>;
 
-    public static loadConfig(path : string) {
-        let file : string[];
-        const fs = require('fs');
-        fs.readFile(path, function (err, data) {
-            if (err) {
-                return console.error(err);
-            }
-            file = data.toString().split("\n");
-        });
-        let type : string;
-        
-        for (let i = 0; i < file.length; i++) {
-            let currentString = file[i].split(" ");
-            type = currentString[0];
-            for (let j = 1; j < currentString.length; j++) {
-                let currentKey = parseInt(currentString[j]);
-                Control.keyMapping[currentKey][Control.keyMapping[currentKey].length] = type;
-            }
-            Control.commands[type] = false;
-        }
+    private static async readTextFile(path) {
+        const response = await fetch(path)
+        const text = await response.text()
+        return text;
     }
     
-    public static fakeLoadConfig() {
-        Control.keyMapping[38] = [];
-        Control.keyMapping[38][0] = "MoveUp";
-        Control.commandsCounter["MoveUp"] = 0;
-        Control.commands["MoveUp"] = false;
-        Control.keyMapping[40] = [];
-        Control.keyMapping[40][0] = "MoveDown";
-        Control.commandsCounter["MoveDown"] = 0;
-        Control.commands["MoveDown"] = false;
-        Control.keyMapping[39] = [];
-        Control.keyMapping[39][0] = "MoveRight";
-        Control.commandsCounter["MoveRight"] = 0;
-        Control.commands["MoveRight"] = false;
-        Control.keyMapping[37] = [];
-        Control.keyMapping[37][0] = "MoveLeft";
-        Control.commandsCounter["MoveLeft"] = 0;
-        Control.commands["MoveLeft"] = false;
+    public static async loadConfig(path : string) {
+        let result = await this.readTextFile(path)
+        .then(result => result.split("\n"))
+        .then(file =>  {            
+            let type : string;
+            for (let i = 0; i < file.length; i++) {
+                let currentString = file[i].split(" ");
+                type = currentString[0];
+                for (let j = 1; j < currentString.length; j++) {
+                    let currentKey = parseInt(currentString[j]);
+                    if (Control.keyMapping[currentKey] == undefined) {
+                        Control.keyMapping[currentKey] = [];
+                    }
+                    Control.keyMapping[currentKey][Control.keyMapping[currentKey].length] = type;
+                }
+                Control.commands[type] = false;
+                Control.commandsCounter[type] = 0;
+            }
+        });
     }
+    
+    // public static fakeLoadConfig() {
+    //     Control.keyMapping[38] = [];
+    //     Control.keyMapping[38][0] = "MoveUp";
+    //     Control.commandsCounter["MoveUp"] = 0;
+    //     Control.commands["MoveUp"] = false;
+    //     Control.keyMapping[40] = [];
+    //     Control.keyMapping[40][0] = "MoveDown";
+    //     Control.commandsCounter["MoveDown"] = 0;
+    //     Control.commands["MoveDown"] = false;
+    //     Control.keyMapping[39] = [];
+    //     Control.keyMapping[39][0] = "MoveRight";
+    //     Control.commandsCounter["MoveRight"] = 0;
+    //     Control.commands["MoveRight"] = false;
+    //     Control.keyMapping[37] = [];
+    //     Control.keyMapping[37][0] = "MoveLeft";
+    //     Control.commandsCounter["MoveLeft"] = 0;
+    //     Control.commands["MoveLeft"] = false;
+    // }
 
     public static init() : void {
         for (let i = 0; i < 256; i++) {
@@ -70,8 +75,8 @@ export class Control {
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Map<string, boolean>();
-        //Control.loadConfig("env/keys.conf");
-        Control.fakeLoadConfig();
+        Control.loadConfig("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/keys.conf");
+        //Control.fakeLoadConfig();
 
         console.log("Done!!", Control.keyMapping);
         console.log(Control.commands["MoveUp"]);
