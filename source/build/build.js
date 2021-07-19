@@ -326,16 +326,23 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.counter = 0;
             this.name = person;
             this.states = states;
-            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_all_" + this.counter % this.states + ".png");
+            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
+            this.mode = "fine";
+            this.direction = "right";
         }
-        Animation.prototype.step = function (string, mode) {
+        Animation.prototype.changedirection = function (string, mode) {
+            this.direction = string;
+            this.mode = mode;
+        };
+        Animation.prototype.step = function () {
             this.counter++;
             var frame = this.counter % this.states;
             this.current_state = Draw_2.Draw.loadImage("textures/" +
                 this.name + "/" +
-                string + "_" +
-                mode + "_" +
+                this.direction + "_" +
+                this.mode + "_" +
                 frame + ".png");
+            this.direction = "stand";
         };
         return Animation;
     }());
@@ -354,26 +361,46 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.animation = new Animation_1.Animation("igor", 3);
             this.mod = mod;
         }
+        Entity.prototype.changedirection = function (x, y) {
+            if (x == 0 && y == 0) {
+                this.animation.changedirection("stand", this.mod);
+            }
+            if (x == 1 && y == 0) {
+                this.animation.changedirection("right", this.mod);
+            }
+            if (x == -1 && y == 0) {
+                this.animation.changedirection("left", this.mod);
+            }
+            if (x == 0 && y == 1) {
+                this.animation.changedirection("top", this.mod);
+            }
+            if (x == 0 && y == -1) {
+                this.animation.changedirection("down", this.mod);
+            }
+        };
         Entity.prototype.step = function () {
+            var x = 0;
+            var y = 0;
             var vel = this.body.velocity;
             if (!this.commands)
                 return;
             if (this.commands["MoveUp"]) {
-                this.animation.step("top", this.mod);
+                y++;
                 this.body.move(new geom.Vector(0, -vel));
             }
             if (this.commands["MoveDown"]) {
-                this.animation.step("down", this.mod);
+                y--;
                 this.body.move(new geom.Vector(0, vel));
             }
             if (this.commands["MoveRight"]) {
-                this.animation.step("right", this.mod);
+                x++;
                 this.body.move(new geom.Vector(vel, 0));
             }
             if (this.commands["MoveLeft"]) {
-                this.animation.step("left", this.mod);
+                x--;
                 this.body.move(new geom.Vector(-vel, 0));
             }
+            this.changedirection(x, y);
             this.commands = this.AIcommands;
         };
         return Entity;
@@ -450,10 +477,11 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.make_person = function (body) {
-            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, "all");
+            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, "fine");
         };
         Game.prototype.step = function () {
             this.mimic.step();
+            this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
         };
         Game.prototype.check_wall = function (pos) {

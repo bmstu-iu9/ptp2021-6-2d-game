@@ -45,13 +45,14 @@ export class Game {
     }
 
     public make_person(body : Body) {
-        return this.entities[this.entities.length] = new Entity(this, body,"all");//последнее - маркер состояния
+        return this.entities[this.entities.length] = new Entity(this, body,"fine");//последнее - маркер состояния
     }
 
     public step() {
         this.mimic.step();
 
         // Processing entities
+        this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
     }
 
