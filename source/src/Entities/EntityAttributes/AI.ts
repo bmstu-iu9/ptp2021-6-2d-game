@@ -15,7 +15,7 @@ export class AI {
         this.commands = commands;
     }
 
-    public goToPoint(point : geom.Vector) {
+    private go(point : geom.Vector) {
         if (this.body.center.x < point.x) {
             this.commands["MoveRight"] = true;
         }
@@ -42,9 +42,7 @@ export class AI {
         }
     }
 
-    public makePathToPoint(point : geom.Vector) {
+    public goToPoint(point : geom.Vector) {
         // TODO: Сделать перемещение к точке на карте, согласно матрице предков и сетке, вшитых в карту
     }
-
-
 }
