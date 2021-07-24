@@ -34,8 +34,8 @@ export class Game {
 
         this.grid[0][0] = new Tile(CollisionType.CornerDR);
         this.grid[1][1] = new Tile(CollisionType.CornerUL);
-        this.grid[0][1] = new Tile(CollisionType.CornerUR);
-        this.grid[1][0] = new Tile(CollisionType.CornerDL);
+        this.grid[0][1] = new Tile(CollisionType.CornerDL);
+        this.grid[1][0] = new Tile(CollisionType.CornerUR);
     }
 
     public make_body(coordinates : geom.Vector, radius : number) : Body {
@@ -91,7 +91,7 @@ export class Game {
             for (let j = 0; j < this.grid[i].length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
                 this.draw.image(this.grid[i][j].image,
-                    (new geom.Vector(this.tileSize * i, this.tileSize * j)).add(size.mul(1 / 2)), size);
+                    (new geom.Vector(this.tileSize * j, this.tileSize * i)).add(size.mul(1 / 2)), size);
             }
         }
 
