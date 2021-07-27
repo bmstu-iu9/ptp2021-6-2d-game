@@ -2,22 +2,35 @@ import {Tile} from "./Tile";
 import {CollisionType} from "./Tile";
 import {PathGenerator} from "./PathGenerator";
 import { Vector } from "./Geom";
+import { Draw } from "./Draw";
 
 function replacer(key, value) {
-    if(value instanceof Map) {
-      return {
+  if(value instanceof Map) {
+    return {
         dataType: 'Map',
         value: Array.from(value.entries()), // or with spread: value: [...value]
       };
-    } else {
-        return value;
-    }
+  }
+  if (value instanceof HTMLImageElement) {
+    let name = value.src;
+    let nameSplit = name.split("/");
+    let lastSplit = nameSplit[nameSplit.length - 1];
+
+    return {
+      dataType: 'HTMLImageElement',
+      value: lastSplit
+    };
+  }
+  return value;
 }
 
 function reviver(key, value) {
     if(typeof value === 'object' && value !== null) {
       if (value.dataType === 'Map') {
         return new Map(value.value);
+      }
+      if (value.dataType === 'HTMLImageElement') {
+        return Draw.loadImage("./textures/" + value.value);
       }
     }
     return value;

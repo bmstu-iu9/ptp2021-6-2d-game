@@ -104,7 +104,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
     }());
     exports.Draw = Draw;
 });
-define("Tile", ["require", "exports"], function (require, exports) {
+define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Tile = exports.CollisionType = void 0;
@@ -123,22 +123,22 @@ define("Tile", ["require", "exports"], function (require, exports) {
             this.colision = CollisionType.Empty;
             this.colision = colision;
             if (colision == 0) {
-                this.image = "textures/Empty.png";
+                this.image = Draw_1.Draw.loadImage("textures/Empty.png");
             }
             if (colision == 1) {
-                this.image = "textures/CornerUL.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerUL.png");
             }
             if (colision == 2) {
-                this.image = "textures/CornerUR.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerUR.png");
             }
             if (colision == 3) {
-                this.image = "textures/CornerDL.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerDL.png");
             }
             if (colision == 4) {
-                this.image = "textures/CornerDR.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerDR.png");
             }
             if (colision == 5) {
-                this.image = "textures/Full.png";
+                this.image = Draw_1.Draw.loadImage("textures/Full.png");
             }
         }
         Tile.prototype.setColision = function (colision) {
@@ -314,18 +314,10 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
     }());
     exports.PathGenerator = PathGenerator;
 });
-define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function (require, exports, Tile_2, Tile_3, PathGenerator_1) {
+define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Draw"], function (require, exports, Tile_2, Tile_3, PathGenerator_1, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MimicMapJSON = exports.VectorPair = void 0;
-    var VectorPair = (function () {
-        function VectorPair(first, second) {
-            this.first = first;
-            this.second = second;
-        }
-        return VectorPair;
-    }());
-    exports.VectorPair = VectorPair;
+    exports.MimicMapJSON = void 0;
     function replacer(key, value) {
         if (value instanceof Map) {
             return {
@@ -333,14 +325,24 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function
                 value: Array.from(value.entries()),
             };
         }
-        else {
-            return value;
+        if (value instanceof HTMLImageElement) {
+            var name_1 = value.src;
+            var nameSplit = name_1.split("/");
+            var lastSplit = nameSplit[nameSplit.length - 1];
+            return {
+                dataType: 'HTMLImageElement',
+                value: lastSplit
+            };
         }
+        return value;
     }
     function reviver(key, value) {
         if (typeof value === 'object' && value !== null) {
             if (value.dataType === 'Map') {
                 return new Map(value.value);
+            }
+            if (value.dataType === 'HTMLImageElement') {
+                return Draw_2.Draw.loadImage("./textures/" + value.value);
             }
         }
         return value;

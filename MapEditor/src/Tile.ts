@@ -11,27 +11,27 @@ export enum CollisionType {
 
 export class Tile {
     public colision = CollisionType.Empty;
-    public image : string;
+    public image : HTMLImageElement;
     
     constructor(colision : CollisionType = 0) {
         this.colision = colision;
         if (colision == 0) {
-            this.image = "textures/Empty.png";
+            this.image = Draw.loadImage("textures/Empty.png");
         }
         if (colision == 1) {
-            this.image = "textures/CornerUL.png";
+            this.image = Draw.loadImage("textures/CornerUL.png");
         }
         if (colision == 2) {
-            this.image = "textures/CornerUR.png";
+            this.image = Draw.loadImage("textures/CornerUR.png");
         }
         if (colision == 3) {
-            this.image = "textures/CornerDL.png";
+            this.image = Draw.loadImage("textures/CornerDL.png");
         }
         if (colision == 4) {
-            this.image = "textures/CornerDR.png";
+            this.image = Draw.loadImage("textures/CornerDR.png");
         }
         if (colision == 5) {
-            this.image = "textures/Full.png";
+            this.image = Draw.loadImage("textures/Full.png");
         }
     }
 
@@ -39,7 +39,7 @@ export class Tile {
         this.colision = colision;
     }
 
-    public setImage(image : string) {
+    public setImage(image : HTMLImageElement) {
         this.image = image;
     }
 }
