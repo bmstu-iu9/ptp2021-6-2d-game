@@ -6,6 +6,32 @@ import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
 
+function replacer(key, value) {
+    if(value instanceof Map) {
+      return {
+        dataType: 'Map',
+        value: Array.from(value.entries()), // or with spread: value: [...value]
+      };
+    } else {
+        return value;
+    }
+}
+
+function reviver(key, value) {
+    if(typeof value === 'object' && value !== null) {
+      if (value.dataType === 'Map') {
+        return new Map(value.value);
+      }
+    }
+    return value;
+}
+
+export class MimicMapJSON {
+    Grid? : Tile[][];
+    CollisionMesh? : boolean[][];
+    PathMatrix? : Map<any, any>;
+}
+
 export class Game {
     public tileSize = 1
     public draw : Draw;

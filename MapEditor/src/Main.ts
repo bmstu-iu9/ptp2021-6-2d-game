@@ -1,6 +1,27 @@
 import {Tile} from "./Tile";
 import {CollisionType} from "./Tile";
 import {PathGenerator} from "./PathGenerator";
+import { Vector } from "./Geom";
+
+function replacer(key, value) {
+    if(value instanceof Map) {
+      return {
+        dataType: 'Map',
+        value: Array.from(value.entries()), // or with spread: value: [...value]
+      };
+    } else {
+        return value;
+    }
+}
+
+function reviver(key, value) {
+    if(typeof value === 'object' && value !== null) {
+      if (value.dataType === 'Map') {
+        return new Map(value.value);
+      }
+    }
+    return value;
+}
 
 export class MimicMapJSON {
     Grid? : Tile[][];
@@ -34,9 +55,11 @@ PathGenerator.generateMatrix(newMap);
 console.log(newMap.CollisionMesh);
 console.log(newMap.PathMatrix);
 
-const blob = new Blob([JSON.stringify(newMap)], {
+const blob = new Blob([JSON.stringify(newMap, replacer)], {
     type: 'application/json'
 });
+
+console.log(Array.from(newMap.PathMatrix.keys()));
 
 const url = window.URL.createObjectURL(blob);
 window.open(url);

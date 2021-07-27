@@ -317,7 +317,34 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
 define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function (require, exports, Tile_2, Tile_3, PathGenerator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MimicMapJSON = void 0;
+    exports.MimicMapJSON = exports.VectorPair = void 0;
+    var VectorPair = (function () {
+        function VectorPair(first, second) {
+            this.first = first;
+            this.second = second;
+        }
+        return VectorPair;
+    }());
+    exports.VectorPair = VectorPair;
+    function replacer(key, value) {
+        if (value instanceof Map) {
+            return {
+                dataType: 'Map',
+                value: Array.from(value.entries()),
+            };
+        }
+        else {
+            return value;
+        }
+    }
+    function reviver(key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (value.dataType === 'Map') {
+                return new Map(value.value);
+            }
+        }
+        return value;
+    }
     var MimicMapJSON = (function () {
         function MimicMapJSON() {
         }
@@ -327,10 +354,10 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function
     var grid = [];
     var sizeX = 10;
     var sizeY = 10;
-    for (var x_1 = 0; x_1 < sizeX; x_1++) {
-        grid[x_1] = [];
+    for (var x = 0; x < sizeX; x++) {
+        grid[x] = [];
         for (var y = 0; y < sizeY; y++) {
-            grid[x_1][y] = new Tile_2.Tile();
+            grid[x][y] = new Tile_2.Tile();
         }
     }
     grid[1][1] = new Tile_2.Tile(Tile_3.CollisionType.CornerDR);
@@ -344,12 +371,10 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function
     PathGenerator_1.PathGenerator.generateMatrix(newMap);
     console.log(newMap.CollisionMesh);
     console.log(newMap.PathMatrix);
-    var blob = new Blob([JSON.stringify(newMap)], {
+    var blob = new Blob([JSON.stringify(newMap, replacer)], {
         type: 'application/json'
     });
-    console.log(JSON.stringify(newMap));
-    var x = newMap.PathMatrix;
-    console.log(Array.from(x.entries()), JSON.stringify(Array.from(x.entries())));
+    console.log(Array.from(newMap.PathMatrix.keys()));
     var url = window.URL.createObjectURL(blob);
     window.open(url);
 });
