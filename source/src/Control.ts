@@ -42,25 +42,6 @@ export class Control {
             }
         });
     }
-    
-    // public static fakeLoadConfig() {
-    //     Control.keyMapping[38] = [];
-    //     Control.keyMapping[38][0] = "MoveUp";
-    //     Control.commandsCounter["MoveUp"] = 0;
-    //     Control.commands["MoveUp"] = false;
-    //     Control.keyMapping[40] = [];
-    //     Control.keyMapping[40][0] = "MoveDown";
-    //     Control.commandsCounter["MoveDown"] = 0;
-    //     Control.commands["MoveDown"] = false;
-    //     Control.keyMapping[39] = [];
-    //     Control.keyMapping[39][0] = "MoveRight";
-    //     Control.commandsCounter["MoveRight"] = 0;
-    //     Control.commands["MoveRight"] = false;
-    //     Control.keyMapping[37] = [];
-    //     Control.keyMapping[37][0] = "MoveLeft";
-    //     Control.commandsCounter["MoveLeft"] = 0;
-    //     Control.commands["MoveLeft"] = false;
-    // }
 
     public static init() : void {
         for (let i = 0; i < 256; i++) {

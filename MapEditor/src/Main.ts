@@ -21,6 +21,13 @@ function replacer(key, value) {
       value: lastSplit
     };
   }
+  if (value instanceof Vector) {
+    return {
+      dataType: 'Vector',
+      x: value.x,
+      y: value.y
+    };
+  }
   return value;
 }
 
@@ -31,6 +38,9 @@ function reviver(key, value) {
       }
       if (value.dataType === 'HTMLImageElement') {
         return Draw.loadImage("./textures/" + value.value);
+      }
+      if (value.dataType === 'Vector') {
+        return new Vector(value.x, value.y);
       }
     }
     return value;

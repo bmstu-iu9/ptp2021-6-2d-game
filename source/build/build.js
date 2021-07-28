@@ -388,16 +388,110 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation"], function (require, exports, geom, Animation_1) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], function (require, exports, geom, Game_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.AI = void 0;
+    var AI = (function () {
+        function AI(game, body) {
+            this.game = game;
+            this.body = body;
+            this.commands = new Map();
+        }
+        AI.prototype.go = function (point) {
+            if (this.body.center.x < point.x) {
+                this.commands["MoveRight"] = true;
+            }
+            else {
+                this.commands["MoveRight"] = false;
+            }
+            if (this.body.center.x > point.x) {
+                this.commands["MoveLeft"] = true;
+            }
+            else {
+                this.commands["MoveLeft"] = false;
+            }
+            if (this.body.center.y < point.y) {
+                this.commands["MoveDown"] = true;
+            }
+            else {
+                this.commands["MoveDown"] = false;
+            }
+            if (this.body.center.y > point.y) {
+                this.commands["MoveUp"] = true;
+            }
+            else {
+                this.commands["MoveUp"] = false;
+            }
+        };
+        AI.prototype.getPointCoordinate = function (place) {
+            return new geom.Vector(place.x * this.game.tileSize / 2, place.y * this.game.tileSize / 2);
+        };
+        AI.prototype.chooseMeshPoint = function (currentPoint) {
+            var CollisionMesh = Game_1.Game.grids[this.game.currentGridName].CollisionMesh;
+            var Grid = Game_1.Game.grids[this.game.currentGridName].Grid;
+            var posRound = new geom.Vector(Math.floor(this.body.center.x / this.game.tileSize), Math.floor(this.body.center.y / this.game.tileSize));
+            var place = new geom.Vector(posRound.x * 2 + 1, posRound.y * 2 + 1);
+            var answer = new geom.Vector(0, 0);
+            for (var i = -1; i <= 1; i++) {
+                for (var j = -1; j <= 1; j++) {
+                    if (CollisionMesh[place.x + i][place.y + j] == false &&
+                        currentPoint.sub(this.getPointCoordinate(new geom.Vector(answer.x, answer.y))).abs() >
+                            currentPoint.sub(this.getPointCoordinate(new geom.Vector(place.x + i, place.y + j))).abs()) {
+                        answer = new geom.Vector(place.x + i, place.y + j);
+                    }
+                }
+            }
+            return answer;
+        };
+        AI.prototype.makePath = function (start, finish) {
+            var pathMatrix = Game_1.Game.grids[this.game.currentGridName].PathMatrix;
+            console.log(pathMatrix, start, Object.create(start), pathMatrix.keys());
+            var key = Array.from(pathMatrix.keys())[0];
+            var pseudokey = {
+                x: 0,
+                y: 0
+            };
+            console.log(pseudokey == key, key, pathMatrix.get(key), pathMatrix[key]);
+            if (pathMatrix.get(start).get(finish) == finish) {
+                var answer = void 0;
+                answer = [];
+                answer[0] = this.getPointCoordinate(start);
+                answer[1] = this.getPointCoordinate(finish);
+                return answer;
+            }
+            var middlePoint = pathMatrix.get(start).get(finish);
+            return this.makePath(start, middlePoint).concat(this.makePath(middlePoint, finish));
+        };
+        AI.prototype.goToPoint = function (point) {
+            this.Path = [];
+            var startMeshPoint = this.chooseMeshPoint(this.body.center);
+            var finishMeshPoint = this.chooseMeshPoint(point);
+            this.Path = this.makePath(startMeshPoint, finishMeshPoint);
+            this.Path[this.Path.length] = point;
+        };
+        AI.prototype.step = function () {
+            if (this.Path.length != 0) {
+                this.go(this.Path[0]);
+                if (this.body.center.sub(this.Path[0]).abs() < geom.eps) {
+                    this.Path.shift();
+                }
+            }
+        };
+        return AI;
+    }());
+    exports.AI = AI;
+});
+define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_1, AI_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
     var Entity = (function () {
         function Entity(game, body, mod) {
-            this.AIcommands = null;
             this.commands = null;
             this.game = game;
             this.body = body;
+            this.myAI = new AI_1.AI(game, body);
             this.animation = new Animation_1.Animation("igor", 3);
             this.mod = mod;
         }
@@ -441,7 +535,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
                 this.body.move(new geom.Vector(-vel, 0));
             }
             this.changedirection(x, y);
-            this.commands = this.AIcommands;
+            this.commands = this.myAI.commands;
         };
         return Entity;
     }());
@@ -483,7 +577,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
     }());
     exports.Mimic = Mimic;
 });
-define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Entity", "Control", "Tile", "Mimic"], function (require, exports, geom, Body_1, Entity_1, Control_2, Tile_2, Mimic_1) {
+define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Entity", "Control", "Draw", "Tile", "Mimic"], function (require, exports, geom, Body_1, Entity_1, Control_2, Draw_3, Tile_2, Mimic_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = exports.MimicMap = void 0;
@@ -494,14 +588,24 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
                 value: Array.from(value.entries()),
             };
         }
-        else {
-            return value;
+        if (value instanceof HTMLImageElement) {
+            var name_1 = value.src;
+            var nameSplit = name_1.split("/");
+            var lastSplit = nameSplit[nameSplit.length - 1];
+            return {
+                dataType: 'HTMLImageElement',
+                value: lastSplit
+            };
         }
+        return value;
     }
     function reviver(key, value) {
         if (typeof value === 'object' && value !== null) {
             if (value.dataType === 'Map') {
                 return new Map(value.value);
+            }
+            if (value.dataType === 'HTMLImageElement') {
+                return Draw_3.Draw.loadImage("./textures/" + value.value);
             }
         }
         return value;
@@ -605,22 +709,25 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
     }());
     exports.Game = Game;
 });
-define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, Draw_3, Game_1) {
+define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, Draw_4, Game_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_3.Draw(canvas, new geom.Vector(640, 640));
-    Game_1.Game.grids = new Map();
-    Game_1.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/Dev/source/env/map.json", "map");
-    var game = new Game_1.Game(draw);
+    var draw = new Draw_4.Draw(canvas, new geom.Vector(640, 640));
+    Game_2.Game.grids = new Map();
+    Game_2.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/Dev/source/env/map.json", "map");
+    var game = new Game_2.Game(draw);
     game.make_person(game.make_body(new geom.Vector(0, 0), 1));
     game.make_person(game.make_body(new geom.Vector(0, 0), 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
+    var t = 0;
     function step() {
-        if (Game_1.Game.grids["map"] != undefined) {
+        if (Game_2.Game.grids["map"] != undefined && t < 100) {
+            t++;
             if (x == false) {
-                console.log(Game_1.Game.grids["map"]);
+                game.entities[1].myAI.goToPoint(new geom.Vector(0, 0));
+                console.log(Game_2.Game.grids["map"]);
                 x = true;
             }
             draw.clear();
@@ -629,47 +736,5 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
         }
     }
     setInterval(step, 20);
-});
-define("Entities/EntityAttributes/AI", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.AI = void 0;
-    var AI = (function () {
-        function AI(game, personID, commands) {
-            this.game = game;
-            this.personID = personID;
-            this.commands = commands;
-        }
-        AI.prototype.go = function (point) {
-            if (this.body.center.x < point.x) {
-                this.commands["MoveRight"] = true;
-            }
-            else {
-                this.commands["MoveRight"] = false;
-            }
-            if (this.body.center.x > point.x) {
-                this.commands["MoveLeft"] = true;
-            }
-            else {
-                this.commands["MoveLeft"] = false;
-            }
-            if (this.body.center.y < point.y) {
-                this.commands["MoveDown"] = true;
-            }
-            else {
-                this.commands["MoveDown"] = false;
-            }
-            if (this.body.center.y > point.y) {
-                this.commands["MoveUp"] = true;
-            }
-            else {
-                this.commands["MoveUp"] = false;
-            }
-        };
-        AI.prototype.goToPoint = function (point) {
-        };
-        return AI;
-    }());
-    exports.AI = AI;
 });
 //# sourceMappingURL=build.js.map

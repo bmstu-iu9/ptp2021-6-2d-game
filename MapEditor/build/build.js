@@ -314,7 +314,7 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
     }());
     exports.PathGenerator = PathGenerator;
 });
-define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Draw"], function (require, exports, Tile_2, Tile_3, PathGenerator_1, Draw_2) {
+define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Geom", "Draw"], function (require, exports, Tile_2, Tile_3, PathGenerator_1, Geom_2, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MimicMapJSON = void 0;
@@ -334,6 +334,13 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Draw"], 
                 value: lastSplit
             };
         }
+        if (value instanceof Geom_2.Vector) {
+            return {
+                dataType: 'Vector',
+                x: value.x,
+                y: value.y
+            };
+        }
         return value;
     }
     function reviver(key, value) {
@@ -343,6 +350,9 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Draw"], 
             }
             if (value.dataType === 'HTMLImageElement') {
                 return Draw_2.Draw.loadImage("./textures/" + value.value);
+            }
+            if (value.dataType === 'Vector') {
+                return new Geom_2.Vector(value.x, value.y);
             }
         }
         return value;

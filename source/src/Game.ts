@@ -23,6 +23,13 @@ function replacer(key, value) {
         value: lastSplit
       };
     }
+    if (value instanceof geom.Vector) {
+      return {
+        dataType: 'Vector',
+        x: value.x,
+        y: value.y
+      };
+    }
     return value;
   }
   
@@ -33,6 +40,9 @@ function replacer(key, value) {
         }
         if (value.dataType === 'HTMLImageElement') {
           return Draw.loadImage("./textures/" + value.value);
+        }
+        if (value.dataType === 'Vector') {
+          return new geom.Vector(value.x, value.y);
         }
       }
       return value;

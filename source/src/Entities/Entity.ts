@@ -1,19 +1,21 @@
 import * as geom from "../Geom";
 import { Body } from "./EntityAttributes/Body";
 import { Animation } from "./EntityAttributes/Animation";
+import { AI } from "./EntityAttributes/AI";
 import { Game } from "../Game";
 
 export class Entity {
     public game : Game;
     public body : Body;
     public animation : Animation;
-    private AIcommands : Map<string, boolean> = null;
+    public myAI : AI;
     public commands : Map<string, boolean> = null;
     private mod : string; //маркер состояния (переименовать по необходимости)
     
-    constructor(game : Game, body : Body,mod : string) {
+    constructor(game : Game, body : Body, mod : string) {
         this.game = game;
         this.body = body;
+        this.myAI = new AI(game, body);
         this.animation = new Animation("igor",3); // создание анимации персонажа
         this.mod=mod; //Маркер состояния
     }
@@ -59,6 +61,6 @@ export class Entity {
         this.changedirection(x,y);
 
         // Восстанавливаем комманды
-        this.commands = this.AIcommands;
+        this.commands = this.myAI.commands;
     }
 }
