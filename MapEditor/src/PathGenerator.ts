@@ -71,8 +71,8 @@ export class PathGenerator {
                 }
                 if (collisionMesh[place.x + i][place.y + j] == false) {
                     let cur_vec = new Vector(place.x + i, place.y + j);
-                    distance.get(place).set(cur_vec, 1);
-                    path.get(place).set(cur_vec, cur_vec);
+                    distance.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), 1);
+                    path.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), cur_vec);
                 }
             }
         }
@@ -80,16 +80,17 @@ export class PathGenerator {
 
     private static FloydWarshall(vertices : Vector[], distance : Map<any, any>, path : Map<any, any>) {
         for (let k = 0; k < vertices.length; k++) {
+            console.log(k, " from ", vertices.length);
             for (let i = 0; i < vertices.length; i++) {
                 for (let j = 0; j < vertices.length; j++) {
-                    let dik = distance.get(vertices[i]).get(vertices[k]);
-                    let dkj = distance.get(vertices[k]).get(vertices[j]);
-                    let dij = distance.get(vertices[i]).get(vertices[j]);
-                    console.log(i, k, j, dik, dkj, dij);
+                    let dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
+                    let dkj = distance.get(JSON.stringify(vertices[k])).get(JSON.stringify(vertices[j]));
+                    let dij = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j]));
                     if (dik != undefined && dkj != undefined) {
-                        if (dij == undefined || dij < dik + dkj) {
-                            distance.get(vertices[i]).set(vertices[j], dik + dkj);
-                            path.get(vertices[i]).set(vertices[j], vertices[k]);
+                        if (dij == undefined || dij > dik + dkj) {
+                            //console.log(vertices[i], vertices[k], vertices[j], dik + dkj, dij, dij < dik + dkj);
+                            distance.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), dik + dkj);
+                            path.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), vertices[k]);
                         }
                     }
                 }
@@ -115,10 +116,10 @@ export class PathGenerator {
             collisionMesh[i * 2 + 2] = [];
             collisionMesh[i * 2 + 2][0] = false;
             for (let j = 0; j < collisionMap[i].length; j++) {
-                collisionMesh[i + 1][j * 2 + 1] = false;
-                collisionMesh[i + 1][j * 2 + 2] = false;
-                collisionMesh[i + 2][j * 2 + 1] = false;
-                collisionMesh[i + 2][j * 2 + 2] = false;
+                collisionMesh[i * 2 + 1][j * 2 + 1] = false;
+                collisionMesh[i * 2  + 1][j * 2 + 2] = false;
+                collisionMesh[i * 2 + 2][j * 2 + 1] = false;
+                collisionMesh[i * 2 + 2][j * 2 + 2] = false;
             }
         }
         // Заполнение матрицы коллизионной сетки значениями коллизионной карты
@@ -149,9 +150,9 @@ export class PathGenerator {
             for (let j = 0; j < collisionMesh[i].length; j++) {
                 if (collisionMesh[i][j] == false) {
                     let place = new Vector(i, j);
-                    if (distance.get(place) == undefined) {
-                        distance.set(place, new Map());
-                        path.set(place, new Map());
+                    if (distance.get(JSON.stringify(place)) == undefined) {
+                        distance.set(JSON.stringify(place), new Map());
+                        path.set(JSON.stringify(place), new Map());
                     }
                     this.findNearestWays(collisionMesh, place, distance, path); 
                     vertices[vertices.length] = place;
@@ -163,8 +164,22 @@ export class PathGenerator {
         // Поиск кратчайших путей
         this.FloydWarshall(vertices, distance, path);
         console.log(path);
+
+        let correctPath = new Map();
+
+        for (let i = 0; i < vertices.length; i++) {
+            for (let j = 0; j < vertices.length; j++) {
+                if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
+                    if (correctPath.get(vertices[i]) == undefined) {
+                        correctPath.set(vertices[i], new Map());
+                    }
+                    correctPath.get(vertices[i]).set(vertices[j],
+                         path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])));
+                }
+            }
+        }
         
-        MimicMap.PathMatrix = path;
+        MimicMap.PathMatrix = correctPath;
         MimicMap.CollisionMesh = collisionMesh;
     }
 }
