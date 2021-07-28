@@ -59,7 +59,7 @@ export class Entity {
             this.body.move(new geom.Vector(-vel, 0));
         }
         this.changedirection(x,y);
-
+        this.myAI.step();
         // Восстанавливаем комманды
         this.commands = this.myAI.commands;
     }

@@ -9,6 +9,10 @@ export class Vector {
         this.y = y;
     }
 
+    public isEqual() {
+        
+    }
+
     public clone() : Vector {
         return new Vector(this.x, this.y);
     }

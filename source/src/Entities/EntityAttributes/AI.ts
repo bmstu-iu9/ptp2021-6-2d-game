@@ -14,6 +14,7 @@ export class AI {
         this.game = game;
         this.body = body;
         this.commands = new Map();
+        this.Path = [];
     }
 
     private go(point : geom.Vector) {
@@ -68,30 +69,36 @@ export class AI {
         return answer;
     }
 
-    private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] {  
+    private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
         let pathMatrix = Game.grids[this.game.currentGridName].PathMatrix;
-        
-        console.log(pathMatrix, start, Object.create(start), pathMatrix.keys());
 
-        console.log(pathMatrix.get(start), pathMatrix[start]);
-        
-        if (pathMatrix.get(start).get(finish) == finish) {
+        console.log(start, finish);
+        console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
+
+        if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
+            return [];
+        }
+
+        if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
             let answer : geom.Vector[];
             answer = [];
             answer[0] = this.getPointCoordinate(start);
             answer[1] = this.getPointCoordinate(finish);
             return answer;
         }
-        let middlePoint = pathMatrix.get(start).get(finish)
+        let middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)))
         return this.makePath(start, middlePoint).concat(this.makePath(middlePoint, finish));
     }
 
     public goToPoint(point : geom.Vector) {
+        console.log("entered");
+        
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);
         this.Path = this.makePath(startMeshPoint, finishMeshPoint);
-        this.Path[this.Path.length] = point;
+        if (this.Path != [])
+            this.Path[this.Path.length] = point;
     }
 
     step() {

@@ -397,6 +397,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
             this.game = game;
             this.body = body;
             this.commands = new Map();
+            this.Path = [];
         }
         AI.prototype.go = function (point) {
             if (this.body.center.x < point.x) {
@@ -446,29 +447,29 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
         };
         AI.prototype.makePath = function (start, finish) {
             var pathMatrix = Game_1.Game.grids[this.game.currentGridName].PathMatrix;
-            console.log(pathMatrix, start, Object.create(start), pathMatrix.keys());
-            var key = Array.from(pathMatrix.keys())[0];
-            var pseudokey = {
-                x: 0,
-                y: 0
-            };
-            console.log(pseudokey == key, key, pathMatrix.get(key), pathMatrix[key]);
-            if (pathMatrix.get(start).get(finish) == finish) {
+            console.log(start, finish);
+            console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
+            if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
+                return [];
+            }
+            if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
                 var answer = void 0;
                 answer = [];
                 answer[0] = this.getPointCoordinate(start);
                 answer[1] = this.getPointCoordinate(finish);
                 return answer;
             }
-            var middlePoint = pathMatrix.get(start).get(finish);
+            var middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
             return this.makePath(start, middlePoint).concat(this.makePath(middlePoint, finish));
         };
         AI.prototype.goToPoint = function (point) {
+            console.log("entered");
             this.Path = [];
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
             this.Path = this.makePath(startMeshPoint, finishMeshPoint);
-            this.Path[this.Path.length] = point;
+            if (this.Path != [])
+                this.Path[this.Path.length] = point;
         };
         AI.prototype.step = function () {
             if (this.Path.length != 0) {
@@ -535,6 +536,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
                 this.body.move(new geom.Vector(-vel, 0));
             }
             this.changedirection(x, y);
+            this.myAI.step();
             this.commands = this.myAI.commands;
         };
         return Entity;
@@ -597,6 +599,13 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
                 value: lastSplit
             };
         }
+        if (value instanceof geom.Vector) {
+            return {
+                dataType: 'Vector',
+                x: value.x,
+                y: value.y
+            };
+        }
         return value;
     }
     function reviver(key, value) {
@@ -606,6 +615,9 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             }
             if (value.dataType === 'HTMLImageElement') {
                 return Draw_3.Draw.loadImage("./textures/" + value.value);
+            }
+            if (value.dataType === 'Vector') {
+                return JSON.stringify(new geom.Vector(value.x, value.y));
             }
         }
         return value;
@@ -723,10 +735,10 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     var x = false;
     var t = 0;
     function step() {
-        if (Game_2.Game.grids["map"] != undefined && t < 100) {
+        if (Game_2.Game.grids["map"] != undefined) {
             t++;
             if (x == false) {
-                game.entities[1].myAI.goToPoint(new geom.Vector(0, 0));
+                game.entities[1].myAI.goToPoint(new geom.Vector(10, 10));
                 console.log(Game_2.Game.grids["map"]);
                 x = true;
             }

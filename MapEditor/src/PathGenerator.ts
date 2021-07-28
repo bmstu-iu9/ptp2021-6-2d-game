@@ -85,6 +85,7 @@ export class PathGenerator {
                     let dik = distance.get(vertices[i]).get(vertices[k]);
                     let dkj = distance.get(vertices[k]).get(vertices[j]);
                     let dij = distance.get(vertices[i]).get(vertices[j]);
+                    console.log(i, k, j, dik, dkj, dij);
                     if (dik != undefined && dkj != undefined) {
                         if (dij == undefined || dij < dik + dkj) {
                             distance.get(vertices[i]).set(vertices[j], dik + dkj);

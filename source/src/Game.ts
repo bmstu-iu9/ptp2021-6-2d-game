@@ -42,7 +42,7 @@ function replacer(key, value) {
           return Draw.loadImage("./textures/" + value.value);
         }
         if (value.dataType === 'Vector') {
-          return new geom.Vector(value.x, value.y);
+          return JSON.stringify(new geom.Vector(value.x, value.y));
         }
       }
       return value;

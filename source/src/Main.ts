@@ -15,10 +15,10 @@ game.mimic.takeControl(game.entities[0]);
 let x = false;
 let t = 0;
 function step() {
-    if (Game.grids["map"] != undefined && t < 100) {
+    if (Game.grids["map"] != undefined) {
         t++;
         if (x == false) {
-            game.entities[1].myAI.goToPoint(new geom.Vector(0, 0));
+            game.entities[1].myAI.goToPoint(new geom.Vector(10, 10));
             console.log(Game.grids["map"]); 
             x = true;
         }
