@@ -18,6 +18,7 @@ export class Entity {
         this.myAI = new AI(game, body);
         this.animation = new Animation("igor",3); // создание анимации персонажа
         this.mod=mod; //Маркер состояния
+        this.commands = this.myAI.commands;
     }
     public changedirection(x : number,y : number){
         if(x==0 && y == 0) {

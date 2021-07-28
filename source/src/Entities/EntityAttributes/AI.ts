@@ -103,6 +103,8 @@ export class AI {
 
     step() {
         if (this.Path.length != 0) {
+            console.log("im here");
+            
             this.go(this.Path[0]);
             if (this.body.center.sub(this.Path[0]).abs() < geom.eps) {
                 this.Path.shift();

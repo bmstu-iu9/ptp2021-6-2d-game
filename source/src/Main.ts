@@ -19,7 +19,7 @@ function step() {
         t++;
         if (x == false) {
             game.entities[1].myAI.goToPoint(new geom.Vector(10, 10));
-            console.log(Game.grids["map"]); 
+            console.log(Game.grids["map"].PathMatrix); 
             x = true;
         }
         draw.clear();

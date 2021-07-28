@@ -46,6 +46,8 @@ define("Geom", ["require", "exports"], function (require, exports) {
             this.x = x;
             this.y = y;
         }
+        Vector.prototype.isEqual = function () {
+        };
         Vector.prototype.clone = function () {
             return new Vector(this.x, this.y);
         };
@@ -473,6 +475,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
         };
         AI.prototype.step = function () {
             if (this.Path.length != 0) {
+                console.log("im here");
                 this.go(this.Path[0]);
                 if (this.body.center.sub(this.Path[0]).abs() < geom.eps) {
                     this.Path.shift();
@@ -495,6 +498,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.myAI = new AI_1.AI(game, body);
             this.animation = new Animation_1.Animation("igor", 3);
             this.mod = mod;
+            this.commands = this.myAI.commands;
         }
         Entity.prototype.changedirection = function (x, y) {
             if (x == 0 && y == 0) {
@@ -739,7 +743,7 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
             t++;
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(10, 10));
-                console.log(Game_2.Game.grids["map"]);
+                console.log(Game_2.Game.grids["map"].PathMatrix);
                 x = true;
             }
             draw.clear();
