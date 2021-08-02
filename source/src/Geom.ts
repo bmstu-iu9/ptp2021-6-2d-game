@@ -1,4 +1,4 @@
-export let eps = 1e-9;
+export let eps = 1e-4;
 
 export class Vector {
     public x : number;
@@ -7,6 +7,10 @@ export class Vector {
     constructor(x = 0, y = 0) {
         this.x = x;
         this.y = y;
+    }
+
+    public isEqual() {
+        
     }
 
     public clone() : Vector {

@@ -104,7 +104,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
     }());
     exports.Draw = Draw;
 });
-define("Tile", ["require", "exports"], function (require, exports) {
+define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Tile = exports.CollisionType = void 0;
@@ -123,22 +123,22 @@ define("Tile", ["require", "exports"], function (require, exports) {
             this.colision = CollisionType.Empty;
             this.colision = colision;
             if (colision == 0) {
-                this.image = "textures/Empty.png";
+                this.image = Draw_1.Draw.loadImage("textures/Empty.png");
             }
             if (colision == 1) {
-                this.image = "textures/CornerUL.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerUL.png");
             }
             if (colision == 2) {
-                this.image = "textures/CornerUR.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerUR.png");
             }
             if (colision == 3) {
-                this.image = "textures/CornerDL.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerDL.png");
             }
             if (colision == 4) {
-                this.image = "textures/CornerDR.png";
+                this.image = Draw_1.Draw.loadImage("textures/CornerDR.png");
             }
             if (colision == 5) {
-                this.image = "textures/Full.png";
+                this.image = Draw_1.Draw.loadImage("textures/Full.png");
             }
         }
         Tile.prototype.setColision = function (colision) {
@@ -224,23 +224,24 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
                     }
                     if (collisionMesh[place.x + i][place.y + j] == false) {
                         var cur_vec = new Geom_1.Vector(place.x + i, place.y + j);
-                        distance.get(place).set(cur_vec, 1);
-                        path.get(place).set(cur_vec, cur_vec);
+                        distance.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), 1);
+                        path.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), cur_vec);
                     }
                 }
             }
         };
         PathGenerator.FloydWarshall = function (vertices, distance, path) {
             for (var k = 0; k < vertices.length; k++) {
+                console.log(k, " from ", vertices.length);
                 for (var i = 0; i < vertices.length; i++) {
                     for (var j = 0; j < vertices.length; j++) {
-                        var dik = distance.get(vertices[i]).get(vertices[k]);
-                        var dkj = distance.get(vertices[k]).get(vertices[j]);
-                        var dij = distance.get(vertices[i]).get(vertices[j]);
+                        var dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
+                        var dkj = distance.get(JSON.stringify(vertices[k])).get(JSON.stringify(vertices[j]));
+                        var dij = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j]));
                         if (dik != undefined && dkj != undefined) {
-                            if (dij == undefined || dij < dik + dkj) {
-                                distance.get(vertices[i]).set(vertices[j], dik + dkj);
-                                path.get(vertices[i]).set(vertices[j], vertices[k]);
+                            if (dij == undefined || dij > dik + dkj) {
+                                distance.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), dik + dkj);
+                                path.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), vertices[k]);
                             }
                         }
                     }
@@ -264,10 +265,10 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
                 collisionMesh[i * 2 + 2] = [];
                 collisionMesh[i * 2 + 2][0] = false;
                 for (var j = 0; j < collisionMap[i].length; j++) {
-                    collisionMesh[i + 1][j * 2 + 1] = false;
-                    collisionMesh[i + 1][j * 2 + 2] = false;
-                    collisionMesh[i + 2][j * 2 + 1] = false;
-                    collisionMesh[i + 2][j * 2 + 2] = false;
+                    collisionMesh[i * 2 + 1][j * 2 + 1] = false;
+                    collisionMesh[i * 2 + 1][j * 2 + 2] = false;
+                    collisionMesh[i * 2 + 2][j * 2 + 1] = false;
+                    collisionMesh[i * 2 + 2][j * 2 + 2] = false;
                 }
             }
             for (var i = 0; i < collisionMap.length; i++) {
@@ -295,9 +296,9 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
                 for (var j = 0; j < collisionMesh[i].length; j++) {
                     if (collisionMesh[i][j] == false) {
                         var place = new Geom_1.Vector(i, j);
-                        if (distance.get(place) == undefined) {
-                            distance.set(place, new Map());
-                            path.set(place, new Map());
+                        if (distance.get(JSON.stringify(place)) == undefined) {
+                            distance.set(JSON.stringify(place), new Map());
+                            path.set(JSON.stringify(place), new Map());
                         }
                         this.findNearestWays(collisionMesh, place, distance, path);
                         vertices[vertices.length] = place;
@@ -307,17 +308,67 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
             console.log(path);
             this.FloydWarshall(vertices, distance, path);
             console.log(path);
-            MimicMap.PathMatrix = path;
+            var correctPath = new Map();
+            for (var i = 0; i < vertices.length; i++) {
+                for (var j = 0; j < vertices.length; j++) {
+                    if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
+                        if (correctPath.get(vertices[i]) == undefined) {
+                            correctPath.set(vertices[i], new Map());
+                        }
+                        correctPath.get(vertices[i]).set(vertices[j], path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])));
+                    }
+                }
+            }
+            MimicMap.PathMatrix = correctPath;
             MimicMap.CollisionMesh = collisionMesh;
         };
         return PathGenerator;
     }());
     exports.PathGenerator = PathGenerator;
 });
-define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function (require, exports, Tile_2, Tile_3, PathGenerator_1) {
+define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Geom", "Draw"], function (require, exports, Tile_2, Tile_3, PathGenerator_1, Geom_2, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MimicMapJSON = void 0;
+    function replacer(key, value) {
+        if (value instanceof Map) {
+            return {
+                dataType: 'Map',
+                value: Array.from(value.entries()),
+            };
+        }
+        if (value instanceof HTMLImageElement) {
+            var name_1 = value.src;
+            var nameSplit = name_1.split("/");
+            var lastSplit = nameSplit[nameSplit.length - 1];
+            return {
+                dataType: 'HTMLImageElement',
+                value: lastSplit
+            };
+        }
+        if (value instanceof Geom_2.Vector) {
+            return {
+                dataType: 'Vector',
+                x: value.x,
+                y: value.y
+            };
+        }
+        return value;
+    }
+    function reviver(key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (value.dataType === 'Map') {
+                return new Map(value.value);
+            }
+            if (value.dataType === 'HTMLImageElement') {
+                return Draw_2.Draw.loadImage("./textures/" + value.value);
+            }
+            if (value.dataType === 'Vector') {
+                return new Geom_2.Vector(value.x, value.y);
+            }
+        }
+        return value;
+    }
     var MimicMapJSON = (function () {
         function MimicMapJSON() {
         }
@@ -327,10 +378,10 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function
     var grid = [];
     var sizeX = 10;
     var sizeY = 10;
-    for (var x_1 = 0; x_1 < sizeX; x_1++) {
-        grid[x_1] = [];
+    for (var x = 0; x < sizeX; x++) {
+        grid[x] = [];
         for (var y = 0; y < sizeY; y++) {
-            grid[x_1][y] = new Tile_2.Tile();
+            grid[x][y] = new Tile_2.Tile();
         }
     }
     grid[1][1] = new Tile_2.Tile(Tile_3.CollisionType.CornerDR);
@@ -344,12 +395,10 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator"], function
     PathGenerator_1.PathGenerator.generateMatrix(newMap);
     console.log(newMap.CollisionMesh);
     console.log(newMap.PathMatrix);
-    var blob = new Blob([JSON.stringify(newMap)], {
+    var blob = new Blob([JSON.stringify(newMap, replacer)], {
         type: 'application/json'
     });
-    console.log(JSON.stringify(newMap));
-    var x = newMap.PathMatrix;
-    console.log(Array.from(x.entries()), JSON.stringify(Array.from(x.entries())));
+    console.log(Array.from(newMap.PathMatrix.keys()));
     var url = window.URL.createObjectURL(blob);
     window.open(url);
 });
