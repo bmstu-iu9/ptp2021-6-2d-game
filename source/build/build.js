@@ -34,11 +34,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("Geom", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Vector = exports.eps = void 0;
-    exports.eps = 1e-9;
+    exports.eps = 1e-4;
     var Vector = (function () {
         function Vector(x, y) {
             if (x === void 0) { x = 0; }
@@ -79,7 +94,20 @@ define("Geom", ["require", "exports"], function (require, exports) {
     }());
     exports.Vector = Vector;
 });
-define("Control", ["require", "exports", "Geom"], function (require, exports, geom) {
+define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], function (require, exports, Geom_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Commands = void 0;
+    var Commands = (function () {
+        function Commands() {
+            this.commands = new Map();
+            this.pointer = new Geom_1.Vector();
+        }
+        return Commands;
+    }());
+    exports.Commands = Commands;
+});
+define("Control", ["require", "exports", "Geom", "Entities/EntityAttributes/Commands"], function (require, exports, geom, Commands_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Control = exports.Keys = void 0;
@@ -149,7 +177,7 @@ define("Control", ["require", "exports", "Geom"], function (require, exports, ge
             console.log("lets do it!!");
             Control.keyMapping = new Map();
             Control.commandsCounter = new Map();
-            Control.commands = new Map();
+            Control.commands = new Commands_1.Commands();
             Control.loadConfig("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/keys.conf");
             console.log("Done!!", Control.keyMapping);
             console.log(Control.commands["MoveUp"]);
@@ -163,7 +191,7 @@ define("Control", ["require", "exports", "Geom"], function (require, exports, ge
         };
         Control.lastMouseCoordinates = function () {
             Control.clicked = false;
-            return Control.mouseCoordinates;
+            return Control.commands.pointer;
         };
         Control.onKeyDown = function (event) {
             if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
@@ -203,14 +231,13 @@ define("Control", ["require", "exports", "Geom"], function (require, exports, ge
         };
         Control.onClick = function (event) {
             Control.clicked = true;
-            Control.mouseCoordinates = new geom.Vector(event.x, event.y);
+            Control.commands.pointer = new geom.Vector(event.x, event.y);
             event.preventDefault();
             event.stopPropagation();
             return false;
         };
         Control._keys = [];
         Control.clicked = false;
-        Control.mouseCoordinates = new geom.Vector(0, 0);
         return Control;
     }());
     exports.Control = Control;
@@ -390,7 +417,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], function (require, exports, geom, Game_1) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands"], function (require, exports, geom, Game_1, Commands_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AI = void 0;
@@ -398,7 +425,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
         function AI(game, body) {
             this.game = game;
             this.body = body;
-            this.commands = new Map();
+            this.commands = new Commands_2.Commands();
             this.Path = [];
         }
         AI.prototype.go = function (point) {
@@ -465,7 +492,6 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
             return this.makePath(start, middlePoint).concat(this.makePath(middlePoint, finish));
         };
         AI.prototype.goToPoint = function (point) {
-            console.log("entered");
             this.Path = [];
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
@@ -475,7 +501,6 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
         };
         AI.prototype.step = function () {
             if (this.Path.length != 0) {
-                console.log("im here");
                 this.go(this.Path[0]);
                 if (this.body.center.sub(this.Path[0]).abs() < geom.eps) {
                     this.Path.shift();
@@ -486,7 +511,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game"], f
     }());
     exports.AI = AI;
 });
-define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_1, AI_1) {
+define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, Animation_1, AI_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
@@ -518,6 +543,25 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             }
         };
         Entity.prototype.step = function () {
+            if (!this.commands)
+                return;
+            this.myAI.step();
+            this.commands = this.myAI.commands;
+        };
+        return Entity;
+    }());
+    exports.Entity = Entity;
+});
+define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom"], function (require, exports, Entity_1, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Person = void 0;
+    var Person = (function (_super) {
+        __extends(Person, _super);
+        function Person(game, body, mod) {
+            return _super.call(this, game, body, mod) || this;
+        }
+        Person.prototype.step = function () {
             var x = 0;
             var y = 0;
             var vel = this.body.velocity;
@@ -540,12 +584,11 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
                 this.body.move(new geom.Vector(-vel, 0));
             }
             this.changedirection(x, y);
-            this.myAI.step();
-            this.commands = this.myAI.commands;
+            _super.prototype.step.call(this);
         };
-        return Entity;
-    }());
-    exports.Entity = Entity;
+        return Person;
+    }(Entity_1.Entity));
+    exports.Person = Person;
 });
 define("Mimic", ["require", "exports", "Geom", "Control"], function (require, exports, geom, Control_1) {
     "use strict";
@@ -583,7 +626,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
     }());
     exports.Mimic = Mimic;
 });
-define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Entity", "Control", "Draw", "Tile", "Mimic"], function (require, exports, geom, Body_1, Entity_1, Control_2, Draw_3, Tile_2, Mimic_1) {
+define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic"], function (require, exports, geom, Body_1, Person_1, Control_2, Draw_3, Tile_2, Mimic_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = exports.MimicMap = void 0;
@@ -685,7 +728,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.make_person = function (body) {
-            return this.entities[this.entities.length] = new Entity_1.Entity(this, body, "fine");
+            return this.entities[this.entities.length] = new Person_1.Person(this, body, "fine");
         };
         Game.prototype.step = function () {
             this.mimic.step();
@@ -752,5 +795,49 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
         }
     }
     setInterval(step, 20);
+});
+define("Entities/Scientist", ["require", "exports", "Entities/Person"], function (require, exports, Person_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Scientist = void 0;
+    var Scientist = (function (_super) {
+        __extends(Scientist, _super);
+        function Scientist(game, body, mod) {
+            return _super.call(this, game, body, mod) || this;
+        }
+        return Scientist;
+    }(Person_2.Person));
+    exports.Scientist = Scientist;
+});
+define("Entities/Soldier", ["require", "exports", "Entities/Person"], function (require, exports, Person_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Soldier = void 0;
+    var Soldier = (function (_super) {
+        __extends(Soldier, _super);
+        function Soldier(game, body, mod) {
+            return _super.call(this, game, body, mod) || this;
+        }
+        Soldier.prototype.step = function () {
+            _super.prototype.step.call(this);
+            if (this.commands.commands["shoot"]) {
+            }
+        };
+        return Soldier;
+    }(Person_3.Person));
+    exports.Soldier = Soldier;
+});
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity"], function (require, exports, Entity_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StationaryObject = void 0;
+    var StationaryObject = (function (_super) {
+        __extends(StationaryObject, _super);
+        function StationaryObject(game, body, mod) {
+            return _super.call(this, game, body, mod) || this;
+        }
+        return StationaryObject;
+    }(Entity_2.Entity));
+    exports.StationaryObject = StationaryObject;
 });
 //# sourceMappingURL=build.js.map

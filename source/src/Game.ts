@@ -1,6 +1,7 @@
 import * as geom from "./Geom";
 import {Body} from "./Entities/EntityAttributes/Body";
 import {Entity} from "./Entities/Entity";
+import { Person } from "./Entities/Person";
 import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
@@ -98,7 +99,7 @@ export class Game {
     }
 
     public make_person(body : Body) {
-        return this.entities[this.entities.length] = new Entity(this, body,"fine");//последнее - маркер состояния
+        return this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
     }
 
     public step() {

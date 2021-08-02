@@ -2,18 +2,19 @@ import * as geom from "../../Geom";
 import { Body } from "./Body";
 import { Game } from "../../Game";
 import { MimicMap } from "../../Game";
+import { Commands } from "./Commands";
 import path = require("path/posix");
 
 export class AI {
     private body : Body;
     public Path : geom.Vector[];
     public game : Game; 
-    public commands : Map<string, boolean>;
+    public commands : Commands;
 
     constructor(game : Game, body : Body) {
         this.game = game;
         this.body = body;
-        this.commands = new Map();
+        this.commands = new Commands();
         this.Path = [];
     }
 
@@ -90,9 +91,7 @@ export class AI {
         return this.makePath(start, middlePoint).concat(this.makePath(middlePoint, finish));
     }
 
-    public goToPoint(point : geom.Vector) {
-        console.log("entered");
-        
+    public goToPoint(point : geom.Vector) {       
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);
@@ -102,9 +101,7 @@ export class AI {
     }
 
     step() {
-        if (this.Path.length != 0) {
-            console.log("im here");
-            
+        if (this.Path.length != 0) {            
             this.go(this.Path[0]);
             if (this.body.center.sub(this.Path[0]).abs() < geom.eps) {
                 this.Path.shift();

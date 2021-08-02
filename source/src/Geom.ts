@@ -1,4 +1,4 @@
-export let eps = 1e-9;
+export let eps = 1e-4;
 
 export class Vector {
     public x : number;

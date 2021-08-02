@@ -1,5 +1,5 @@
 import * as geom from "./Geom";
-
+import { Commands } from "./Entities/EntityAttributes/Commands";
 
 export enum Keys {
     LeftArrow = 37,
@@ -12,9 +12,8 @@ export class Control {
     private static  keyMapping : Map<number, string[]>;
     private static _keys : boolean[] = [];
     private static clicked = false;
-    private static mouseCoordinates = new geom.Vector(0, 0);
     private static commandsCounter : Map<string, number>;
-    public static commands : Map<string, boolean>;
+    public static commands : Commands;
 
     private static async readTextFile(path) {
         const response = await fetch(path)
@@ -55,7 +54,7 @@ export class Control {
         
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
-        Control.commands = new Map<string, boolean>();
+        Control.commands = new Commands();
         Control.loadConfig("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/keys.conf");
         //Control.fakeLoadConfig();
 
@@ -75,7 +74,7 @@ S
 
     public static lastMouseCoordinates() : geom.Vector {
         Control.clicked = false;
-        return Control.mouseCoordinates;
+        return Control.commands.pointer;
     }
 
     private static onKeyDown(event : KeyboardEvent) : boolean {
@@ -118,7 +117,7 @@ S
 
     private static onClick(event : MouseEvent) : boolean {
         Control.clicked = true;
-        Control.mouseCoordinates = new geom.Vector(event.x, event.y);
+        Control.commands.pointer = new geom.Vector(event.x, event.y);
         event.preventDefault();
         event.stopPropagation();
         return false;
