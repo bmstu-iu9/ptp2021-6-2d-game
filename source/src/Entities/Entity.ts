@@ -25,10 +25,10 @@ export class Entity {
         if(x==0 && y == 0) {
             this.animation.changedirection("stand",this.mod)
         }
-        if(x==1 && y == 0) {
+        if(x==1) {
             this.animation.changedirection("right",this.mod)
         }
-        if(x==-1 && y == 0) {
+        if(x==-1) {
             this.animation.changedirection("left",this.mod)
         }
         if(x==0 && y == 1) {
