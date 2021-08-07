@@ -9,6 +9,7 @@ export class Entity {
     public game : Game;
     public body : Body;
     public animation : Animation;
+    public entityID : number;
     public myAI : AI;
     public commands : Commands = null;
     private mod : string; //маркер состояния (переименовать по необходимости)

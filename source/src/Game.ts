@@ -6,8 +6,10 @@ import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
+import { Trigger } from "./Trigger";
+import { Debug } from "./Debug";
 
-function replacer(key, value) {
+function replacer(key, value) { // функция замены классов для преобразования в JSON
     if(value instanceof Map) {
       return {
           dataType: 'Map',
@@ -34,7 +36,7 @@ function replacer(key, value) {
     return value;
   }
   
-  function reviver(key, value) {
+  function reviver(key, value) { // функция обратной замены классов для преобразования из JSON
       if(typeof value === 'object' && value !== null) {
         if (value.dataType === 'Map') {
           return new Map(value.value);
@@ -62,6 +64,7 @@ export class Game {
     public draw : Draw;
     private bodies : Body [] = [];
     public entities : Entity [] = [];
+    public triggers : Trigger [] = [];
     public currentGridName = "map";
     public playerID = 0;
     public mimic : Mimic;
@@ -99,7 +102,13 @@ export class Game {
     }
 
     public make_person(body : Body) {
-        return this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
+        this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
+        this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
+        return this.entities[this.entities.length - 1];
+    }
+
+    public make_trigger(lifeTime : number, boundEntity : Entity) {
+        return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
     }
 
     public step() {
@@ -153,5 +162,7 @@ export class Game {
         for (let i = 0; i < this.entities.length; i++) {
             this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
         }
+
+        Debug.drawPoints(this);
     }
 }
