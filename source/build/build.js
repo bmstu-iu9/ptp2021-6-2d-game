@@ -434,17 +434,24 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands"], function (require, exports, geom, Game_1, Commands_2) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, Debug_1, Draw_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AI = void 0;
     var AI = (function () {
         function AI(game, body) {
+            this.destination = new geom.Vector(0, 0);
             this.game = game;
             this.body = body;
             this.commands = new Commands_2.Commands();
             this.Path = [];
         }
+        AI.prototype.stop = function () {
+            this.commands["MoveRight"] = false;
+            this.commands["MoveLeft"] = false;
+            this.commands["MoveDown"] = false;
+            this.commands["MoveUp"] = false;
+        };
         AI.prototype.go = function (point) {
             if (this.body.center.x < point.x) {
                 this.commands["MoveRight"] = true;
@@ -472,20 +479,25 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             }
         };
         AI.prototype.getPointCoordinate = function (place) {
-            return new geom.Vector(place.x * this.game.tileSize / 2, place.y * this.game.tileSize / 2);
+            return new geom.Vector(place.y * this.game.tileSize / 2, place.x * this.game.tileSize / 2);
         };
         AI.prototype.chooseMeshPoint = function (currentPoint) {
             var CollisionMesh = Game_1.Game.grids[this.game.currentGridName].CollisionMesh;
             var Grid = Game_1.Game.grids[this.game.currentGridName].Grid;
             var posRound = new geom.Vector(Math.floor(this.body.center.x / this.game.tileSize), Math.floor(this.body.center.y / this.game.tileSize));
-            var place = new geom.Vector(posRound.x * 2 + 1, posRound.y * 2 + 1);
+            var place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
             var answer = new geom.Vector(0, 0);
-            for (var i = -1; i <= 1; i++) {
-                for (var j = -1; j <= 1; j++) {
-                    if (CollisionMesh[place.x + i][place.y + j] == false &&
-                        currentPoint.sub(this.getPointCoordinate(new geom.Vector(answer.x, answer.y))).abs() >
-                            currentPoint.sub(this.getPointCoordinate(new geom.Vector(place.x + i, place.y + j))).abs()) {
-                        answer = new geom.Vector(place.x + i, place.y + j);
+            console.log("here");
+            for (var i = -5; i <= 5; i++) {
+                for (var j = -5; j <= 5; j++) {
+                    if (place.x + i < CollisionMesh.length && place.x + i > 0) {
+                        if (place.y + j < CollisionMesh[place.x + i].length && place.y + j > 0) {
+                            if (CollisionMesh[place.x + i][place.y + j] == false &&
+                                currentPoint.sub(this.getPointCoordinate(new geom.Vector(answer.x, answer.y))).abs() >
+                                    currentPoint.sub(this.getPointCoordinate(new geom.Vector(place.x + i, place.y + j))).abs()) {
+                                answer = new geom.Vector(place.x + i, place.y + j);
+                            }
+                        }
                     }
                 }
             }
@@ -493,36 +505,57 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
         };
         AI.prototype.makePath = function (start, finish) {
             var pathMatrix = Game_1.Game.grids[this.game.currentGridName].PathMatrix;
-            console.log(start, finish);
-            console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
-            if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
+            if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
                 return [];
             }
             if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
-                var answer = void 0;
-                answer = [];
-                answer[0] = this.getPointCoordinate(start);
-                answer[1] = this.getPointCoordinate(finish);
-                return answer;
+                var answer_1;
+                answer_1 = [];
+                answer_1[0] = this.getPointCoordinate(finish);
+                return answer_1;
             }
             var middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
-            return this.makePath(start, middlePoint).concat(this.makePath(middlePoint, finish));
+            var a1 = this.makePath(start, middlePoint);
+            var a2 = this.makePath(middlePoint, finish);
+            var answer = a1.concat(a2);
+            return answer;
         };
         AI.prototype.goToPoint = function (point) {
+            this.destination = point;
             this.Path = [];
+            console.log("hello");
+            console.log("hello?", this.body.center, point);
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
-            this.Path = this.makePath(startMeshPoint, finishMeshPoint);
-            if (this.Path != [])
-                this.Path[this.Path.length] = point;
+            console.log("goToPoint: ", startMeshPoint, finishMeshPoint);
+            var localPath = this.makePath(startMeshPoint, finishMeshPoint);
+            for (var i = 0; i < localPath.length; i++) {
+                this.Path[i] = localPath[i].clone();
+            }
+            console.log("Path", this.Path);
         };
         AI.prototype.step = function () {
             if (this.Path.length != 0) {
                 this.go(this.Path[0]);
-                if (this.body.center.sub(this.Path[0]).abs() < geom.eps) {
+                if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {
                     this.Path.shift();
                 }
             }
+            else {
+                this.stop();
+            }
+            var CollisionMesh = Game_1.Game.grids[this.game.currentGridName].CollisionMesh;
+            for (var i = 0; i < CollisionMesh.length; i++) {
+                for (var j = 0; j < CollisionMesh[i].length; j++) {
+                    var coordinate = this.getPointCoordinate(new geom.Vector(i, j));
+                    var color = new Draw_3.Color(0, 255, 0);
+                    if (CollisionMesh[i][j] == true) {
+                        color = new Draw_3.Color(255, 0, 0);
+                    }
+                    Debug_1.Debug.addPoint(coordinate, color);
+                }
+            }
+            Debug_1.Debug.addPoint(this.destination, new Draw_3.Color(0, 0, 255));
         };
         return AI;
     }());
@@ -569,7 +602,7 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
     }());
     exports.Entity = Entity;
 });
-define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_1, Draw_3) {
+define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Person = void 0;
@@ -590,7 +623,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             var center = this.body.center;
             for (var i = 0; i < this.game.triggers.length; i++) {
                 var triggerCoordinate = this.game.triggers[i].getCoordinates();
-                Debug_1.Debug.addPoint(triggerCoordinate, new Draw_3.Color(0, 0, 255));
+                Debug_2.Debug.addPoint(triggerCoordinate, new Draw_4.Color(0, 0, 255));
                 var triggerVector = triggerCoordinate.sub(center);
                 if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
                     if (triggerVector.abs() <= this.viewRadius && !this.game.triggers[i].isEntityTriggered(this)) {
@@ -604,7 +637,6 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             var x = 0;
             var y = 0;
             var vel = this.body.velocity;
-            console.log("alertLvl:", this.alertLvl);
             if (!this.commands)
                 return;
             if (this.commands["MoveUp"]) {
@@ -705,7 +737,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Trigger", "Debug"], function (require, exports, geom, Body_1, Person_1, Control_2, Draw_4, Tile_2, Mimic_1, Trigger_1, Debug_2) {
+define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Trigger", "Debug"], function (require, exports, geom, Body_1, Person_1, Control_2, Draw_5, Tile_2, Mimic_1, Trigger_1, Debug_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = exports.MimicMap = void 0;
@@ -740,7 +772,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
                 return new Map(value.value);
             }
             if (value.dataType === 'HTMLImageElement') {
-                return Draw_4.Draw.loadImage("./textures/" + value.value);
+                return Draw_5.Draw.loadImage("./textures/" + value.value);
             }
             if (value.dataType === 'Vector') {
                 return JSON.stringify(new geom.Vector(value.x, value.y));
@@ -848,7 +880,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             for (var i = 0; i < this.entities.length; i++) {
                 this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
             }
-            Debug_2.Debug.drawPoints(this);
+            Debug_3.Debug.drawPoints(this);
         };
         return Game;
     }());
@@ -886,16 +918,17 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
     }());
     exports.Debug = Debug;
 });
-define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, Draw_5, Game_2) {
+define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, Draw_6, Game_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_5.Draw(canvas, new geom.Vector(640, 640));
+    var draw = new Draw_6.Draw(canvas, new geom.Vector(640, 640));
+    draw.cam.scale = 0.4;
     Game_2.Game.grids = new Map();
     Game_2.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/map.json", "map");
     var game = new Game_2.Game(draw);
     game.make_person(game.make_body(new geom.Vector(1, 0), 1));
-    game.make_person(game.make_body(new geom.Vector(0, 0), 1));
+    game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;
@@ -903,9 +936,12 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
         if (Game_2.Game.grids["map"] != undefined) {
             t++;
             if (x == false) {
+                game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
                 game.make_trigger(100000000, game.entities[1]);
-                console.log(Game_2.Game.grids["map"].PathMatrix);
                 x = true;
+            }
+            if (t % 100 == 0) {
+                console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
             }
             draw.clear();
             game.step();

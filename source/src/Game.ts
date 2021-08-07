@@ -114,6 +114,7 @@ export class Game {
     public step() {
         this.mimic.step();
 
+        
         // Processing entities
         this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());

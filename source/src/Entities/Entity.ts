@@ -39,7 +39,7 @@ export class Entity {
             this.animation.changedirection("down",this.mod)
         }
     }
-    public step() {
+    public step() {        
         if (!this.commands)
             return;
         this.myAI.step();
