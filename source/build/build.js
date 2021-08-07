@@ -242,7 +242,7 @@ define("Control", ["require", "exports", "Geom", "Entities/EntityAttributes/Comm
     }());
     exports.Control = Control;
 });
-define("Draw", ["require", "exports"], function (require, exports) {
+define("Draw", ["require", "exports", "Geom"], function (require, exports, Geom_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Draw = exports.Color = exports.Camera = void 0;
@@ -297,6 +297,21 @@ define("Draw", ["require", "exports"], function (require, exports) {
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+        };
+        Draw.prototype.strokeRect = function (pos, box, color) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+            this.ctx.clearRect(posNew.x + 1, posNew.y + 1, boxNew.x - 2, boxNew.y - 2);
+        };
+        Draw.prototype.strokeCircle = function (pos, radius, color) {
+            var posNew = this.transform(pos);
+            posNew = posNew.sub(new Geom_2.Vector(radius / 2, radius / 2));
+            this.ctx.arc(posNew.x, posNew.y, radius, 0, Math.PI * 2, true);
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.stroke();
         };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
