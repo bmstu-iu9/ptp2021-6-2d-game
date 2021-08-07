@@ -72,6 +72,15 @@ export class Draw {
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.stroke();
     }
+    public fillCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
+        let posNew = this.transform(pos);
+        posNew = posNew.sub(new Vector(radius/2, radius/2));
+        this.ctx.arc(posNew.x,posNew.y,radius,0,Math.PI*2,true); // окружность
+        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.stroke();
+        this.ctx.fill();
+    }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
