@@ -330,6 +330,14 @@ define("Draw", ["require", "exports", "Geom"], function (require, exports, Geom_
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.stroke();
         };
+        Draw.prototype.fillPolygon = function (pos, vertices, color) {
+            var posNew = this.transform(pos);
+            for (var i = 0; i < vertices.length; i++) {
+                this.ctx.lineTo(posNew.x + vertices[i].x, posNew.x + vertices[i].y);
+            }
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fill();
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };

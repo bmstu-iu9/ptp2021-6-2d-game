@@ -81,13 +81,21 @@ export class Draw {
         this.ctx.stroke();
         this.ctx.fill();
     }
-    public strokePolygon(pos : geom.Vector,vertices : Array<geom.Vector>, color : Color) { //многоугольник по точкам
+    public strokePolygon(pos : geom.Vector,vertices : Array<geom.Vector>, color : Color) { //многоугольник по точкам без заливки
         let posNew = this.transform(pos);
         for (let i = 0; i < vertices.length; i++) {
             this.ctx.lineTo(posNew.x+vertices[i].x,posNew.x+vertices[i].y);
         }
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.stroke();
+    }
+    public fillPolygon(pos : geom.Vector,vertices : Array<geom.Vector>, color : Color) { //многоугольник по точкам с заливкой
+        let posNew = this.transform(pos);
+        for (let i = 0; i < vertices.length; i++) {
+            this.ctx.lineTo(posNew.x+vertices[i].x,posNew.x+vertices[i].y);
+        }
+        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.fill();
     }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
