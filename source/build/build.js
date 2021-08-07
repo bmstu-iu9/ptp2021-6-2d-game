@@ -313,6 +313,23 @@ define("Draw", ["require", "exports", "Geom"], function (require, exports, Geom_
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.stroke();
         };
+        Draw.prototype.fillCircle = function (pos, radius, color) {
+            var posNew = this.transform(pos);
+            posNew = posNew.sub(new Geom_2.Vector(radius / 2, radius / 2));
+            this.ctx.arc(posNew.x, posNew.y, radius, 0, Math.PI * 2, true);
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.stroke();
+            this.ctx.fill();
+        };
+        Draw.prototype.strokePolygon = function (pos, vertices, color) {
+            var posNew = this.transform(pos);
+            for (var i = 0; i < vertices.length; i++) {
+                this.ctx.lineTo(posNew.x + vertices[i].x, posNew.x + vertices[i].y);
+            }
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.stroke();
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
