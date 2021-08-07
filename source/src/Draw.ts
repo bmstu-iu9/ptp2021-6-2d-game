@@ -56,6 +56,14 @@ export class Draw {
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
+    public strokeRect(pos : geom.Vector, box : geom.Vector, color : Color) {
+        let posNew = this.transform(pos);
+        let boxNew = box.mul(this.cam.scale);
+        posNew = posNew.sub(boxNew.mul(1 / 2)); //незаполненный прямоугольник только черный, рисуем цветной и делаем дырку
+        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+        this.ctx.clearRect(posNew.x+1, posNew.y+1, boxNew.x-2, boxNew.y-2);
+    }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
