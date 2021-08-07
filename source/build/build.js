@@ -774,7 +774,7 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_4.Draw(canvas, new geom.Vector(640, 640));
     Game_2.Game.grids = new Map();
-    Game_2.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/Dev/source/env/map.json", "map");
+    Game_2.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/map.json", "map");
     var game = new Game_2.Game(draw);
     game.make_person(game.make_body(new geom.Vector(0, 0), 1));
     game.make_person(game.make_body(new geom.Vector(0, 0), 1));
