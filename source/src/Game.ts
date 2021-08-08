@@ -6,15 +6,18 @@ import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
+import { Trigger } from "./Trigger";
+import { Debug } from "./Debug";
 
-function replacer(key, value) {
-    if(value instanceof Map) {
+function replacer(key, value) { // функция замены классов для преобразования в JSON
+    if(value instanceof Map) { // упаковка Map
       return {
-          dataType: 'Map',
+          dataType: 'Map', 
           value: Array.from(value.entries()), // or with spread: value: [...value]
         };
     }
-    if (value instanceof HTMLImageElement) {
+    if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
+      // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
       let name = value.src;
       let nameSplit = name.split("/");
       let lastSplit = nameSplit[nameSplit.length - 1];
@@ -24,7 +27,7 @@ function replacer(key, value) {
         value: lastSplit
       };
     }
-    if (value instanceof geom.Vector) {
+    if (value instanceof geom.Vector) { // упаковка Vector
       return {
         dataType: 'Vector',
         x: value.x,
@@ -34,45 +37,47 @@ function replacer(key, value) {
     return value;
   }
   
-  function reviver(key, value) {
+  function reviver(key, value) { // функция обратной замены классов для преобразования из JSON
       if(typeof value === 'object' && value !== null) {
-        if (value.dataType === 'Map') {
+        if (value.dataType === 'Map') { // распаковка Map
           return new Map(value.value);
         }
-        if (value.dataType === 'HTMLImageElement') {
+        if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
           return Draw.loadImage("./textures/" + value.value);
         }
-        if (value.dataType === 'Vector') {
+        if (value.dataType === 'Vector') { // распаковка Vector
           return JSON.stringify(new geom.Vector(value.x, value.y));
         }
       }
       return value;
   }
 
-export class MimicMap {
+export class MimicMap { // класс карты
     Grid? : Tile[][];
     CollisionMesh? : boolean[][];
     PathMatrix? : Map<any, any>;
 }
 
 export class Game {
-    public static grids : Map<any, any>;
+    public static grids : Map<any, any>; // набор всех карт каждая карта вызывается по своему названию
 
-    public tileSize = 1
-    public draw : Draw;
-    private bodies : Body [] = [];
-    public entities : Entity [] = [];
-    public currentGridName = "map";
-    public playerID = 0;
-    public mimic : Mimic;
+    public tileSize = 1; // размер тайла
+    public draw : Draw; 
+    private bodies : Body [] = []; // массив всех тел
+    public entities : Entity [] = []; // массив всех entity
+    public triggers : Trigger [] = []; // массив всех триггеров
+    public currentGridName = "map"; // название текущей карты
+    public playerID = 0; // атавизм? id игрока, хз зачем нужно
+    public mimic : Mimic; // объект мимик, за который играет игрок
+    public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
 
-    private static async readTextFile(path) {
+    private static async readTextFile(path) { // функция считывания файла по внешней ссылке
         const response = await fetch(path)
         const text = await response.text()
         return text;
     }
 
-    public static async loadMap(path : string, name : string) {
+    public static async loadMap(path : string, name : string) { // загрузка карты по ссылке и названию
         let result = await this.readTextFile(path)
         .then(result => {
             console.log(result);
@@ -92,18 +97,25 @@ export class Game {
     }
     
 
-    public make_body(coordinates : geom.Vector, radius : number) : Body {
+    public make_body(coordinates : geom.Vector, radius : number) : Body { // создаёт тело и возвращает ссылку
         let body = new Body(coordinates, radius);
         body.game = this;
         return this.bodies[this.bodies.length] = body;
     }
 
-    public make_person(body : Body) {
-        return this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
+    public make_person(body : Body) { // создаёт персонажа и возвращает ссылку
+        this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
+        this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
+        return this.entities[this.entities.length - 1];
+    }
+
+    public make_trigger(lifeTime : number, boundEntity : Entity) { // создаёт триггер и возвращает ссылку
+        return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
     }
 
     public step() {
         this.mimic.step();
+
 
         // Processing entities
         this.entities.forEach(entity => entity.animation.step());
@@ -153,5 +165,8 @@ export class Game {
         for (let i = 0; i < this.entities.length; i++) {
             this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
         }
+
+        // Отрисовка графического дебага
+        Debug.drawPoints(this);
     }
 }

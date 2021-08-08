@@ -9,6 +9,7 @@ export class Entity {
     public game : Game;
     public body : Body;
     public animation : Animation;
+    public entityID : number;
     public myAI : AI;
     public commands : Commands = null;
     private mod : string; //маркер состояния (переименовать по необходимости)
@@ -38,7 +39,7 @@ export class Entity {
             this.animation.changedirection("down",this.mod)
         }
     }
-    public step() {
+    public step() {        
         if (!this.commands)
             return;
         this.myAI.step();
