@@ -434,7 +434,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, Debug_1, Draw_3) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, aux, Debug_1, Draw_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AI = void 0;
@@ -523,18 +523,23 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
         AI.prototype.goToPoint = function (point) {
             this.destination = point;
             this.Path = [];
-            console.log("hello");
-            console.log("hello?", this.body.center, point);
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
-            console.log("goToPoint: ", startMeshPoint, finishMeshPoint);
             var localPath = this.makePath(startMeshPoint, finishMeshPoint);
             for (var i = 0; i < localPath.length; i++) {
                 this.Path[i] = localPath[i].clone();
             }
-            console.log("Path", this.Path);
+        };
+        AI.prototype.wait = function (milliseconds) {
+            this.activationTime = aux.getMilliCount() + milliseconds;
+        };
+        AI.prototype.pursuit = function () {
+            this.goToPoint(this.game.ghost);
         };
         AI.prototype.step = function () {
+            if (this.activationTime > aux.getMilliCount()) {
+                return;
+            }
             if (this.Path.length != 0) {
                 this.go(this.Path[0]);
                 if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {
@@ -579,10 +584,10 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
             if (x == 0 && y == 0) {
                 this.animation.changedirection("stand", this.mod);
             }
-            if (x == 1 && y == 0) {
+            if (x == 1) {
                 this.animation.changedirection("right", this.mod);
             }
-            if (x == -1 && y == 0) {
+            if (x == -1) {
                 this.animation.changedirection("left", this.mod);
             }
             if (x == 0 && y == 1) {
@@ -626,9 +631,14 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
                 Debug_2.Debug.addPoint(triggerCoordinate, new Draw_4.Color(0, 0, 255));
                 var triggerVector = triggerCoordinate.sub(center);
                 if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
-                    if (triggerVector.abs() <= this.viewRadius && !this.game.triggers[i].isEntityTriggered(this)) {
-                        this.upAlertLvl();
-                        this.game.triggers[i].entityTriggered(this);
+                    if (triggerVector.abs() <= this.viewRadius) {
+                        if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
+                            this.game.ghost = this.game.mimic.controlledEntity.body.center;
+                        }
+                        if (!this.game.triggers[i].isEntityTriggered(this)) {
+                            this.upAlertLvl();
+                            this.game.triggers[i].entityTriggered(this);
+                        }
                     }
                 }
             }
@@ -794,6 +804,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             this.triggers = [];
             this.currentGridName = "map";
             this.playerID = 0;
+            this.ghost = new geom.Vector(0, 0);
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
