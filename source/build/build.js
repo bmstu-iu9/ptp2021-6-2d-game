@@ -315,6 +315,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
+        Draw.prototype.strokeRect = function (pos, box, color) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
@@ -908,7 +915,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         }
         Point.prototype.drawPoint = function (game) {
             var box = new Geom_3.Vector(0.1, 0.1);
-            game.draw.fillRect(this.place, box, this.color);
+            game.draw.strokeRect(this.place, box, this.color);
         };
         return Point;
     }());

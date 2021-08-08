@@ -12,7 +12,7 @@ class Point {
 
     public drawPoint(game : Game) {
         let box = new Vector(0.1, 0.1);
-        game.draw.fillRect(this.place, box, this.color);
+        game.draw.strokeRect(this.place, box, this.color);
     }
 }
 
