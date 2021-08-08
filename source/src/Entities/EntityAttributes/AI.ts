@@ -1,7 +1,7 @@
 import * as geom from "../../Geom";
 import { Body } from "./Body";
 import { Game } from "../../Game";
-import { MimicMap } from "../../Game";
+import { Level } from "../../Level";
 import { Commands } from "./Commands";
 import path = require("path/posix");
 
@@ -50,8 +50,8 @@ export class AI {
     }
 
     private chooseMeshPoint(currentPoint : geom.Vector) : geom.Vector {
-        let CollisionMesh = Game.grids[this.game.currentGridName].CollisionMesh;
-        let Grid = Game.grids[this.game.currentGridName].Grid;
+        let CollisionMesh = Game.levels[this.game.currentLevel].CollisionMesh;
+        let Grid = Game.levels[this.game.currentLevel].Grid;
         let posRound = new geom.Vector(
             Math.floor(this.body.center.x / this.game.tileSize), 
             Math.floor(this.body.center.y / this.game.tileSize)
@@ -71,7 +71,7 @@ export class AI {
     }
 
     private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
-        let pathMatrix = Game.grids[this.game.currentGridName].PathMatrix;
+        let pathMatrix = Game.levels[this.game.currentLevel].PathMatrix;
 
         console.log(start, finish);
         console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));

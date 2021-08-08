@@ -34,35 +34,29 @@ function replacer(key, value) {
     return value;
   }
   
-  function reviver(key, value) {
-      if(typeof value === 'object' && value !== null) {
-        if (value.dataType === 'Map') {
-          return new Map(value.value);
-        }
-        if (value.dataType === 'HTMLImageElement') {
-          return Draw.loadImage("./textures/" + value.value);
-        }
-        if (value.dataType === 'Vector') {
-          return JSON.stringify(new geom.Vector(value.x, value.y));
-        }
+function reviver(key, value) {
+    if(typeof value === 'object' && value !== null) {
+      if (value.dataType === 'Map') {
+        return new Map(value.value);
       }
-      return value;
-  }
-
-export class MimicMap {
-    Grid? : Tile[][];
-    CollisionMesh? : boolean[][];
-    PathMatrix? : Map<any, any>;
+      if (value.dataType === 'HTMLImageElement') {
+        return Draw.loadImage("./textures/" + value.value);
+      }
+      if (value.dataType === 'Vector') {
+        return JSON.stringify(new geom.Vector(value.x, value.y));
+      }
+    }
+    return value;
 }
 
 export class Game {
-    public static grids : Map<any, any>;
+    public static levels : Map<any, any>;
 
     public tileSize = 1
     public draw : Draw;
     private bodies : Body [] = [];
     public entities : Entity [] = [];
-    public currentGridName = "map";
+    public currentLevel = "map";
     public playerID = 0;
     public mimic : Mimic;
 
@@ -78,7 +72,7 @@ export class Game {
             console.log(result);
             
             let grid = JSON.parse(result, reviver);
-            this.grids[name] = grid;
+            this.levels[name] = grid;
         });
     }
 
@@ -119,11 +113,11 @@ export class Game {
 
         // If out of bounds
         if (posRound.x < 0 || posRound.y < 0 || 
-            posRound.x >= Game.grids[this.currentGridName].Grid.length || 
-            posRound.y >= Game.grids[this.currentGridName].Grid[0].length)
+            posRound.x >= Game.levels[this.currentLevel].Grid.length || 
+            posRound.y >= Game.levels[this.currentLevel].Grid[0].length)
             return 0;
 
-        let collisionType = Game.grids[this.currentGridName].Grid[posRound.x][posRound.y].colision;    
+        let collisionType = Game.levels[this.currentLevel].Grid[posRound.x][posRound.y].colision;    
         // Coordinates in particular grid cell
         let posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
         // Different collision types
@@ -141,10 +135,10 @@ export class Game {
         this.draw.cam.pos = new geom.Vector(0, 0);
         this.draw.cam.scale = 100;
         // Tiles
-        for (let i = 0; i < Game.grids[this.currentGridName].Grid.length; i++) {
-            for (let j = 0; j < Game.grids[this.currentGridName].Grid.length; j++) {
+        for (let i = 0; i < Game.levels[this.currentLevel].Grid.length; i++) {
+            for (let j = 0; j < Game.levels[this.currentLevel].Grid.length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
-                this.draw.image(Game.grids[this.currentGridName].Grid[i][j].image,
+                this.draw.image(Game.levels[this.currentLevel].Grid[i][j].image,
                     (new geom.Vector(this.tileSize * j, this.tileSize * i)).add(size.mul(1 / 2)), size);
             }
         }
