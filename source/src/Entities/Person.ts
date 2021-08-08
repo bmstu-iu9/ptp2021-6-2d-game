@@ -6,10 +6,10 @@ import { Debug } from "../Debug";
 import { Color } from "../Draw";
 
 export class Person extends Entity {
-    public viewRadius : number;
-    public viewingAngle : number;
-    public direction : geom.Vector;
-    public alertLvl : number;
+    public viewRadius : number; // радиус сектора видимости
+    public viewingAngle : number; // угол сектора видимости
+    public direction : geom.Vector; // направление взгляда
+    public alertLvl : number; // уровень тревоги
 
     constructor(game : Game, body : Body, mod : string) {
         super(game, body, mod);
@@ -19,12 +19,12 @@ export class Person extends Entity {
         this.alertLvl = 0; 
     }
 
-    public upAlertLvl() {
+    public upAlertLvl() { // поднятие уровня тревоги
         // Возможно нужны еще манипуляции (тревога по карте и т.д.)
         this.alertLvl++;
     }
 
-    public checkTriggers() {
+    public checkTriggers() { // проверка всех триггеров на попадание в сетор видимости
         let center = this.body.center;
         for (let i = 0; i < this.game.triggers.length; i++) {
             
@@ -32,9 +32,14 @@ export class Person extends Entity {
             Debug.addPoint(triggerCoordinate, new Color(0, 0, 255));
             let triggerVector = triggerCoordinate.sub(center);
             if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
-                if (triggerVector.abs() <= this.viewRadius && !this.game.triggers[i].isEntityTriggered(this)) {
-                    this.upAlertLvl();
-                    this.game.triggers[i].entityTriggered(this);
+                if (triggerVector.abs() <= this.viewRadius) {
+                    if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
+                        this.game.ghost = this.game.mimic.controlledEntity.body.center;
+                    }
+                    if (!this.game.triggers[i].isEntityTriggered(this)) {
+                        this.upAlertLvl();
+                        this.game.triggers[i].entityTriggered(this);
+                    }
                 }
             }
         }
@@ -46,6 +51,7 @@ export class Person extends Entity {
         let vel = this.body.velocity;
         //console.log("alertLvl:", this.alertLvl);
         
+        // перемещение согласно commands
         if (!this.commands)
             return;
         if(this.commands["MoveUp"]) {
@@ -64,7 +70,7 @@ export class Person extends Entity {
             x--;
             this.body.move(new geom.Vector(-vel, 0));
         }
-        this.changedirection(x, y);
+        this.changedirection(x, y); // измененниие напрвления для анимаций
         this.checkTriggers();
         this.direction = new geom.Vector(x, y);
         super.step();

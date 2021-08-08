@@ -4,16 +4,18 @@ import { Game } from "../../Game";
 import { MimicMap } from "../../Game";
 import { Commands } from "./Commands";
 import path = require("path/posix");
+import * as aux from "../../AuxLib";
 import { Debug } from "../../Debug";
 import { Color } from "../../Draw";
 
 export class AI {
-    private destination : geom.Vector = new geom.Vector(0, 0);
+    private destination : geom.Vector = new geom.Vector(0, 0); // конечная точка, куда направляется персонаж(нужна для дебага)
+    private activationTime : number; // время, с которого объект перестаёт ждать и становится активным
 
-    private body : Body;
-    public Path : geom.Vector[];
-    public game : Game; 
-    public commands : Commands;
+    private body : Body; // тело объекта
+    public Path : geom.Vector[]; // путь к конечной точке
+    public game : Game;
+    public commands : Commands; // набор команд, генерируемых AI
 
     constructor(game : Game, body : Body) {
         this.game = game;
@@ -22,14 +24,14 @@ export class AI {
         this.Path = [];
     }
 
-    private stop() {
+    private stop() { // функция остановки
         this.commands["MoveRight"] = false;
         this.commands["MoveLeft"] = false;
         this.commands["MoveDown"] = false;
         this.commands["MoveUp"] = false;
     }
 
-    private go(point : geom.Vector) {
+    private go(point : geom.Vector) { // функция движения в направлении к точке
         if (this.body.center.x < point.x) {
             this.commands["MoveRight"] = true;
         }
@@ -56,10 +58,12 @@ export class AI {
         }
     }
 
+    // возвращает координату точки коллизионной сетки по её положению в этой сетке
     private getPointCoordinate(place : geom.Vector) : geom.Vector {
         return new geom.Vector(place.y * this.game.tileSize / 2, place.x * this.game.tileSize / 2);
     }
 
+    // находит ближайшую точку коллизионной сетки
     private chooseMeshPoint(currentPoint : geom.Vector) : geom.Vector {
         let CollisionMesh = Game.grids[this.game.currentGridName].CollisionMesh;
         let Grid = Game.grids[this.game.currentGridName].Grid;
@@ -88,14 +92,17 @@ export class AI {
         return answer;
     }
 
+    // рекурсивная функция создающая путь по точкам коллизионной сетки
     private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
         let pathMatrix = Game.grids[this.game.currentGridName].PathMatrix;
         //console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
 
+        // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
         if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
             return [];
         }
 
+        // если точки находятся рядом то путь состоит из одной финальной вершины
         if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
             let answer : geom.Vector[];
             answer = [];
@@ -104,6 +111,8 @@ export class AI {
             
             return answer;
         }
+
+        // middlePoint - третья точка точка лежащая на кратчайшем пути
         let middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
         let a1 = this.makePath(start, middlePoint);
         let a2 = this.makePath(middlePoint, finish);
@@ -113,36 +122,44 @@ export class AI {
         return answer;
     }
 
-    public goToPoint(point : geom.Vector) {    
+    public goToPoint(point : geom.Vector) { // функция, прокладывающая путь до точки
         this.destination = point;   
         this.Path = [];
-        console.log("hello");
-        console.log("hello?", this.body.center, point);
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);        
-        console.log("goToPoint: ", startMeshPoint, finishMeshPoint);
         
         let localPath = this.makePath(startMeshPoint, finishMeshPoint);
         for (let i = 0; i < localPath.length; i++) {
             this.Path[i] = localPath[i].clone();
         }
-        console.log("Path", this.Path);
-        
-        //if (this.Path != [])
-        //    this.Path[this.Path.length] = point;
+    }
+
+    // функция, определяющая когда активируется персонаж(чтобы сбросить время ожидания вызвать wait(0))
+    public wait(milliseconds : number) {
+        this.activationTime = aux.getMilliCount() + milliseconds;
+    }
+
+    // функция преследования мимика со всеми вытекающими
+    public pursuit() {
+        this.goToPoint(this.game.ghost);
+        // TODO сделать поиск в окрестности точки ghost
     }
 
     step() {
-        if (this.Path.length != 0) {            
+        if (this.activationTime > aux.getMilliCount()) { // проверк активности персонажа
+            return;
+        }
+        if (this.Path.length != 0) { // если путь не пустой, то идти по направлению следующей точки
             this.go(this.Path[0]);
             //console.log(this.body.center.sub(this.Path[0]).abs(), geom.eps * 150);
             if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {                
                 this.Path.shift();
             }
-        } else {
+        } else { // иначе остановится
             this.stop();
         }
 
+        // Debug коллизионной сетки
         let CollisionMesh = Game.grids[this.game.currentGridName].CollisionMesh;
         
         for (let i = 0; i < CollisionMesh.length; i++) {
