@@ -9,8 +9,11 @@ export class Vector {
         this.y = y;
     }
 
-    public isEqual() {
-        
+    public isEqual(a : Vector) {
+        if (Math.abs(a.x - this.x) < eps && Math.abs(a.y - this.y) < eps) {
+            return true;
+        }
+        return false;
     }
 
     public clone() : Vector {
@@ -38,6 +41,11 @@ export class Vector {
             return new Vector(0, 0);
         } 
         return this.mul(1 / this.abs());
+    }
+
+    public getAngle(a : Vector) : number {
+        let scalar = this.x * a.x + this.y * a.y;
+        return Math.acos(scalar / this.abs() / a.abs());
     }
 
     public rotate(angle : number) : Vector {
