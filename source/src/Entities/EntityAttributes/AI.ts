@@ -1,7 +1,7 @@
 import * as geom from "../../Geom";
 import { Body } from "./Body";
 import { Game } from "../../Game";
-import { MimicMap } from "../../Game";
+import { Level } from "../../Level";
 import { Commands } from "./Commands";
 import path = require("path/posix");
 import * as aux from "../../AuxLib";
@@ -60,16 +60,16 @@ export class AI {
 
     // возвращает координату точки коллизионной сетки по её положению в этой сетке
     private getPointCoordinate(place : geom.Vector) : geom.Vector {
-        return new geom.Vector(place.y * this.game.tileSize / 2, place.x * this.game.tileSize / 2);
+        return new geom.Vector(place.y * this.game.currentLevel.tileSize / 2, place.x * this.game.currentLevel.tileSize / 2);
     }
 
     // находит ближайшую точку коллизионной сетки
     private chooseMeshPoint(currentPoint : geom.Vector) : geom.Vector {
-        let CollisionMesh = Game.grids[this.game.currentGridName].CollisionMesh;
-        let Grid = Game.grids[this.game.currentGridName].Grid;
+        let CollisionMesh = Game.levels[this.game.currentLevelName].CollisionMesh;
+        let Grid = Game.levels[this.game.currentLevelName].Grid;
         let posRound = new geom.Vector(
-            Math.floor(this.body.center.x / this.game.tileSize), 
-            Math.floor(this.body.center.y / this.game.tileSize)
+            Math.floor(this.body.center.x / this.game.currentLevel.tileSize), 
+            Math.floor(this.body.center.y / this.game.currentLevel.tileSize)
         );
         let place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
         let answer = new geom.Vector(0, 0);
@@ -94,8 +94,7 @@ export class AI {
 
     // рекурсивная функция создающая путь по точкам коллизионной сетки
     private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
-        let pathMatrix = Game.grids[this.game.currentGridName].PathMatrix;
-        //console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
+        let pathMatrix = Game.levels[this.game.currentLevelName].PathMatrix;
 
         // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
         if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
@@ -160,7 +159,7 @@ export class AI {
         }
 
         // Debug коллизионной сетки
-        let CollisionMesh = Game.grids[this.game.currentGridName].CollisionMesh;
+        let CollisionMesh = this.game.currentLevel.CollisionMesh;
         
         for (let i = 0; i < CollisionMesh.length; i++) {
             for (let j = 0; j < CollisionMesh[i].length; j++) {                
