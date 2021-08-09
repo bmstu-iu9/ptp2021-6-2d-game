@@ -6,6 +6,7 @@ import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
+import { Level } from "./Level";
 
 function replacer(key, value) {
     if(value instanceof Map) {
@@ -52,11 +53,11 @@ function reviver(key, value) {
 export class Game {
     public static levels : Map<any, any>;
 
-    public tileSize = 1
     public draw : Draw;
     private bodies : Body [] = [];
     public entities : Entity [] = [];
-    public currentLevel = "map";
+    public currentLevelName = "map";
+    public currentLevel = new Level();
     public playerID = 0;
     public mimic : Mimic;
 
@@ -71,8 +72,10 @@ export class Game {
         .then(result => {
             console.log(result);
             
-            let grid = JSON.parse(result, reviver);
-            this.levels[name] = grid;
+            let prototype = JSON.parse(result, reviver);
+            let level = new Level();
+            level.createFromPrototype(prototype);
+            this.levels[name] = level;
         });
     }
 
@@ -81,6 +84,7 @@ export class Game {
         
         Control.init();
         this.draw = draw;
+        this.currentLevel.Grid = [];
 
         this.mimic = new Mimic(this);
     }
@@ -97,29 +101,33 @@ export class Game {
     }
 
     public step() {
-        this.mimic.step();
+      // Ксотыль
+      if (Game.levels[this.currentLevelName])
+        this.currentLevel =  Game.levels[this.currentLevelName];
 
-        // Processing entities
-        this.entities.forEach(entity => entity.animation.step());
-        this.entities.forEach(entity => entity.step());
+      this.mimic.step();
+
+      // Processing entities
+      this.entities.forEach(entity => entity.animation.step());
+      this.entities.forEach(entity => entity.step());
     }
 
     // Checks if pos is in wall
     public check_wall(pos : geom.Vector) : number {
         let posRound = new geom.Vector(
-            Math.floor(pos.x / this.tileSize), 
-            Math.floor(pos.y / this.tileSize)
+            Math.floor(pos.x / this.currentLevel.tileSize), 
+            Math.floor(pos.y / this.currentLevel.tileSize)
         );
 
         // If out of bounds
         if (posRound.x < 0 || posRound.y < 0 || 
-            posRound.x >= Game.levels[this.currentLevel].Grid.length || 
-            posRound.y >= Game.levels[this.currentLevel].Grid[0].length)
+            posRound.x >= this.currentLevel.Grid.length || 
+            posRound.y >= this.currentLevel.Grid[0].length)
             return 0;
 
-        let collisionType = Game.levels[this.currentLevel].Grid[posRound.x][posRound.y].colision;    
+        let collisionType = this.currentLevel.Grid[posRound.x][posRound.y].colision;    
         // Coordinates in particular grid cell
-        let posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
+        let posIn = pos.sub(posRound.mul(this.currentLevel.tileSize)).mul(1 / this.currentLevel.tileSize);
         // Different collision types
         if (collisionType == CollisionType.Full ||
             collisionType == CollisionType.CornerUR && posIn.y < posIn.x ||
@@ -135,13 +143,7 @@ export class Game {
         this.draw.cam.pos = new geom.Vector(0, 0);
         this.draw.cam.scale = 100;
         // Tiles
-        for (let i = 0; i < Game.levels[this.currentLevel].Grid.length; i++) {
-            for (let j = 0; j < Game.levels[this.currentLevel].Grid.length; j++) {
-                let size = new geom.Vector(this.tileSize, this.tileSize);
-                this.draw.image(Game.levels[this.currentLevel].Grid[i][j].image,
-                    (new geom.Vector(this.tileSize * j, this.tileSize * i)).add(size.mul(1 / 2)), size);
-            }
-        }
+        this.currentLevel.display(this.draw);
 
         // People
         for (let i = 0; i < this.entities.length; i++) {

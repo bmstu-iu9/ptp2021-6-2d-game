@@ -46,15 +46,15 @@ export class AI {
     }
 
     private getPointCoordinate(place : geom.Vector) : geom.Vector {
-        return new geom.Vector(place.x * this.game.tileSize / 2, place.y * this.game.tileSize / 2);
+        return new geom.Vector(place.x * this.game.currentLevel.tileSize / 2, place.y * this.game.currentLevel.tileSize / 2);
     }
 
     private chooseMeshPoint(currentPoint : geom.Vector) : geom.Vector {
-        let CollisionMesh = Game.levels[this.game.currentLevel].CollisionMesh;
-        let Grid = Game.levels[this.game.currentLevel].Grid;
+        let CollisionMesh = Game.levels[this.game.currentLevelName].CollisionMesh;
+        let Grid = Game.levels[this.game.currentLevelName].Grid;
         let posRound = new geom.Vector(
-            Math.floor(this.body.center.x / this.game.tileSize), 
-            Math.floor(this.body.center.y / this.game.tileSize)
+            Math.floor(this.body.center.x / this.game.currentLevel.tileSize), 
+            Math.floor(this.body.center.y / this.game.currentLevel.tileSize)
         );
         let place = new geom.Vector(posRound.x * 2 + 1, posRound.y * 2 + 1);
         let answer = new geom.Vector(0, 0);
@@ -71,7 +71,7 @@ export class AI {
     }
 
     private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
-        let pathMatrix = Game.levels[this.game.currentLevel].PathMatrix;
+        let pathMatrix = Game.levels[this.game.currentLevelName].PathMatrix;
 
         console.log(start, finish);
         console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));

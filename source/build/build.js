@@ -352,6 +352,51 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
     }());
     exports.Tile = Tile;
 });
+define("Level", ["require", "exports", "Geom"], function (require, exports, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Level = exports.LevelJSON = void 0;
+    var LevelJSON = (function () {
+        function LevelJSON() {
+        }
+        return LevelJSON;
+    }());
+    exports.LevelJSON = LevelJSON;
+    var Level = (function () {
+        function Level() {
+            this.tileSize = 1;
+        }
+        Level.prototype.createFromPrototype = function (prototype) {
+            this.Grid = prototype.Grid;
+            this.CollisionMesh = prototype.CollisionMesh;
+            this.PathMatrix = prototype.PathMatrix;
+        };
+        Level.prototype.display = function (draw) {
+            for (var i = 0; i < this.Grid.length; i++) {
+                for (var j = 0; j < this.Grid.length; j++) {
+                    var size = new geom.Vector(this.tileSize, this.tileSize);
+                    draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * j, this.tileSize * i))
+                        .add(size.mul(1 / 2)), size);
+                }
+            }
+        };
+        return Level;
+    }());
+    exports.Level = Level;
+});
+define("Editor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Editor = (function () {
+        function Editor() {
+        }
+        Editor.prototype.step = function () {
+        };
+        Editor.prototype.display = function () {
+        };
+        return Editor;
+    }());
+});
 define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"], function (require, exports, geom, Tile_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -417,17 +462,6 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Level", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Level = void 0;
-    var Level = (function () {
-        function Level() {
-        }
-        return Level;
-    }());
-    exports.Level = Level;
-});
 define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands"], function (require, exports, geom, Game_1, Commands_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -466,12 +500,12 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             }
         };
         AI.prototype.getPointCoordinate = function (place) {
-            return new geom.Vector(place.x * this.game.tileSize / 2, place.y * this.game.tileSize / 2);
+            return new geom.Vector(place.x * this.game.currentLevel.tileSize / 2, place.y * this.game.currentLevel.tileSize / 2);
         };
         AI.prototype.chooseMeshPoint = function (currentPoint) {
-            var CollisionMesh = Game_1.Game.levels[this.game.currentLevel].CollisionMesh;
-            var Grid = Game_1.Game.levels[this.game.currentLevel].Grid;
-            var posRound = new geom.Vector(Math.floor(this.body.center.x / this.game.tileSize), Math.floor(this.body.center.y / this.game.tileSize));
+            var CollisionMesh = Game_1.Game.levels[this.game.currentLevelName].CollisionMesh;
+            var Grid = Game_1.Game.levels[this.game.currentLevelName].Grid;
+            var posRound = new geom.Vector(Math.floor(this.body.center.x / this.game.currentLevel.tileSize), Math.floor(this.body.center.y / this.game.currentLevel.tileSize));
             var place = new geom.Vector(posRound.x * 2 + 1, posRound.y * 2 + 1);
             var answer = new geom.Vector(0, 0);
             for (var i = -1; i <= 1; i++) {
@@ -486,7 +520,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             return answer;
         };
         AI.prototype.makePath = function (start, finish) {
-            var pathMatrix = Game_1.Game.levels[this.game.currentLevel].PathMatrix;
+            var pathMatrix = Game_1.Game.levels[this.game.currentLevelName].PathMatrix;
             console.log(start, finish);
             console.log(pathMatrix.get(JSON.stringify(start)), pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
             if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
@@ -637,7 +671,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
     }());
     exports.Mimic = Mimic;
 });
-define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic"], function (require, exports, geom, Body_1, Person_1, Control_2, Draw_3, Tile_2, Mimic_1) {
+define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level"], function (require, exports, geom, Body_1, Person_1, Control_2, Draw_3, Tile_2, Mimic_1, Level_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -682,14 +716,15 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
     }
     var Game = (function () {
         function Game(draw) {
-            this.tileSize = 1;
             this.bodies = [];
             this.entities = [];
-            this.currentLevel = "map";
+            this.currentLevelName = "map";
+            this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
+            this.currentLevel.Grid = [];
             this.mimic = new Mimic_1.Mimic(this);
         }
         Game.readTextFile = function (path) {
@@ -717,8 +752,10 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
                         case 0: return [4, this.readTextFile(path)
                                 .then(function (result) {
                                 console.log(result);
-                                var grid = JSON.parse(result, reviver);
-                                _this.levels[name] = grid;
+                                var prototype = JSON.parse(result, reviver);
+                                var level = new Level_1.Level();
+                                level.createFromPrototype(prototype);
+                                _this.levels[name] = level;
                             })];
                         case 1:
                             result = _a.sent();
@@ -736,18 +773,20 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.entities[this.entities.length] = new Person_1.Person(this, body, "fine");
         };
         Game.prototype.step = function () {
+            if (Game.levels[this.currentLevelName])
+                this.currentLevel = Game.levels[this.currentLevelName];
             this.mimic.step();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
         };
         Game.prototype.check_wall = function (pos) {
-            var posRound = new geom.Vector(Math.floor(pos.x / this.tileSize), Math.floor(pos.y / this.tileSize));
+            var posRound = new geom.Vector(Math.floor(pos.x / this.currentLevel.tileSize), Math.floor(pos.y / this.currentLevel.tileSize));
             if (posRound.x < 0 || posRound.y < 0 ||
-                posRound.x >= Game.levels[this.currentLevel].Grid.length ||
-                posRound.y >= Game.levels[this.currentLevel].Grid[0].length)
+                posRound.x >= this.currentLevel.Grid.length ||
+                posRound.y >= this.currentLevel.Grid[0].length)
                 return 0;
-            var collisionType = Game.levels[this.currentLevel].Grid[posRound.x][posRound.y].colision;
-            var posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
+            var collisionType = this.currentLevel.Grid[posRound.x][posRound.y].colision;
+            var posIn = pos.sub(posRound.mul(this.currentLevel.tileSize)).mul(1 / this.currentLevel.tileSize);
             if (collisionType == Tile_2.CollisionType.Full ||
                 collisionType == Tile_2.CollisionType.CornerUR && posIn.y < posIn.x ||
                 collisionType == Tile_2.CollisionType.CornerDL && posIn.y > posIn.x ||
@@ -759,12 +798,7 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
         Game.prototype.display = function () {
             this.draw.cam.pos = new geom.Vector(0, 0);
             this.draw.cam.scale = 100;
-            for (var i = 0; i < Game.levels[this.currentLevel].Grid.length; i++) {
-                for (var j = 0; j < Game.levels[this.currentLevel].Grid.length; j++) {
-                    var size = new geom.Vector(this.tileSize, this.tileSize);
-                    this.draw.image(Game.levels[this.currentLevel].Grid[i][j].image, (new geom.Vector(this.tileSize * j, this.tileSize * i)).add(size.mul(1 / 2)), size);
-                }
-            }
+            this.currentLevel.display(this.draw);
             for (var i = 0; i < this.entities.length; i++) {
                 this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
             }
