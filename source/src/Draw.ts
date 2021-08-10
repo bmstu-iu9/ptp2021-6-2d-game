@@ -56,6 +56,13 @@ export class Draw {
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
+    public strokeRect(pos : geom.Vector, box : geom.Vector, color : Color) {
+        let posNew = this.transform(pos);
+        let boxNew = box.mul(this.cam.scale);
+        posNew = posNew.sub(boxNew.mul(1 / 2));
+        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+    }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
