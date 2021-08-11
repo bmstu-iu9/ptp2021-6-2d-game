@@ -11,8 +11,8 @@ class Point {
     }
 
     public drawPoint(game : Game) {
-        let box = [new Vector (75,50 ),new Vector (100, 75),new Vector (100, 25)];
-        game.draw.fillPolygon(box, this.color);
+        let box = new Vector(1, 1);
+        game.draw.strokeRect(this.place, box, this.color,50);
     }
 }
 

@@ -315,12 +315,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
-        Draw.prototype.strokeRect = function (pos, box, color) {
+        Draw.prototype.strokeRect = function (pos, box, color, lineWidth) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+            this.ctx.lineWidth = lineWidth;
         };
         Draw.prototype.fillCircle = function (pos, radius, color) {
             var posNew = this.transform(pos);
@@ -329,10 +330,11 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fill();
         };
-        Draw.prototype.strokeCircle = function (pos, radius, color) {
+        Draw.prototype.strokeCircle = function (pos, radius, color, lineWidth) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
             this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.lineWidth = lineWidth;
             this.ctx.stroke();
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         };
@@ -344,10 +346,11 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fill();
         };
-        Draw.prototype.strokePolygon = function (vertices, color) {
+        Draw.prototype.strokePolygon = function (vertices, color, lineWidth) {
             for (var i = 0; i < vertices.length; i++) {
                 var posNew = this.transform(vertices[i]);
                 this.ctx.lineTo(posNew.x, posNew.y);
+                this.ctx.lineWidth = lineWidth;
             }
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.stroke();
@@ -944,8 +947,8 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
             this.color = color;
         }
         Point.prototype.drawPoint = function (game) {
-            var box = [new Geom_3.Vector(75, 50), new Geom_3.Vector(100, 75), new Geom_3.Vector(100, 25)];
-            game.draw.fillPolygon(box, this.color);
+            var box = new Geom_3.Vector(1, 1);
+            game.draw.strokeRect(this.place, box, this.color, 50);
         };
         return Point;
     }());

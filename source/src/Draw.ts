@@ -56,12 +56,13 @@ export class Draw {
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
-    public strokeRect(pos : geom.Vector, box : geom.Vector, color : Color) {
+    public strokeRect(pos : geom.Vector, box : geom.Vector, color : Color,lineWidth : number) {
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale);
         posNew = posNew.sub(boxNew.mul(1 / 2)); //незаполненный прямоугольник
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+        this.ctx.lineWidth = lineWidth;
     }
     public fillCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
         let posNew = this.transform(pos);
@@ -70,10 +71,11 @@ export class Draw {
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fill();
     }
-    public strokeCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
+    public strokeCircle(pos : geom.Vector, radius : number, color : Color,lineWidth : number) { //заполненная окружность
         let posNew = this.transform(pos);
         this.ctx.beginPath ();
         this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, 0, Math.PI * 2, false);
+        this.ctx.lineWidth = lineWidth;
         this.ctx.stroke();
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
     }
@@ -85,11 +87,13 @@ export class Draw {
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fill();
     }
-    public strokePolygon(vertices : Array<geom.Vector>, color : Color) { //контур многоугольника
+    public strokePolygon(vertices : Array<geom.Vector>, color : Color,lineWidth : number ) { //контур многоугольника
         for (let i = 0; i < vertices.length; i++) {
             let posNew = this.transform(vertices[i]);
             this.ctx.lineTo(posNew.x,posNew.y);
+            this.ctx.lineWidth = lineWidth;
         }
+
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.stroke();
     }
