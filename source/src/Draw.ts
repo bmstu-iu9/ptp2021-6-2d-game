@@ -62,7 +62,7 @@ export class Draw {
         posNew = posNew.sub(boxNew.mul(1 / 2)); //незаполненный прямоугольник
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; //цвет контура
         this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
-        this.ctx.lineWidth = lineWidth; //ширина контура
+        this.ctx.lineWidth = lineWidth/this.cam.scale; //ширина контура
     }
     public fillCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
         let posNew = this.transform(pos);
@@ -75,7 +75,7 @@ export class Draw {
         let posNew = this.transform(pos);
         this.ctx.beginPath ();
         this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, 0, Math.PI * 2, false);
-        this.ctx.lineWidth = lineWidth; //ширина контура
+        this.ctx.lineWidth = lineWidth/this.cam.scale; //ширина контура
         this.ctx.stroke();
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; //цвет контура
     }
@@ -91,7 +91,7 @@ export class Draw {
         for (let i = 0; i < vertices.length; i++) {
             let posNew = this.transform(vertices[i]);
             this.ctx.lineTo(posNew.x,posNew.y);
-            this.ctx.lineWidth = lineWidth; //ширина контура
+            this.ctx.lineWidth = lineWidth/this.cam.scale; //ширина контура
         }
 
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; //цвет контура
@@ -108,7 +108,7 @@ export class Draw {
         let posNew = this.transform(pos);
         this.ctx.beginPath ();
         this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, startAngle, endAngle, false);
-        this.ctx.lineWidth = lineWidth;  //ширина контура
+        this.ctx.lineWidth = lineWidth/this.cam.scale;  //ширина контура
         this.ctx.stroke();
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; //цвет контура
     }
