@@ -70,6 +70,13 @@ export class Draw {
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fill();
     }
+    public strokeCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
+        let posNew = this.transform(pos);
+        this.ctx.beginPath ();
+        this.ctx.arc (posNew.x,posNew.y,radius, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+    }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
