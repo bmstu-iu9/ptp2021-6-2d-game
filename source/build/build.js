@@ -322,6 +322,20 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
+        Draw.prototype.fillCircle = function (pos, radius, color) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fill();
+        };
+        Draw.prototype.strokeCircle = function (pos, radius, color) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius, 0, Math.PI * 2, false);
+            this.ctx.stroke();
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
@@ -915,7 +929,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         }
         Point.prototype.drawPoint = function (game) {
             var box = new Geom_3.Vector(0.1, 0.1);
-            game.draw.strokeRect(this.place, box, this.color);
+            game.draw.strokeCircle(this.place, 5, this.color);
         };
         return Point;
     }());
