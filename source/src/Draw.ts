@@ -77,6 +77,13 @@ export class Draw {
         this.ctx.stroke();
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
     }
+    public fillPolygon(vertices : Array<geom.Vector>, color : Color) { //заполненный многоугольник
+        for (let i = 0; i < vertices.length; i++) {
+            this.ctx.lineTo(vertices[i].x,vertices[i].y);
+        }
+        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.fill();
+    }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
