@@ -343,6 +343,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fill();
         };
+        Draw.prototype.strokePolygon = function (vertices, color) {
+            for (var i = 0; i < vertices.length; i++) {
+                this.ctx.lineTo(vertices[i].x, vertices[i].y);
+            }
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.stroke();
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
@@ -936,7 +943,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         }
         Point.prototype.drawPoint = function (game) {
             var box = [new Geom_3.Vector(75, 50), new Geom_3.Vector(100, 75), new Geom_3.Vector(100, 25)];
-            game.draw.fillPolygon(box, this.color);
+            game.draw.strokePolygon(box, this.color);
         };
         return Point;
     }());
