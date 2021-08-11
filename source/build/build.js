@@ -325,27 +325,29 @@ define("Draw", ["require", "exports"], function (require, exports) {
         Draw.prototype.fillCircle = function (pos, radius, color) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius, 0, Math.PI * 2, false);
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fill();
         };
         Draw.prototype.strokeCircle = function (pos, radius, color) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius, 0, Math.PI * 2, false);
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
             this.ctx.stroke();
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         };
         Draw.prototype.fillPolygon = function (vertices, color) {
             for (var i = 0; i < vertices.length; i++) {
-                this.ctx.lineTo(vertices[i].x, vertices[i].y);
+                var posNew = this.transform(vertices[i]);
+                this.ctx.lineTo(posNew.x, posNew.y);
             }
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fill();
         };
         Draw.prototype.strokePolygon = function (vertices, color) {
             for (var i = 0; i < vertices.length; i++) {
-                this.ctx.lineTo(vertices[i].x, vertices[i].y);
+                var posNew = this.transform(vertices[i]);
+                this.ctx.lineTo(posNew.x, posNew.y);
             }
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.stroke();
@@ -943,7 +945,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         }
         Point.prototype.drawPoint = function (game) {
             var box = [new Geom_3.Vector(75, 50), new Geom_3.Vector(100, 75), new Geom_3.Vector(100, 25)];
-            game.draw.strokePolygon(box, this.color);
+            game.draw.fillPolygon(box, this.color);
         };
         return Point;
     }());

@@ -66,27 +66,29 @@ export class Draw {
     public fillCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
         let posNew = this.transform(pos);
         this.ctx.beginPath ();
-        this.ctx.arc (posNew.x,posNew.y,radius, 0, Math.PI * 2, false);
+        this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fill();
     }
     public strokeCircle(pos : geom.Vector, radius : number, color : Color) { //заполненная окружность
         let posNew = this.transform(pos);
         this.ctx.beginPath ();
-        this.ctx.arc (posNew.x,posNew.y,radius, 0, Math.PI * 2, false);
+        this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, 0, Math.PI * 2, false);
         this.ctx.stroke();
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
     }
     public fillPolygon(vertices : Array<geom.Vector>, color : Color) { //заполненный многоугольник
         for (let i = 0; i < vertices.length; i++) {
-            this.ctx.lineTo(vertices[i].x,vertices[i].y);
+            let posNew = this.transform(vertices[i]);
+            this.ctx.lineTo(posNew.x,posNew.y);
         }
         this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.fill();
     }
     public strokePolygon(vertices : Array<geom.Vector>, color : Color) { //контур многоугольника
         for (let i = 0; i < vertices.length; i++) {
-            this.ctx.lineTo(vertices[i].x,vertices[i].y);
+            let posNew = this.transform(vertices[i]);
+            this.ctx.lineTo(posNew.x,posNew.y);
         }
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.stroke();
