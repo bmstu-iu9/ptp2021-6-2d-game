@@ -355,6 +355,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.stroke();
         };
+        Draw.prototype.fillSector = function (pos, radius, color) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI, false);
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fill();
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
@@ -948,7 +955,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         }
         Point.prototype.drawPoint = function (game) {
             var box = new Geom_3.Vector(1, 1);
-            game.draw.strokeRect(this.place, box, this.color, 50);
+            game.draw.fillSector(this.place, 500, this.color);
         };
         return Point;
     }());

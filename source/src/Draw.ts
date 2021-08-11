@@ -97,6 +97,21 @@ export class Draw {
         this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         this.ctx.stroke();
     }
+    public fillSector(pos : geom.Vector, radius : number, color : Color,startAngle : number,endAngle : number) { //заполненная окружность
+        let posNew = this.transform(pos);
+        this.ctx.beginPath ();
+        this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, startAngle, endAngle , false);
+        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        this.ctx.fill();
+    }
+    public strokeSector(pos : geom.Vector, radius : number, color : Color,lineWidth : number,startAngle : number,endAngle : number) { //заполненная окружность
+        let posNew = this.transform(pos);
+        this.ctx.beginPath ();
+        this.ctx.arc (posNew.x,posNew.y,radius/this.cam.scale, startAngle, endAngle, false);
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.stroke();
+        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+    }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
