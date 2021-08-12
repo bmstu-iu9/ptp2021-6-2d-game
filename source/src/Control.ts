@@ -25,24 +25,34 @@ export class Control {
     public static async loadConfig(path : string) {
         if (localStorage.getItem("commands") == undefined) {
             let result = await this.readTextFile(aux.environment + path)
-            .then(result =>  { Control.keyMapping = JSON.parse(result, aux.reviver); console.log("i was here");
+            .then(result =>  { 
+                Control.keyMapping = JSON.parse(result, aux.reviver);
+                localStorage.setItem("commands", result);
+            })
+            .then(result => {
+                console.log(Array.from(Control.keyMapping.values()));
+                
+                let vals = Array.from(Control.keyMapping.values());
+                for (let i = 0; i < vals.length; i++) {
+                    for (let j = 0; j < vals[i].length; j++) {
+                        Control.commands[vals[i][j]] = false;
+                        Control.commandsCounter[vals[i][j]] = 0;
+                    }
+                }
             });
         } else {
+            console.log("loading from local storage");
+            
             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
-        }
-        let keys = Array.from(Control.keyMapping.keys());
-        for (let i = 0; i < keys.length; i++) {
-            Control.commands[keys[i]] = false;
-            Control.commandsCounter[keys[i]] = 0;
+            let vals = Array.from(Control.keyMapping.values());
+            for (let i = 0; i < vals.length; i++) {
+                for (let j = 0; j < vals[i].length; j++) {
+                    Control.commands[vals[i][j]] = false;
+                    Control.commandsCounter[vals[i][j]] = 0;
+                }
+            }
         }
     }
-
-    //public static fakeLoadConfig() {
-    //    Control.keyMapping.set(38, ["MoveUp"]);
-    //    Control.keyMapping.set(40, ["MoveDown"]);
-    //    Control.keyMapping.set(39, ["MoveRight"]);
-    //    Control.keyMapping.set(37, ["MoveLeft"]);
-    //}
 
     public static init() : void {
         for (let i = 0; i < 256; i++) {
@@ -57,17 +67,7 @@ export class Control {
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Commands();
-        Control.loadConfig("keys.json");
-        //Control.fakeLoadConfig();
-        console.log(Control.keyMapping, Control.keyMapping.entries(), Array.from(Control.keyMapping.entries()),JSON.stringify(Control.keyMapping, aux.replacer));
-        const blob = new Blob([JSON.stringify(Control.keyMapping, aux.replacer)], {
-            type: 'application/json'
-        });
-        
-        const url = window.URL.createObjectURL(blob);
-        window.open(url);
-
-        
+        Control.loadConfig("keys.json");       
 
         console.log("Done!!", Control.keyMapping);
         console.log(Control.commands["MoveUp"]);
@@ -90,12 +90,12 @@ export class Control {
 
     private static onKeyDown(event : KeyboardEvent) : boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
-            console.log(event.key, Control.keyMapping, Control.keyMapping[event.keyCode]);
-            if (Control.keyMapping[event.keyCode] == undefined) {
-                Control.keyMapping[event.keyCode] = [];
+            console.log(event.key, event.keyCode, Control.keyMapping, Control.keyMapping[event.keyCode]);
+            if (Control.keyMapping.get(event.keyCode) == undefined) {
+                Control.keyMapping.set(event.keyCode, []);
             }
-            for (let i = 0; i < Control.keyMapping[event.keyCode].length; i++) {
-                let currentCommand = Control.keyMapping[event.keyCode][i];
+            for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
+                let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]++;
                 Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 console.log(currentCommand, Control.commandsCounter[currentCommand], Control.commands[currentCommand]);
@@ -111,11 +111,11 @@ export class Control {
 
     private static onKeyUp(event : KeyboardEvent) : boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == true) {
-            if (Control.keyMapping[event.keyCode] == undefined) {
-                Control.keyMapping[event.keyCode] = [];
+            if (Control.keyMapping.get(event.keyCode) == undefined) {
+                Control.keyMapping.set(event.keyCode, []);
             }
-            for (let i = 0; i < Control.keyMapping[event.keyCode].length; i++) {
-                let currentCommand = Control.keyMapping[event.keyCode][i];
+            for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
+                let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]--;
                 Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
             }

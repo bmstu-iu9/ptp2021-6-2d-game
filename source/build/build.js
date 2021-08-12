@@ -264,7 +264,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         };
         Control.loadConfig = function (path) {
             return __awaiter(this, void 0, void 0, function () {
-                var result, keys, i;
+                var result, vals, i, j;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -272,21 +272,33 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                             return [4, this.readTextFile(aux.environment + path)
                                     .then(function (result) {
                                     Control.keyMapping = JSON.parse(result, aux.reviver);
-                                    console.log("i was here");
+                                    localStorage.setItem("commands", result);
+                                })
+                                    .then(function (result) {
+                                    console.log(Array.from(Control.keyMapping.values()));
+                                    var vals = Array.from(Control.keyMapping.values());
+                                    for (var i = 0; i < vals.length; i++) {
+                                        for (var j = 0; j < vals[i].length; j++) {
+                                            Control.commands[vals[i][j]] = false;
+                                            Control.commandsCounter[vals[i][j]] = 0;
+                                        }
+                                    }
                                 })];
                         case 1:
                             result = _a.sent();
                             return [3, 3];
                         case 2:
+                            console.log("loading from local storage");
                             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
-                            _a.label = 3;
-                        case 3:
-                            keys = Array.from(Control.keyMapping.keys());
-                            for (i = 0; i < keys.length; i++) {
-                                Control.commands[keys[i]] = false;
-                                Control.commandsCounter[keys[i]] = 0;
+                            vals = Array.from(Control.keyMapping.values());
+                            for (i = 0; i < vals.length; i++) {
+                                for (j = 0; j < vals[i].length; j++) {
+                                    Control.commands[vals[i][j]] = false;
+                                    Control.commandsCounter[vals[i][j]] = 0;
+                                }
                             }
-                            return [2];
+                            _a.label = 3;
+                        case 3: return [2];
                     }
                 });
             });
@@ -303,12 +315,6 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
             Control.commandsCounter = new Map();
             Control.commands = new Commands_1.Commands();
             Control.loadConfig("keys.json");
-            console.log(Control.keyMapping, Control.keyMapping.entries(), Array.from(Control.keyMapping.entries()), JSON.stringify(Control.keyMapping, aux.replacer));
-            var blob = new Blob([JSON.stringify(Control.keyMapping, aux.replacer)], {
-                type: 'application/json'
-            });
-            var url = window.URL.createObjectURL(blob);
-            window.open(url);
             console.log("Done!!", Control.keyMapping);
             console.log(Control.commands["MoveUp"]);
             console.log(Control.commands);
@@ -325,12 +331,12 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         };
         Control.onKeyDown = function (event) {
             if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
-                console.log(event.key, Control.keyMapping, Control.keyMapping[event.keyCode]);
-                if (Control.keyMapping[event.keyCode] == undefined) {
-                    Control.keyMapping[event.keyCode] = [];
+                console.log(event.key, event.keyCode, Control.keyMapping, Control.keyMapping[event.keyCode]);
+                if (Control.keyMapping.get(event.keyCode) == undefined) {
+                    Control.keyMapping.set(event.keyCode, []);
                 }
-                for (var i = 0; i < Control.keyMapping[event.keyCode].length; i++) {
-                    var currentCommand = Control.keyMapping[event.keyCode][i];
+                for (var i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
+                    var currentCommand = Control.keyMapping.get(event.keyCode)[i];
                     Control.commandsCounter[currentCommand]++;
                     Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                     console.log(currentCommand, Control.commandsCounter[currentCommand], Control.commands[currentCommand]);
@@ -345,11 +351,11 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         };
         Control.onKeyUp = function (event) {
             if (Control.keyMapping != undefined && Control._keys[event.keyCode] == true) {
-                if (Control.keyMapping[event.keyCode] == undefined) {
-                    Control.keyMapping[event.keyCode] = [];
+                if (Control.keyMapping.get(event.keyCode) == undefined) {
+                    Control.keyMapping.set(event.keyCode, []);
                 }
-                for (var i = 0; i < Control.keyMapping[event.keyCode].length; i++) {
-                    var currentCommand = Control.keyMapping[event.keyCode][i];
+                for (var i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
+                    var currentCommand = Control.keyMapping.get(event.keyCode)[i];
                     Control.commandsCounter[currentCommand]--;
                     Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 }
@@ -943,7 +949,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game"], function (require, exports, geom, aux, Draw_6, Game_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/control/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_6.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
