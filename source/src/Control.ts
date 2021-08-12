@@ -1,4 +1,5 @@
 import * as geom from "./Geom";
+import * as aux from "./AuxLib";
 import { Commands } from "./Entities/EntityAttributes/Commands";
 
 export enum Keys {
@@ -22,25 +23,26 @@ export class Control {
     }
     
     public static async loadConfig(path : string) {
-        let result = await this.readTextFile(path)
-        .then(result => result.split("\n"))
-        .then(file =>  {            
-            let type : string;
-            for (let i = 0; i < file.length; i++) {
-                let currentString = file[i].split(" ");
-                type = currentString[0];
-                for (let j = 1; j < currentString.length; j++) {
-                    let currentKey = parseInt(currentString[j]);
-                    if (Control.keyMapping[currentKey] == undefined) {
-                        Control.keyMapping[currentKey] = [];
-                    }
-                    Control.keyMapping[currentKey][Control.keyMapping[currentKey].length] = type;
-                }
-                Control.commands[type] = false;
-                Control.commandsCounter[type] = 0;
-            }
-        });
+        if (localStorage.getItem("commands") == undefined) {
+            let result = await this.readTextFile(aux.environment + path)
+            .then(result =>  { Control.keyMapping = JSON.parse(result, aux.reviver); console.log("i was here");
+            });
+        } else {
+            Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
+        }
+        let keys = Array.from(Control.keyMapping.keys());
+        for (let i = 0; i < keys.length; i++) {
+            Control.commands[keys[i]] = false;
+            Control.commandsCounter[keys[i]] = 0;
+        }
     }
+
+    //public static fakeLoadConfig() {
+    //    Control.keyMapping.set(38, ["MoveUp"]);
+    //    Control.keyMapping.set(40, ["MoveDown"]);
+    //    Control.keyMapping.set(39, ["MoveRight"]);
+    //    Control.keyMapping.set(37, ["MoveLeft"]);
+    //}
 
     public static init() : void {
         for (let i = 0; i < 256; i++) {
@@ -55,8 +57,17 @@ export class Control {
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Commands();
-        Control.loadConfig("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/keys.conf");
+        Control.loadConfig("keys.json");
         //Control.fakeLoadConfig();
+        console.log(Control.keyMapping, Control.keyMapping.entries(), Array.from(Control.keyMapping.entries()),JSON.stringify(Control.keyMapping, aux.replacer));
+        const blob = new Blob([JSON.stringify(Control.keyMapping, aux.replacer)], {
+            type: 'application/json'
+        });
+        
+        const url = window.URL.createObjectURL(blob);
+        window.open(url);
+
+        
 
         console.log("Done!!", Control.keyMapping);
         console.log(Control.commands["MoveUp"]);
@@ -67,7 +78,7 @@ export class Control {
     public static isKeyDown(key : Keys) : boolean {
         return Control._keys[key];
     }
-S
+
     public static isMouseClicked() : boolean {
         return Control.clicked;
     }

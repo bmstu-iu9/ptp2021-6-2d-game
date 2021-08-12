@@ -1,12 +1,18 @@
 import * as geom from "./Geom";
+import * as aux from "./AuxLib";
 import {Draw} from "./Draw";
 import { Game } from "./Game";
+
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
 draw.cam.scale = 0.4;
 Game.grids = new Map();
-Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/map.json", "map");
+
+Game.loadMap("map.json", "map");
+
+console.log("now init game");
 
 let game = new Game(draw);
 game.make_person(game.make_body(new geom.Vector(1, 0), 1));
