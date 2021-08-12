@@ -11,8 +11,8 @@ class Point {
     }
 
     public drawPoint(game : Game) {
-        let box = new Vector(1, 1);
-        //game.draw.fillSector(this.place, 500, this.color);
+        let box = new Vector(0.1, 0.1);
+        game.draw.fillRect(this.place, box, this.color);
     }
 }
 
