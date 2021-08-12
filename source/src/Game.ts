@@ -7,29 +7,24 @@ import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
+import { Level } from "./Level";
 import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
 
-export class MimicMap { // класс карты
-    Grid? : Tile[][];
-    CollisionMesh? : boolean[][];
-    PathMatrix? : Map<any, any>;
-}
-
 export class Game {
-    public static grids : Map<any, any>; // набор всех карт каждая карта вызывается по своему названию
+    public static levels : Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
 
-    public tileSize = 1; // размер тайла
-    public draw : Draw; 
+    public draw : Draw;
     private bodies : Body [] = []; // массив всех тел
     public entities : Entity [] = []; // массив всех entity
     public triggers : Trigger [] = []; // массив всех триггеров
-    public currentGridName = "map"; // название текущей карты
-    public playerID = 0; // атавизм? id игрока, хз зачем нужно
+    public currentLevelName = "map";  // название текущего уровня
+    public currentLevel = new Level(); // текущий уровень (возможно имеет смылс заменить на метод getCurrentLevel)
+    public playerID = 0;  // атавизм? id игрока, хз зачем нужно
     public mimic : Mimic; // объект мимик, за который играет игрок
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
 
-    private static async readTextFile(path) { // функция считывания файла по внешней ссылке
+    private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
         return text;
@@ -40,8 +35,10 @@ export class Game {
         .then(result => {
             console.log(result);
             
-            let grid = JSON.parse(result, aux.reviver);
-            this.grids[name] = grid;
+            let prototype = JSON.parse(result, aux.reviver);
+            let level = new Level();
+            level.createFromPrototype(prototype);
+            this.levels[name] = level;
         });
     }
 
@@ -50,6 +47,7 @@ export class Game {
         
         Control.init();
         this.draw = draw;
+        this.currentLevel.Grid = [];
 
         this.mimic = new Mimic(this);
     }
@@ -72,30 +70,33 @@ export class Game {
     }
 
     public step() {
-        this.mimic.step();
+      // Ксотыль
+      if (Game.levels[this.currentLevelName])
+        this.currentLevel =  Game.levels[this.currentLevelName];
 
+      this.mimic.step();
 
-        // Processing entities
-        this.entities.forEach(entity => entity.animation.step());
-        this.entities.forEach(entity => entity.step());
+      // Processing entities
+      this.entities.forEach(entity => entity.animation.step());
+      this.entities.forEach(entity => entity.step());
     }
 
     // Checks if pos is in wall
     public check_wall(pos : geom.Vector) : number {
         let posRound = new geom.Vector(
-            Math.floor(pos.x / this.tileSize), 
-            Math.floor(pos.y / this.tileSize)
+            Math.floor(pos.x / this.currentLevel.tileSize), 
+            Math.floor(pos.y / this.currentLevel.tileSize)
         );
 
         // If out of bounds
         if (posRound.x < 0 || posRound.y < 0 || 
-            posRound.x >= Game.grids[this.currentGridName].Grid.length || 
-            posRound.y >= Game.grids[this.currentGridName].Grid[0].length)
+            posRound.x >= this.currentLevel.Grid.length || 
+            posRound.y >= this.currentLevel.Grid[0].length)
             return 0;
 
-        let collisionType = Game.grids[this.currentGridName].Grid[posRound.x][posRound.y].colision;    
+        let collisionType = this.currentLevel.Grid[posRound.x][posRound.y].colision;    
         // Coordinates in particular grid cell
-        let posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
+        let posIn = pos.sub(posRound.mul(this.currentLevel.tileSize)).mul(1 / this.currentLevel.tileSize);
         // Different collision types
         if (collisionType == CollisionType.Full ||
             collisionType == CollisionType.CornerUR && posIn.y < posIn.x ||
@@ -111,13 +112,7 @@ export class Game {
         this.draw.cam.pos = new geom.Vector(0, 0);
         this.draw.cam.scale = 100;
         // Tiles
-        for (let i = 0; i < Game.grids[this.currentGridName].Grid.length; i++) {
-            for (let j = 0; j < Game.grids[this.currentGridName].Grid.length; j++) {
-                let size = new geom.Vector(this.tileSize, this.tileSize);
-                this.draw.image(Game.grids[this.currentGridName].Grid[i][j].image,
-                    (new geom.Vector(this.tileSize * j, this.tileSize * i)).add(size.mul(1 / 2)), size);
-            }
-        }
+        this.currentLevel.display(this.draw);
 
         // People
         for (let i = 0; i < this.entities.length; i++) {
