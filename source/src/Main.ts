@@ -2,6 +2,7 @@ import * as geom from "./Geom";
 import {Draw} from "./Draw";
 import { Game } from "./Game";
 import { Level } from "./Level";
+import { Editor } from "./Editor";
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
@@ -16,6 +17,11 @@ game.mimic.takeControl(game.entities[0]);
 
 let x = false;
 let t = 0;
+
+// Флаг режима редактора уровней
+let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
+
+// В случае если режим игры
 function step() {
     if (Game.levels["map"] != undefined) {
         t++;
@@ -38,4 +44,16 @@ function step() {
     }
 }
 
-setInterval(step, 20);
+// В случае если режим редактора
+let editor = new Editor();
+editor.draw = draw;
+editor.level = new Level(new geom.Vector(10, 10));
+function editorStep() {
+    draw.clear();
+    editor.display();
+}
+
+if (levelEditorMode)
+    setInterval(editorStep, 20);
+else
+    setInterval(step, 20);

@@ -914,8 +914,10 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
             return this.triggers[this.triggers.length] = new Trigger_1.Trigger(lifeTime, boundEntity);
         };
         Game.prototype.step = function () {
-            if (Game.levels[this.currentLevelName])
+            if (Game.levels[this.currentLevelName]) {
                 this.currentLevel = Game.levels[this.currentLevelName];
+                this.currentLevel.Grid[2][1].colision = 3;
+            }
             this.mimic.step();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
@@ -939,11 +941,19 @@ define("Game", ["require", "exports", "Geom", "Entities/EntityAttributes/Body", 
         Game.prototype.display = function () {
             this.draw.cam.pos = new geom.Vector(0, 0);
             this.draw.cam.scale = 100;
-            this.currentLevel.display(this.draw);
+            this.currentLevel.display(this.draw, true);
             for (var i = 0; i < this.entities.length; i++) {
                 this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
             }
             Debug_3.Debug.drawPoints(this);
+            for (var x = 0; x < 100; x++) {
+                for (var y = 0; y < 100; y++) {
+                    var v = (new geom.Vector(x, y)).mul(1 / 10);
+                    if (this.check_wall(v)) {
+                        this.draw.fillRect(v, new geom.Vector(0.01, 0.01), new Draw_6.Color(255, 25, 70));
+                    }
+                }
+            }
         };
         return Game;
     }());
@@ -984,15 +994,18 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
 define("Editor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Editor = void 0;
     var Editor = (function () {
         function Editor() {
         }
         Editor.prototype.step = function () {
         };
         Editor.prototype.display = function () {
+            this.level.display(this.draw, true);
         };
         return Editor;
     }());
+    exports.Editor = Editor;
 });
 define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require, exports, geom, Draw_7, Game_2) {
     "use strict";
@@ -1008,6 +1021,7 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;
+    var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     function step() {
         if (Game_2.Game.levels["map"] != undefined) {
             t++;
@@ -1024,7 +1038,17 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
             game.display();
         }
     }
-    setInterval(step, 20);
+    var editor = new Editor_1.Editor();
+    editor.draw = draw;
+    editor.level = new Level_2.Level(new geom.Vector(10, 10));
+    function editorStep() {
+        draw.clear();
+        editor.display();
+    }
+    if (levelEditorMode)
+        setInterval(editorStep, 20);
+    else
+        setInterval(step, 20);
 });
 define("Entities/Scientist", ["require", "exports", "Entities/Person"], function (require, exports, Person_2) {
     "use strict";

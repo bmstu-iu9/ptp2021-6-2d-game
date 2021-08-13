@@ -1,15 +1,15 @@
 import { Draw } from "./Draw";
 import { Level } from "./Level";
 
-class Editor {
+export class Editor {
     public level : Level;
-    public Draw : Draw;
+    public draw : Draw;
 
     public step() {
 
     }
 
     public display() {
-
+        this.level.display(this.draw, true);
     }
 }
