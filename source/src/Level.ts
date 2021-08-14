@@ -43,7 +43,7 @@ export class Level {
             }
             str += "\n";
         }
-        console.log(str);
+        //console.log(str);
         
         for (let i = 0; i < this.Grid.length; i++) {
             for (let j = 0; j < this.Grid[i].length; j++) {

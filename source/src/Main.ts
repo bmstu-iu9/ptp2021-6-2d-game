@@ -7,7 +7,7 @@ let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
 draw.cam.scale = 0.4;
 Game.levels = new Map();
-Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/map.json", "map");
+Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/XY-fix/source/env/map.json", "map");
 
 let game = new Game(draw);
 game.make_person(game.make_body(new geom.Vector(1, 0), 1));
@@ -20,16 +20,19 @@ function step() {
     if (Game.levels["map"] != undefined) {
         t++;
         if (x == false) {
-            //console.log(Game.grids["map"]);
+            //console.log(Game.levels["map"]);
             
             game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
             game.make_trigger(100000000, game.entities[1]);
-            //console.log(Game.grids["map"].PathMatrix); 
+            console.log(Game.levels["map"].PathMatrix); 
             x = true;
         }
         if (t % 100 == 0) {
             console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
-            
+            for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
+                console.log(game.entities[1].myAI.Path[i]);
+                
+            }
         }
         draw.clear();
         game.step();

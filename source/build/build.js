@@ -477,7 +477,6 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                 }
                 str += "\n";
             }
-            console.log(str);
             for (var i = 0; i < this.Grid.length; i++) {
                 for (var j = 0; j < this.Grid[i].length; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
@@ -570,6 +569,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                 var answer_1;
                 answer_1 = [];
                 answer_1[0] = this.getPointCoordinate(finish);
+                console.log("Path from ", start, " to ", finish, " is ", answer_1);
                 return answer_1;
             }
             var middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
@@ -587,6 +587,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             for (var i = 0; i < localPath.length; i++) {
                 this.Path[i] = localPath[i].clone();
             }
+            this.Path[this.Path.length] = point;
         };
         AI.prototype.wait = function (milliseconds) {
             this.activationTime = aux.getMilliCount() + milliseconds;
@@ -599,6 +600,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                 return;
             }
             if (this.Path.length != 0) {
+                console.log(this.Path[0]);
                 this.go(this.Path[0]);
                 if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {
                     this.Path.shift();
@@ -1001,7 +1003,7 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
     var draw = new Draw_7.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
     Game_2.Game.levels = new Map();
-    Game_2.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/map.json", "map");
+    Game_2.Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/XY-fix/source/env/map.json", "map");
     var game = new Game_2.Game(draw);
     game.make_person(game.make_body(new geom.Vector(1, 0), 1));
     game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
@@ -1014,10 +1016,14 @@ define("Main", ["require", "exports", "Geom", "Draw", "Game"], function (require
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
                 game.make_trigger(100000000, game.entities[1]);
+                console.log(Game_2.Game.levels["map"].PathMatrix);
                 x = true;
             }
             if (t % 100 == 0) {
                 console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
+                for (var i = 0; i < game.entities[1].myAI.Path.length; i++) {
+                    console.log(game.entities[1].myAI.Path[i]);
+                }
             }
             draw.clear();
             game.step();
