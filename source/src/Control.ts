@@ -12,6 +12,7 @@ export class Control {
     private static  keyMapping : Map<number, string[]>;
     private static _keys : boolean[] = [];
     private static clicked = false;
+    private static mousePressed = true;
     private static currentMousePos = new geom.Vector();
     private static mouseWheelDelta = 0;
     private static commandsCounter : Map<string, number>;
@@ -53,6 +54,8 @@ export class Control {
         window.addEventListener("click", Control.onClick);
         window.addEventListener("wheel", Control.onWheel);
         window.addEventListener("mousemove", Control.onMouseMove);
+        window.addEventListener("mousedown", Control.onMouseDown);
+        window.addEventListener("mouseup", Control.onMouseUp);
         
         console.log("lets do it!!");
         
@@ -71,7 +74,7 @@ export class Control {
     public static isKeyDown(key : Keys) : boolean {
         return Control._keys[key];
     }
-S
+
     public static isMouseClicked() : boolean {
         return Control.clicked;
     }
@@ -89,6 +92,10 @@ S
 
     public static mousePos() : geom.Vector {
         return this.currentMousePos.clone();
+    }
+
+    public static isMousePressed() {
+        return Control.mousePressed;
     }
 
     private static onKeyDown(event : KeyboardEvent) : boolean {
@@ -134,6 +141,16 @@ S
         Control.commands.pointer = new geom.Vector(event.x, event.y);
         event.preventDefault();
         event.stopPropagation();
+        return false;
+    }
+
+    private static onMouseDown(event : MouseEvent) : boolean {
+        Control.mousePressed = true;
+        return false;
+    }
+
+    private static onMouseUp(event : MouseEvent) : boolean {
+        Control.mousePressed = false;
         return false;
     }
 
