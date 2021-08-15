@@ -49,6 +49,7 @@ let editor = new Editor();
 editor.draw = draw;
 editor.level = new Level(new geom.Vector(10, 10));
 function editorStep() {
+    editor.step();
     draw.clear();
     editor.display();
 }
