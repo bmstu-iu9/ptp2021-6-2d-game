@@ -37,8 +37,8 @@ export class Level {
         // Проверка на границы
         if (pos.x < 0) pos.x = 0;
         if (pos.y < 0) pos.y = 0;
-        if (pos.x >= this.Grid.length) pos.x = 0;
-        if (pos.y >= this.Grid[0].length) pos.y = 0;
+        if (pos.x >= this.Grid.length) pos.x = this.Grid.length - 1;
+        if (pos.y >= this.Grid[0].length) pos.y = this.Grid[0].length - 1;
         return pos;
     }
 
