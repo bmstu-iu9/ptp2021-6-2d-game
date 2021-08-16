@@ -12,7 +12,8 @@ export class Control {
     private static  keyMapping : Map<number, string[]>;
     private static _keys : boolean[] = [];
     private static clicked = false;
-    private static mousePressed = true;
+    private static mouseLeftPressed = true;
+    private static mouseRightPressed = true;
     private static currentMousePos = new geom.Vector();
     private static mouseWheelDelta = 0;
     private static commandsCounter : Map<string, number>;
@@ -56,6 +57,8 @@ export class Control {
         window.addEventListener("mousemove", Control.onMouseMove);
         window.addEventListener("mousedown", Control.onMouseDown);
         window.addEventListener("mouseup", Control.onMouseUp);
+        // Блокировка контекстного меню по ПКМ
+        window.addEventListener("contextmenu", e => e.preventDefault());
         
         console.log("lets do it!!");
         
@@ -94,8 +97,12 @@ export class Control {
         return this.currentMousePos.clone();
     }
 
-    public static isMousePressed() {
-        return Control.mousePressed;
+    public static isMouseLeftPressed() {
+        return Control.mouseLeftPressed;
+    }
+
+    public static isMouseRightPressed() {
+        return Control.mouseRightPressed;
     }
 
     private static onKeyDown(event : KeyboardEvent) : boolean {
@@ -145,12 +152,18 @@ export class Control {
     }
 
     private static onMouseDown(event : MouseEvent) : boolean {
-        Control.mousePressed = true;
+        if (event.button == 0)
+            Control.mouseLeftPressed = true;
+        if (event.button == 2)
+            Control.mouseRightPressed = true;
         return false;
     }
 
     private static onMouseUp(event : MouseEvent) : boolean {
-        Control.mousePressed = false;
+        if (event.button == 0)
+            Control.mouseLeftPressed = false;
+        if (event.button == 2)
+            Control.mouseRightPressed = false;
         return false;
     }
 
