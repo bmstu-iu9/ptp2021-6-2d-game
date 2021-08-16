@@ -27,6 +27,21 @@ export class Level {
         }
     }
 
+
+    // Определяет, в каком квадрате сетки лежит заданный вектор
+    public gridCoordinates(pos : geom.Vector) {
+        pos = new geom.Vector(
+            Math.floor(pos.x / this.tileSize),
+            Math.floor(pos.y / this.tileSize)
+        );
+        // Проверка на границы
+        if (pos.x < 0) pos.x = 0;
+        if (pos.y < 0) pos.y = 0;
+        if (pos.x >= this.Grid.length) pos.x = 0;
+        if (pos.y >= this.Grid[0].length) pos.y = 0;
+        return pos;
+    }
+
     // Создание из прототипа
     public createFromPrototype(prototype : any) {
         this.Grid = prototype.Grid;
