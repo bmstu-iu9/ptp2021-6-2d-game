@@ -12,8 +12,8 @@ export class Control {
     private static  keyMapping : Map<number, string[]>;
     private static _keys : boolean[] = [];
     private static clicked = false;
-    private static mouseLeftPressed = true;
-    private static mouseRightPressed = true;
+    private static mouseLeftPressed = false;
+    private static mouseRightPressed = false;
     private static currentMousePos = new geom.Vector();
     private static mouseWheelDelta = 0;
     private static commandsCounter : Map<string, number>;
