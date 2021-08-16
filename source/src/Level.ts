@@ -35,16 +35,7 @@ export class Level {
     }
 
     // Отрисовка
-    public display(draw : Draw, advanced = false) {
-        let str = "";
-        for (let j = 0; j < this.Grid[0].length; j++) {
-            for (let i = 0; i < this.Grid.length; i++) {
-                str += this.Grid[i][j].colision;
-            }
-            str += "\n";
-        }
-        console.log(str);
-        
+    public display(draw : Draw, advanced = false) {        
         for (let i = 0; i < this.Grid.length; i++) {
             for (let j = 0; j < this.Grid[i].length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
