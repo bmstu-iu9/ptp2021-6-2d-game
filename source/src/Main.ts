@@ -46,8 +46,7 @@ function step() {
 
 // В случае если режим редактора
 let editor = new Editor();
-editor.draw = draw;
-editor.level = new Level(new geom.Vector(10, 10));
+editor.setDraw(draw);
 function editorStep() {
     editor.step();
     draw.clear();
