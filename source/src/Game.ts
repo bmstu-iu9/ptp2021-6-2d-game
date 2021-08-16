@@ -10,47 +10,46 @@ import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
-    if(value instanceof Map) { // упаковка Map
-      return {
-          dataType: 'Map', 
+    if (value instanceof Map) { // упаковка Map
+        return {
+            dataType: 'Map',
           value: Array.from(value.entries()), // or with spread: value: [...value]
         };
     }
     if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
-      // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
-      let name = value.src;
-      let nameSplit = name.split("/");
-      let lastSplit = nameSplit[nameSplit.length - 1];
-  
-      return {
-        dataType: 'HTMLImageElement',
-        value: lastSplit
-      };
+        // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка
+        let name = value.src;
+        let nameSplit = name.split("/");
+        let lastSplit = nameSplit[nameSplit.length - 1];
+        return {
+            dataType: 'HTMLImageElement',
+            value: lastSplit
+        };
     }
     if (value instanceof geom.Vector) { // упаковка Vector
-      return {
-        dataType: 'Vector',
-        x: value.x,
-        y: value.y
-      };
+        return {
+            dataType: 'Vector',
+            x: value.x,
+            y: value.y
+        };
     }
     return value;
-  }
+}
   
-  function reviver(key, value) { // функция обратной замены классов для преобразования из JSON
-      if(typeof value === 'object' && value !== null) {
+function reviver(key, value) { // функция обратной замены классов для преобразования из JSON
+    if (typeof value === 'object' && value !== null) {
         if (value.dataType === 'Map') { // распаковка Map
-          return new Map(value.value);
+            return new Map(value.value);
         }
         if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
-          return Draw.loadImage("./textures/" + value.value);
+            return Draw.loadImage("./textures/" + value.value);
         }
         if (value.dataType === 'Vector') { // распаковка Vector
-          return JSON.stringify(new geom.Vector(value.x, value.y));
+            return JSON.stringify(new geom.Vector(value.x, value.y));
         }
-      }
-      return value;
-  }
+    }
+    return value;
+}
 
 export class MimicMap { // класс карты
     Grid? : Tile[][];
@@ -60,7 +59,6 @@ export class MimicMap { // класс карты
 
 export class Game {
     public static grids : Map<any, any>; // набор всех карт каждая карта вызывается по своему названию
-
     public tileSize = 1; // размер тайла
     public draw : Draw; 
     private bodies : Body [] = []; // массив всех тел
@@ -70,7 +68,6 @@ export class Game {
     public playerID = 0; // атавизм? id игрока, хз зачем нужно
     public mimic : Mimic; // объект мимик, за который играет игрок
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
-
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке
         const response = await fetch(path)
         const text = await response.text()
@@ -81,7 +78,6 @@ export class Game {
         let result = await this.readTextFile(path)
         .then(result => {
             console.log(result);
-            
             let grid = JSON.parse(result, reviver);
             this.grids[name] = grid;
         });
@@ -89,13 +85,10 @@ export class Game {
 
     constructor(draw : Draw) {
         console.log("im here!!");
-        
         Control.init();
         this.draw = draw;
-
         this.mimic = new Mimic(this);
     }
-    
 
     public make_body(coordinates : geom.Vector, radius : number) : Body { // создаёт тело и возвращает ссылку
         let body = new Body(coordinates, radius);
@@ -115,8 +108,6 @@ export class Game {
 
     public step() {
         this.mimic.step();
-
-
         // Processing entities
         this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
@@ -128,14 +119,12 @@ export class Game {
             Math.floor(pos.x / this.tileSize), 
             Math.floor(pos.y / this.tileSize)
         );
-
         // If out of bounds
         if (posRound.x < 0 || posRound.y < 0 || 
             posRound.x >= Game.grids[this.currentGridName].Grid.length || 
             posRound.y >= Game.grids[this.currentGridName].Grid[0].length)
             return 0;
-
-        let collisionType = Game.grids[this.currentGridName].Grid[posRound.x][posRound.y].colision;    
+        let collisionType = Game.grids[this.currentGridName].Grid[posRound.x][posRound.y].colision;
         // Coordinates in particular grid cell
         let posIn = pos.sub(posRound.mul(this.tileSize)).mul(1 / this.tileSize);
         // Different collision types
@@ -160,12 +149,10 @@ export class Game {
                     (new geom.Vector(this.tileSize * j, this.tileSize * i)).add(size.mul(1 / 2)), size);
             }
         }
-
         // People
         for (let i = 0; i < this.entities.length; i++) {
             this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
         }
-
         // Отрисовка графического дебага
         Debug.drawPoints(this);
     }
