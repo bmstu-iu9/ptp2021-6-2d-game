@@ -94,7 +94,8 @@ export class Control {
     }
 
     public static mousePos() : geom.Vector {
-        return this.currentMousePos.clone();
+        let canvas = document.getElementById("gameCanvas");
+        return this.currentMousePos.sub(new geom.Vector(canvas.offsetLeft, canvas.offsetTop));
     }
 
     public static isMouseLeftPressed() {
