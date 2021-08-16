@@ -12,19 +12,24 @@ export class Editor {
         this.mousePrev = Control.mousePos();
     }
 
-    public step() {
-        // Mouse now
+    // Двигает камеру в соответствии с движениями мышки
+    private moveCamera() {
+        // Сохраняем екущие координаты мыши
         let mouseCoords = Control.mousePos().clone();
 
-        // Cam management
+        // Двигаем камеру
         this.draw.cam.scale *= Math.pow(1.001, -Control.wheelDelta());
-        if (Control.isMousePressed()) {
+        if (Control.isMouseRightPressed()) {
             let delta = mouseCoords.sub(this.mousePrev);
             this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
         }
 
-        // Restore mouse
+        // Сохраняем предыдущие координаты мыши
         this.mousePrev = mouseCoords.clone();
+    }
+
+    public step() {
+        this.moveCamera();
     }
 
     public display() {
