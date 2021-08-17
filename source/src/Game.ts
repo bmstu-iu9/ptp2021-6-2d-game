@@ -1,4 +1,5 @@
 import * as geom from "./Geom";
+import * as aux from "./AuxLib";
 import {Body} from "./Entities/EntityAttributes/Body";
 import {Entity} from "./Entities/Entity";
 import { Person } from "./Entities/Person";
@@ -9,49 +10,6 @@ import { Mimic } from "./Mimic";
 import { Level } from "./Level";
 import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
-
-function replacer(key, value) { // функция замены классов для преобразования в JSON
-    if(value instanceof Map) { // упаковка Map
-      return {
-          dataType: 'Map', 
-          value: Array.from(value.entries()), // or with spread: value: [...value]
-        };
-    }
-    if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
-      // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
-      let name = value.src;
-      let nameSplit = name.split("/");
-      let lastSplit = nameSplit[nameSplit.length - 1];
-  
-      return {
-        dataType: 'HTMLImageElement',
-        value: lastSplit
-      };
-    }
-    if (value instanceof geom.Vector) { // упаковка Vector
-      return {
-        dataType: 'Vector',
-        x: value.x,
-        y: value.y
-      };
-    }
-    return value;
-  }
-  
-function reviver(key, value) { // функция обратной замены классов для преобразования из JSON
-    if(typeof value === 'object' && value !== null) {
-      if (value.dataType === 'Map') { // распаковка Map
-        return new Map(value.value);
-      }
-      if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
-        return Draw.loadImage("./textures/" + value.value);
-      }
-      if (value.dataType === 'Vector') { // распаковка Vector
-        return JSON.stringify(new geom.Vector(value.x, value.y));
-      }
-    }
-    return value;
-}
 
 export class Game {
     public static levels : Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -73,11 +31,11 @@ export class Game {
     }
 
     public static async loadMap(path : string, name : string) { // загрузка карты по ссылке и названию
-        let result = await this.readTextFile(path)
+        let result = await this.readTextFile(aux.environment + path)
         .then(result => {
             console.log(result);
             
-            let prototype = JSON.parse(result, reviver);
+            let prototype = JSON.parse(result, aux.reviver);
             let level = new Level();
             level.createFromPrototype(prototype);
             this.levels[name] = level;
