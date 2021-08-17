@@ -648,7 +648,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 1);
+                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.03);
                 }
             }
         };

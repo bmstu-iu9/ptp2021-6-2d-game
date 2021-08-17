@@ -59,7 +59,7 @@ export class Level {
                     .add(size.mul(1 / 2)), size);
                 // Отрисовка сетки в расширенном режиме
                 draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 1)
+                .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.03)
             }
         }
     }
