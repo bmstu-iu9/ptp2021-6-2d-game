@@ -158,6 +158,61 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
             this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
+        Draw.prototype.strokeRect = function (pos, box, color, lineWidth) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
+            this.ctx.lineWidth = lineWidth / this.cam.scale;
+        };
+        Draw.prototype.fillCircle = function (pos, radius, color) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fill();
+        };
+        Draw.prototype.strokeCircle = function (pos, radius, color, lineWidth) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.lineWidth = lineWidth / this.cam.scale;
+            this.ctx.stroke();
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        };
+        Draw.prototype.fillPolygon = function (vertices, color) {
+            for (var i = 0; i < vertices.length; i++) {
+                var posNew = this.transform(vertices[i]);
+                this.ctx.lineTo(posNew.x, posNew.y);
+            }
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fill();
+        };
+        Draw.prototype.strokePolygon = function (vertices, color, lineWidth) {
+            for (var i = 0; i < vertices.length; i++) {
+                var posNew = this.transform(vertices[i]);
+                this.ctx.lineTo(posNew.x, posNew.y);
+                this.ctx.lineWidth = lineWidth / this.cam.scale;
+            }
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.stroke();
+        };
+        Draw.prototype.fillSector = function (pos, radius, color, startAngle, endAngle) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, startAngle, endAngle, false);
+            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fill();
+        };
+        Draw.prototype.strokeSector = function (pos, radius, color, lineWidth, startAngle, endAngle) {
+            var posNew = this.transform(pos);
+            this.ctx.beginPath();
+            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, startAngle, endAngle, false);
+            this.ctx.lineWidth = lineWidth / this.cam.scale;
+            this.ctx.stroke();
+            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+        };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
@@ -490,7 +545,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, geom, Draw_3) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, geom, Draw_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
@@ -532,7 +587,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Draw_3.Color(0, 0, 0));
+                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 1);
                 }
             }
         };
@@ -540,7 +595,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
     }());
     exports.Level = Level;
 });
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, aux, Debug_1, Draw_4) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, aux, Debug_1, Draw_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AI = void 0;
@@ -662,14 +717,14 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             for (var i = 0; i < CollisionMesh.length; i++) {
                 for (var j = 0; j < CollisionMesh[i].length; j++) {
                     var coordinate = this.getPointCoordinate(new geom.Vector(i, j));
-                    var color = new Draw_4.Color(0, 255, 0);
+                    var color = new Draw_5.Color(0, 255, 0);
                     if (CollisionMesh[i][j] == true) {
-                        color = new Draw_4.Color(255, 0, 0);
+                        color = new Draw_5.Color(255, 0, 0);
                     }
                     Debug_1.Debug.addPoint(coordinate, color);
                 }
             }
-            Debug_1.Debug.addPoint(this.destination, new Draw_4.Color(0, 0, 255));
+            Debug_1.Debug.addPoint(this.destination, new Draw_5.Color(0, 0, 255));
         };
         return AI;
     }());
@@ -693,10 +748,10 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
             if (x == 0 && y == 0) {
                 this.animation.changedirection("stand", this.mod);
             }
-            if (x == 1 && y == 0) {
+            if (x == 1) {
                 this.animation.changedirection("right", this.mod);
             }
-            if (x == -1 && y == 0) {
+            if (x == -1) {
                 this.animation.changedirection("left", this.mod);
             }
             if (x == 0 && y == 1) {
@@ -716,7 +771,7 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
     }());
     exports.Entity = Entity;
 });
-define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_5) {
+define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Person = void 0;
@@ -737,7 +792,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             var center = this.body.center;
             for (var i = 0; i < this.game.triggers.length; i++) {
                 var triggerCoordinate = this.game.triggers[i].getCoordinates();
-                Debug_2.Debug.addPoint(triggerCoordinate, new Draw_5.Color(0, 0, 255));
+                Debug_2.Debug.addPoint(triggerCoordinate, new Draw_6.Color(0, 0, 255));
                 var triggerVector = triggerCoordinate.sub(center);
                 if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
                     if (triggerVector.abs() <= this.viewRadius) {
@@ -856,7 +911,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_2, Mimic_1, Level_1, Trigger_1, Debug_3) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_3, Mimic_1, Level_1, Trigger_1, Debug_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1006,7 +1061,7 @@ define("Editor", ["require", "exports"], function (require, exports) {
         return Editor;
     }());
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game"], function (require, exports, geom, aux, Draw_6, Game_2) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game"], function (require, exports, geom, aux, Draw_7, Game_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
