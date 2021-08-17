@@ -18,6 +18,7 @@ export class Editor {
 
     // Инициализирует взаимодействие с HTML
     private initHTML() {
+        // Обработка кнопок
         let emptyMode = () => {this.cursor.collisionType = CollisionType.Empty}
         let fullMode = () => {this.cursor.collisionType = CollisionType.Full}
         let ulMode = () => {this.cursor.collisionType = CollisionType.CornerUL}
@@ -30,6 +31,10 @@ export class Editor {
         document.getElementById("ur").onclick = urMode;
         document.getElementById("dl").onclick = dlMode;
         document.getElementById("dr").onclick = drMode;
+        // Окно превью
+        this.cursor.drawPreview = new Draw(
+            document.getElementById("preview") as HTMLCanvasElement, 
+            new geom.Vector(50, 50));
     }
 
     // Двигает камеру в соответствии с движениями мышки

@@ -17,6 +17,8 @@ export class Cursor {
     public pos = new geom.Vector();
     public mode = Mode.Wall;
     public collisionType = CollisionType.Full;
+    public drawPreview : Draw;
+
 
     constructor(level : Level = null, draw : Draw = null) {
         this.level = level;
@@ -35,6 +37,10 @@ export class Cursor {
     }
 
     public display() {
+        // Preview
+        let tile = new Tile(this.collisionType);
+        this.drawPreview.image(tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50))
+        // Cursor on grid
         this.draw.strokeRect(
             this.pos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2)), 
             new geom.Vector(this.level.tileSize, this.level.tileSize), 

@@ -1135,13 +1135,15 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
                 this.setBlock();
         };
         Cursor.prototype.display = function () {
+            var tile = new Tile_4.Tile(this.collisionType);
+            this.drawPreview.image(tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
             this.draw.strokeRect(this.pos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
         };
         return Cursor;
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Level_2, geom, Cursor_1, Tile_5) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_8, Level_2, geom, Cursor_1, Tile_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -1166,6 +1168,7 @@ define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Curs
             document.getElementById("ur").onclick = urMode;
             document.getElementById("dl").onclick = dlMode;
             document.getElementById("dr").onclick = drMode;
+            this.cursor.drawPreview = new Draw_8.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
@@ -1192,12 +1195,12 @@ define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Curs
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_8, Game_2, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_8.Draw(canvas, new geom.Vector(640, 640));
+    var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
     Game_2.Game.levels = new Map();
     Game_2.Game.loadMap("map.json", "map");
