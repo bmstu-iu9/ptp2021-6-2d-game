@@ -1,12 +1,16 @@
 import * as geom from "./Geom";
+import * as aux from "./AuxLib";
 import {Draw} from "./Draw";
 import { Game } from "./Game";
+import { Level } from "./Level";
+
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
 draw.cam.scale = 0.4;
-Game.grids = new Map();
-Game.loadMap("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/map.json", "map");
+Game.levels = new Map();
+Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
 game.make_person(game.make_body(new geom.Vector(1, 0), 1));
@@ -16,7 +20,7 @@ game.mimic.takeControl(game.entities[0]);
 let x = false;
 let t = 0;
 function step() {
-    if (Game.grids["map"] != undefined) {
+    if (Game.levels["map"] != undefined) {
         t++;
         if (x == false) {
             //console.log(Game.grids["map"]);
