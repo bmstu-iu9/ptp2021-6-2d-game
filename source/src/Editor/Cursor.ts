@@ -37,7 +37,8 @@ export class Cursor {
         this.draw.strokeRect(
             this.pos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2)), 
             new geom.Vector(this.level.tileSize, this.level.tileSize), 
-            new Color(0, 255, 0)
+            new Color(0, 255, 0),
+            0.1
         );
     }
 }

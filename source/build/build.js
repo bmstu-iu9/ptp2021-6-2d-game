@@ -147,6 +147,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             posNew = posNew.add(this.cam.center);
             return posNew;
         };
+        Draw.prototype.transformBack = function (pos) {
+            var posNew = pos.clone();
+            posNew = posNew.sub(this.cam.center);
+            posNew = posNew.mul(1 / this.cam.scale);
+            posNew = posNew.add(this.cam.pos);
+            return posNew;
+        };
         Draw.prototype.image = function (image, pos, box, angle) {
             if (angle === void 0) { angle = 0; }
             var posNew = this.transform(pos);
@@ -594,7 +601,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, geom, Draw_3) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, geom, Draw_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
@@ -641,7 +648,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Draw_3.Color(0, 0, 0));
+                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 1);
                 }
             }
         };
@@ -649,7 +656,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
     }());
     exports.Level = Level;
 });
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, aux, Debug_1, Draw_4) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, aux, Debug_1, Draw_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AI = void 0;
@@ -768,14 +775,14 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             for (var i = 0; i < CollisionMesh.length; i++) {
                 for (var j = 0; j < CollisionMesh[i].length; j++) {
                     var coordinate = this.getPointCoordinate(new geom.Vector(i, j));
-                    var color = new Draw_4.Color(0, 255, 0);
+                    var color = new Draw_5.Color(0, 255, 0);
                     if (CollisionMesh[i][j] == true) {
-                        color = new Draw_4.Color(255, 0, 0);
+                        color = new Draw_5.Color(255, 0, 0);
                     }
                     Debug_1.Debug.addPoint(coordinate, color);
                 }
             }
-            Debug_1.Debug.addPoint(this.destination, new Draw_4.Color(0, 0, 255));
+            Debug_1.Debug.addPoint(this.destination, new Draw_5.Color(0, 0, 255));
         };
         return AI;
     }());
@@ -822,7 +829,7 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
     }());
     exports.Entity = Entity;
 });
-define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_5) {
+define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Person = void 0;
@@ -843,7 +850,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             var center = this.body.center;
             for (var i = 0; i < this.game.triggers.length; i++) {
                 var triggerCoordinate = this.game.triggers[i].getCoordinates();
-                Debug_2.Debug.addPoint(triggerCoordinate, new Draw_5.Color(0, 0, 255));
+                Debug_2.Debug.addPoint(triggerCoordinate, new Draw_6.Color(0, 0, 255));
                 var triggerVector = triggerCoordinate.sub(center);
                 if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
                     if (triggerVector.abs() <= this.viewRadius) {
@@ -962,7 +969,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_2, Mimic_1, Level_1, Trigger_1, Debug_3) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_3, Mimic_1, Level_1, Trigger_1, Debug_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1127,7 +1134,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
                 this.setBlock();
         };
         Cursor.prototype.display = function () {
-            this.draw.strokeRect(this.pos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0));
+            this.draw.strokeRect(this.pos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
         };
         return Cursor;
     }());
@@ -1168,7 +1175,7 @@ define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Curs
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game"], function (require, exports, geom, aux, Draw_6, Game_2) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_8, Game_2, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
