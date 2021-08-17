@@ -635,6 +635,12 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                 pos.y = this.Grid[0].length - 1;
             return pos;
         };
+        Level.prototype.isInBounds = function (pos) {
+            return pos.x > 0 &&
+                pos.y > 0 &&
+                pos.x < this.Grid.length * this.tileSize &&
+                pos.y < this.Grid[0].length * this.tileSize;
+        };
         Level.prototype.createFromPrototype = function (prototype) {
             this.Grid = prototype.Grid;
             this.CollisionMesh = prototype.CollisionMesh;
@@ -1120,6 +1126,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
             if (level === void 0) { level = null; }
             if (draw === void 0) { draw = null; }
             this.pos = new geom.Vector();
+            this.gridPos = new geom.Vector();
             this.mode = Mode.Wall;
             this.collisionType = Tile_4.CollisionType.Full;
             this.level = level;
@@ -1127,17 +1134,19 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
         }
         Cursor.prototype.setBlock = function () {
             var tile = new Tile_4.Tile(this.collisionType);
-            this.level.Grid[this.pos.x][this.pos.y] = tile;
+            this.level.Grid[this.gridPos.x][this.gridPos.y] = tile;
         };
         Cursor.prototype.step = function () {
-            this.pos = this.level.gridCoordinates(this.draw.transformBack(Control_3.Control.mousePos()));
-            if (Control_3.Control.isMouseLeftPressed())
+            this.pos = this.draw.transformBack(Control_3.Control.mousePos());
+            this.gridPos = this.level.gridCoordinates(this.pos);
+            if (Control_3.Control.isMouseLeftPressed() && this.level.isInBounds(this.pos))
                 this.setBlock();
         };
         Cursor.prototype.display = function () {
             var tile = new Tile_4.Tile(this.collisionType);
             this.drawPreview.image(tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
-            this.draw.strokeRect(this.pos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
+            if (this.level.isInBounds(this.pos))
+                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
         };
         return Cursor;
     }());
