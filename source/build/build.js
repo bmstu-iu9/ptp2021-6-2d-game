@@ -147,6 +147,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             posNew = posNew.add(this.cam.center);
             return posNew;
         };
+        Draw.prototype.transformBack = function (pos) {
+            var posNew = pos.clone();
+            posNew = posNew.sub(this.cam.center);
+            posNew = posNew.mul(1 / this.cam.scale);
+            posNew = posNew.add(this.cam.pos);
+            return posNew;
+        };
         Draw.prototype.image = function (image, pos, box, angle) {
             if (angle === void 0) { angle = 0; }
             var posNew = this.transform(pos);
@@ -165,56 +172,56 @@ define("Draw", ["require", "exports"], function (require, exports) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
+            this.ctx.lineWidth = lineWidth * this.cam.scale;
             this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
-            this.ctx.lineWidth = lineWidth / this.cam.scale;
         };
         Draw.prototype.fillCircle = function (pos, radius, color) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokeCircle = function (pos, radius, color, lineWidth) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
-            this.ctx.lineWidth = lineWidth / this.cam.scale;
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.lineWidth = lineWidth * this.cam.scale;
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         };
         Draw.prototype.fillPolygon = function (vertices, color) {
             for (var i = 0; i < vertices.length; i++) {
                 var posNew = this.transform(vertices[i]);
                 this.ctx.lineTo(posNew.x, posNew.y);
             }
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokePolygon = function (vertices, color, lineWidth) {
             for (var i = 0; i < vertices.length; i++) {
                 var posNew = this.transform(vertices[i]);
                 this.ctx.lineTo(posNew.x, posNew.y);
-                this.ctx.lineWidth = lineWidth / this.cam.scale;
+                this.ctx.lineWidth = lineWidth * this.cam.scale;
             }
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
         };
         Draw.prototype.fillSector = function (pos, radius, color, startAngle, endAngle) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, startAngle, endAngle, false);
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokeSector = function (pos, radius, color, lineWidth, startAngle, endAngle) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, startAngle, endAngle, false);
-            this.ctx.lineWidth = lineWidth / this.cam.scale;
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
+            this.ctx.lineWidth = lineWidth * this.cam.scale;
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
@@ -820,7 +827,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
     }(Entity_1.Entity));
     exports.Person = Person;
 });
-define("Mimic", ["require", "exports", "Geom", "Control"], function (require, exports, geom, Control_1) {
+define("Mimic", ["require", "exports", "Control"], function (require, exports, Control_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -837,8 +844,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
             if (Control_1.Control.isMouseClicked()) {
-                var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
-                coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
+                var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
                 for (var i = 0; i < this.game.entities.length; i++) {
                     var target = this.game.entities[i];
                     var centerDistance = this.controlledEntity.body.center.sub(target.body.center).abs();
