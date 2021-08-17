@@ -42,6 +42,14 @@ export class Level {
         return pos;
     }
 
+    // Проверяет, находится ли точка в пределах карты
+    public isInBounds(pos : geom.Vector) : boolean {
+        return pos.x > 0 &&
+            pos.y > 0 &&
+            pos.x < this.Grid.length * this.tileSize &&
+            pos.y < this.Grid[0].length * this.tileSize;
+    }
+
     // Создание из прототипа
     public createFromPrototype(prototype : any) {
         this.Grid = prototype.Grid;
