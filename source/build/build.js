@@ -1109,23 +1109,24 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
 define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_7, geom, Tile_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Cursor = void 0;
+    exports.Cursor = exports.Mode = void 0;
     var Mode;
     (function (Mode) {
         Mode[Mode["Eraser"] = 0] = "Eraser";
         Mode[Mode["Wall"] = 1] = "Wall";
-    })(Mode || (Mode = {}));
+    })(Mode = exports.Mode || (exports.Mode = {}));
     var Cursor = (function () {
         function Cursor(level, draw) {
             if (level === void 0) { level = null; }
             if (draw === void 0) { draw = null; }
             this.pos = new geom.Vector();
             this.mode = Mode.Wall;
+            this.collisionType = Tile_4.CollisionType.Full;
             this.level = level;
             this.draw = draw;
         }
         Cursor.prototype.setBlock = function () {
-            var tile = new Tile_4.Tile(Tile_4.CollisionType.Full);
+            var tile = new Tile_4.Tile(this.collisionType);
             this.level.Grid[this.pos.x][this.pos.y] = tile;
         };
         Cursor.prototype.step = function () {
@@ -1140,7 +1141,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Cursor"], function (require, exports, Control_4, Level_2, geom, Cursor_1) {
+define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Level_2, geom, Cursor_1, Tile_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -1149,10 +1150,22 @@ define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Curs
             this.level = new Level_2.Level(new geom.Vector(10, 10));
             this.cursor = new Cursor_1.Cursor(this.level);
             this.mousePrev = Control_4.Control.mousePos();
+            this.initHTML();
         }
-        Editor.prototype.setDraw = function (draw) {
-            this.draw = draw;
-            this.cursor.draw = this.draw;
+        Editor.prototype.initHTML = function () {
+            var _this = this;
+            var emptyMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.Empty; };
+            var fullMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.Full; };
+            var ulMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerUL; };
+            var urMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerUR; };
+            var dlMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerDL; };
+            var drMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerDR; };
+            document.getElementById("empty").onclick = emptyMode;
+            document.getElementById("full").onclick = fullMode;
+            document.getElementById("ul").onclick = ulMode;
+            document.getElementById("ur").onclick = urMode;
+            document.getElementById("dl").onclick = dlMode;
+            document.getElementById("dr").onclick = drMode;
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
@@ -1162,6 +1175,10 @@ define("Editor", ["require", "exports", "Control", "Level", "Geom", "Editor/Curs
                 this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
             }
             this.mousePrev = mouseCoords.clone();
+        };
+        Editor.prototype.setDraw = function (draw) {
+            this.draw = draw;
+            this.cursor.draw = this.draw;
         };
         Editor.prototype.step = function () {
             this.moveCamera();

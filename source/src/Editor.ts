@@ -2,7 +2,8 @@ import { Control } from "./Control";
 import { Draw } from "./Draw";
 import { Level } from "./Level";
 import * as geom from "./Geom";
-import { Cursor } from "./Editor/Cursor";
+import { Cursor, Mode } from "./Editor/Cursor";
+import { CollisionType } from "./Tile";
 
 export class Editor {
     private mousePrev : geom.Vector;
@@ -12,11 +13,23 @@ export class Editor {
 
     constructor() {
         this.mousePrev = Control.mousePos();
+        this.initHTML();
     }
 
-    public setDraw(draw : Draw) {
-        this.draw = draw;
-        this.cursor.draw = this.draw;
+    // Инициализирует взаимодействие с HTML
+    private initHTML() {
+        let emptyMode = () => {this.cursor.collisionType = CollisionType.Empty}
+        let fullMode = () => {this.cursor.collisionType = CollisionType.Full}
+        let ulMode = () => {this.cursor.collisionType = CollisionType.CornerUL}
+        let urMode = () => {this.cursor.collisionType = CollisionType.CornerUR}
+        let dlMode = () => {this.cursor.collisionType = CollisionType.CornerDL}
+        let drMode = () => {this.cursor.collisionType = CollisionType.CornerDR}
+        document.getElementById("empty").onclick = emptyMode;
+        document.getElementById("full").onclick = fullMode;
+        document.getElementById("ul").onclick = ulMode;
+        document.getElementById("ur").onclick = urMode;
+        document.getElementById("dl").onclick = dlMode;
+        document.getElementById("dr").onclick = drMode;
     }
 
     // Двигает камеру в соответствии с движениями мышки
@@ -33,6 +46,11 @@ export class Editor {
 
         // Сохраняем предыдущие координаты мыши
         this.mousePrev = mouseCoords.clone();
+    }
+
+    public setDraw(draw : Draw) {
+        this.draw = draw;
+        this.cursor.draw = this.draw;
     }
 
     public step() {

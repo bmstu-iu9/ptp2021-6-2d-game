@@ -1,5 +1,14 @@
 <div id="mode" style="visibility: hidden" value="editor">editor</div>
-<canvas id="gameCanvas"></canvas>
+<canvas id="gameCanvas" style="border: 1px solid black;"></canvas>
+<div id="palette">
+    <canvas id="preview" style="border: 1px solid black; vertical-align: top;" height=50 width = 50></canvas>
+    <button id="empty"> Empty </button>
+    <button id="full"> Full </button>
+    <button id="ul"> UL </button>
+    <button id="ur"> UR </button>
+    <button id="dl"> DL </button>
+    <button id="dr"> DR </button>
+</div>
 <script src="./require.js"></script>
 <script src="build/build.js"></script>
 <script>

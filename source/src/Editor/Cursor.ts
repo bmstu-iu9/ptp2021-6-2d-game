@@ -4,7 +4,7 @@ import * as geom from "../Geom";
 import { Level } from "../Level";
 import { CollisionType, Tile } from "../Tile";
 
-enum Mode {
+export enum Mode {
     Eraser = 0,
     Wall,
   }
@@ -16,6 +16,7 @@ export class Cursor {
     public draw : Draw;
     public pos = new geom.Vector();
     public mode = Mode.Wall;
+    public collisionType = CollisionType.Full;
 
     constructor(level : Level = null, draw : Draw = null) {
         this.level = level;
@@ -23,7 +24,7 @@ export class Cursor {
     }
 
     private setBlock() {
-        let tile = new Tile(CollisionType.Full);
+        let tile = new Tile(this.collisionType);
         this.level.Grid[this.pos.x][this.pos.y] = tile;
     }
 
