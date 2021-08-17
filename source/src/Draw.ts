@@ -48,6 +48,14 @@ export class Draw {
         posNew = posNew.add(this.cam.center);
         return posNew;
     }
+    // Обратное реобразование координат
+    public transformBack(pos : geom.Vector) : geom.Vector {
+        let posNew = pos.clone();
+        posNew = posNew.sub(this.cam.center);
+        posNew = posNew.mul(1 / this.cam.scale);
+        posNew = posNew.add(this.cam.pos);
+        return posNew;
+    }
     // Изображение
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle = 0) {
         let posNew = this.transform(pos);
