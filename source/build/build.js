@@ -118,6 +118,9 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.g = g;
             this.b = b;
         }
+        Color.prototype.toString = function () {
+            return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+        };
         return Color;
     }());
     exports.Color = Color;
@@ -155,14 +158,14 @@ define("Draw", ["require", "exports"], function (require, exports) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
         Draw.prototype.strokeRect = function (pos, box, color, lineWidth) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
             this.ctx.lineWidth = lineWidth * this.cam.scale;
             this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
@@ -170,7 +173,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
             this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokeCircle = function (pos, radius, color, lineWidth) {
@@ -178,7 +181,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.beginPath();
             this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
             this.ctx.lineWidth = lineWidth * this.cam.scale;
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
         };
         Draw.prototype.fillPolygon = function (vertices, color) {
@@ -186,7 +189,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
                 var posNew = this.transform(vertices[i]);
                 this.ctx.lineTo(posNew.x, posNew.y);
             }
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokePolygon = function (vertices, color, lineWidth) {
@@ -195,14 +198,14 @@ define("Draw", ["require", "exports"], function (require, exports) {
                 this.ctx.lineTo(posNew.x, posNew.y);
                 this.ctx.lineWidth = lineWidth * this.cam.scale;
             }
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
         };
         Draw.prototype.fillSector = function (pos, radius, color, startAngle, endAngle) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
             this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokeSector = function (pos, radius, color, lineWidth, startAngle, endAngle) {
@@ -210,7 +213,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.ctx.beginPath();
             this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
             this.ctx.lineWidth = lineWidth * this.cam.scale;
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
         };
         Draw.prototype.clear = function () {

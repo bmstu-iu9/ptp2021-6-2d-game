@@ -16,6 +16,10 @@ export class Color {
         this.g = g;
         this.b = b;
     }
+
+    public toString() : string {
+        return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+    }
 }
 
 export class Draw {
@@ -56,7 +60,7 @@ export class Draw {
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale);
         posNew = posNew.sub(boxNew.mul(1 / 2));
-        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет заливки
+        this.ctx.fillStyle = color.toString(); // цвет заливки
         this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
     // Контур прямоугольника
@@ -64,7 +68,7 @@ export class Draw {
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale);
         posNew = posNew.sub(boxNew.mul(1 / 2)); // незаполненный прямоугольник
-        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет контура
+        this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.lineWidth = lineWidth * this.cam.scale; // ширина контура
         this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
@@ -73,7 +77,7 @@ export class Draw {
         let posNew = this.transform(pos);
         this.ctx.beginPath();
         this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет заливки
+        this.ctx.fillStyle = color.toString(); // цвет заливки
         this.ctx.fill();
     }
     // Контур окружности
@@ -82,7 +86,7 @@ export class Draw {
         this.ctx.beginPath();
         this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
         this.ctx.lineWidth = lineWidth * this.cam.scale; // ширина контура
-        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет контура
+        this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.stroke();
     }
     // Заполненный многоугольник
@@ -91,7 +95,7 @@ export class Draw {
             let posNew = this.transform(vertices[i]);
             this.ctx.lineTo(posNew.x, posNew.y);
         }
-        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет заливки
+        this.ctx.fillStyle = color.toString(); // цвет заливки
         this.ctx.fill();
     }
     // Контур многоугольника
@@ -102,7 +106,7 @@ export class Draw {
             this.ctx.lineWidth = lineWidth * this.cam.scale; //ширина контура
         }
 
-        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет контура
+        this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.stroke();
     }
     // Заполненный сектор
@@ -110,7 +114,7 @@ export class Draw {
         let posNew = this.transform(pos);
         this.ctx.beginPath();
         this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
-        this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет заливки
+        this.ctx.fillStyle = color.toString(); // цвет заливки
         this.ctx.fill();
     }
     // Контур сектора
@@ -119,7 +123,7 @@ export class Draw {
         this.ctx.beginPath();
         this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
         this.ctx.lineWidth = lineWidth * this.cam.scale;  // ширина контура
-        this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")"; // цвет контура
+        this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.stroke();       
     }
     public clear() {
