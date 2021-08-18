@@ -1398,7 +1398,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("file:///C:/Users/ilyin/GitHub/ptp2021-6-2d-game/source/env/");
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/level-editor/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;

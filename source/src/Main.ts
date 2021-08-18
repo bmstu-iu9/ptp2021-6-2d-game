@@ -5,7 +5,7 @@ import { Game } from "./Game";
 import { Level } from "./Level";
 import { Editor } from "./Editor";
 
-aux.setEnvironment("file:///C:/Users/ilyin/GitHub/ptp2021-6-2d-game/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/level-editor/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
