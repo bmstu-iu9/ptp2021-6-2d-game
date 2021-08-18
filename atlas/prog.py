@@ -4,9 +4,9 @@ import sys
 
 def deploy(athlas, config, path):
     mas = []
+    
     l1 = []
     l2 = []
-    
     with open(config, "r") as f:
         for line in f:
             if line.find("anim", 0, len(line)) > -1:
@@ -38,13 +38,15 @@ def deploy(athlas, config, path):
     if not os.path.isdir(path):
         os.mkdir(path)
     os.chdir(path)
+    t = 0
     while i < len(mas):
         k = 0
         while k < frames:
             crop_img.append(img.crop((mas[i]+k*size1, mas[i+1], mas[i]+size1*(k+1) , mas[i+1]+size2)))
             k = k + 1
-            crop_img[j].save(l1[p] + '_' + l2[p] +(str(j)) + str2)
+            crop_img[t].save(l1[p] + '_' + l2[p] + '_' + (str(j)) + str2)
             j = j+1
+            t = t+1
         p = p+1
         j = 0
         i = i + 2
