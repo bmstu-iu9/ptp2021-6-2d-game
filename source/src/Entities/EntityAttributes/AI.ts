@@ -144,7 +144,11 @@ export class AI {
         // TODO сделать поиск в окрестности точки ghost
     }
 
-    step() {
+    public getWaitingTime() {
+        return aux.getMilliCount() - this.activationTime;
+    }
+
+    public step() {
         if (this.activationTime > aux.getMilliCount()) { // проверк активности персонажа
             return;
         }

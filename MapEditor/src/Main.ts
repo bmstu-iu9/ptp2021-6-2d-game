@@ -73,7 +73,7 @@ newMap = {Grid: grid, CollisionMesh: [], PathMatrix: new Map()};
 console.log(grid);
 
 console.log(newMap.Grid);
-PathGenerator.generateMatrix(newMap);
+//PathGenerator.generateMatrix(newMap);
 
 console.log(newMap.CollisionMesh);
 console.log(newMap.PathMatrix);

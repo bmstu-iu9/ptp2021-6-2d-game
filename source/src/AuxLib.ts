@@ -2,6 +2,7 @@ import { setEnvironmentData } from "worker_threads";
 import { Draw } from "./Draw";
 import * as geom from "./Geom";
 import { Commands } from "./Entities/EntityAttributes/Commands";
+import { BehaviorModel } from "./BehaviorModel";
 
 export let environment : string;
 
@@ -37,6 +38,12 @@ export function replacer(key, value) { // функция замены класс
         x: value.x,
         y: value.y
       };
+    }
+    if (value instanceof BehaviorModel) {
+      return {
+        dataType: 'BehaviorModel',
+        
+      }
     }
     return value;
   }

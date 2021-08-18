@@ -326,7 +326,7 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
     }());
     exports.PathGenerator = PathGenerator;
 });
-define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Geom", "Draw"], function (require, exports, Tile_2, Tile_3, PathGenerator_1, Geom_2, Draw_2) {
+define("Main", ["require", "exports", "Tile", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, Tile_3, Geom_2, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MimicMapJSON = void 0;
@@ -392,7 +392,6 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Geom", "
     newMap = { Grid: grid, CollisionMesh: [], PathMatrix: new Map() };
     console.log(grid);
     console.log(newMap.Grid);
-    PathGenerator_1.PathGenerator.generateMatrix(newMap);
     console.log(newMap.CollisionMesh);
     console.log(newMap.PathMatrix);
     var blob = new Blob([JSON.stringify(newMap, replacer)], {
@@ -400,6 +399,12 @@ define("Main", ["require", "exports", "Tile", "Tile", "PathGenerator", "Geom", "
     });
     console.log(Array.from(newMap.PathMatrix.keys()));
     var url = window.URL.createObjectURL(blob);
+    var information = document.createElement('textarea');
+    information.value = JSON.stringify(newMap, replacer);
+    document.body.appendChild(information);
+    document.execCommand('copy');
+    document.body.removeChild(information);
+    console.log("ok", information);
     window.open(url);
 });
 //# sourceMappingURL=build.js.map
