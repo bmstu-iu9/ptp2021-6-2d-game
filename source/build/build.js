@@ -1091,7 +1091,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
     }(Entity_1.Entity));
     exports.Person = Person;
 });
-define("Mimic", ["require", "exports", "Geom", "Control"], function (require, exports, geom, Control_1) {
+define("Mimic", ["require", "exports", "Control"], function (require, exports, Control_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -1108,8 +1108,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
             if (Control_1.Control.isMouseClicked()) {
-                var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
-                coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
+                var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
                 for (var i = 0; i < this.game.entities.length; i++) {
                     var target = this.game.entities[i];
                     var centerDistance = this.controlledEntity.body.center.sub(target.body.center).abs();
@@ -1237,8 +1236,12 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             if (Game.levels[this.currentLevelName])
                 this.currentLevel = Game.levels[this.currentLevelName];
             this.mimic.step();
+            this.attachCamToMimic();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
+        };
+        Game.prototype.attachCamToMimic = function () {
+            this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
         };
         Game.prototype.check_wall = function (pos) {
             var posRound = new geom.Vector(Math.floor(pos.x / this.currentLevel.tileSize), Math.floor(pos.y / this.currentLevel.tileSize));
@@ -1257,7 +1260,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return Tile_4.CollisionType.Empty;
         };
         Game.prototype.display = function () {
-            this.draw.cam.pos = new geom.Vector(0, 0);
             this.draw.cam.scale = 100;
             this.currentLevel.display(this.draw);
             for (var i = 0; i < this.entities.length; i++) {

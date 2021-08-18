@@ -75,10 +75,14 @@ export class Game {
         this.currentLevel =  Game.levels[this.currentLevelName];
 
       this.mimic.step();
-
+      this.attachCamToMimic();
       // Processing entities
       this.entities.forEach(entity => entity.animation.step());
       this.entities.forEach(entity => entity.step());
+    }
+
+    public attachCamToMimic() {
+        this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
     }
 
     // Checks if pos is in wall
@@ -109,7 +113,7 @@ export class Game {
     }
 
     public display() {
-        this.draw.cam.pos = new geom.Vector(0, 0);
+        //this.draw.cam.pos = new geom.Vector(0, 0);
         this.draw.cam.scale = 100;
         // Tiles
         this.currentLevel.display(this.draw);
