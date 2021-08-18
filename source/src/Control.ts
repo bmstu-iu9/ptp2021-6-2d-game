@@ -1,4 +1,5 @@
 import * as geom from "./Geom";
+import * as aux from "./AuxLib";
 import { Commands } from "./Entities/EntityAttributes/Commands";
 
 export enum Keys {
@@ -22,24 +23,35 @@ export class Control {
     }
     
     public static async loadConfig(path : string) {
-        let result = await this.readTextFile(path)
-        .then(result => result.split("\n"))
-        .then(file =>  {            
-            let type : string;
-            for (let i = 0; i < file.length; i++) {
-                let currentString = file[i].split(" ");
-                type = currentString[0];
-                for (let j = 1; j < currentString.length; j++) {
-                    let currentKey = parseInt(currentString[j]);
-                    if (Control.keyMapping[currentKey] == undefined) {
-                        Control.keyMapping[currentKey] = [];
+        if (localStorage.getItem("commands") == undefined) {
+            let result = await this.readTextFile(aux.environment + path)
+            .then(result =>  { 
+                Control.keyMapping = JSON.parse(result, aux.reviver);
+                localStorage.setItem("commands", result);
+            })
+            .then(result => {
+                console.log(Array.from(Control.keyMapping.values()));
+                
+                let vals = Array.from(Control.keyMapping.values());
+                for (let i = 0; i < vals.length; i++) {
+                    for (let j = 0; j < vals[i].length; j++) {
+                        Control.commands[vals[i][j]] = false;
+                        Control.commandsCounter[vals[i][j]] = 0;
                     }
-                    Control.keyMapping[currentKey][Control.keyMapping[currentKey].length] = type;
                 }
-                Control.commands[type] = false;
-                Control.commandsCounter[type] = 0;
+            });
+        } else {
+            console.log("loading from local storage");
+            
+            Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
+            let vals = Array.from(Control.keyMapping.values());
+            for (let i = 0; i < vals.length; i++) {
+                for (let j = 0; j < vals[i].length; j++) {
+                    Control.commands[vals[i][j]] = false;
+                    Control.commandsCounter[vals[i][j]] = 0;
+                }
             }
-        });
+        }
     }
 
     public static init() : void {
@@ -55,8 +67,7 @@ export class Control {
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Commands();
-        Control.loadConfig("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/keys.conf");
-        //Control.fakeLoadConfig();
+        Control.loadConfig("keys.json");       
 
         console.log("Done!!", Control.keyMapping);
         console.log(Control.commands["MoveUp"]);
@@ -67,7 +78,7 @@ export class Control {
     public static isKeyDown(key : Keys) : boolean {
         return Control._keys[key];
     }
-S
+
     public static isMouseClicked() : boolean {
         return Control.clicked;
     }
@@ -79,12 +90,12 @@ S
 
     private static onKeyDown(event : KeyboardEvent) : boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
-            console.log(event.key, Control.keyMapping, Control.keyMapping[event.keyCode]);
-            if (Control.keyMapping[event.keyCode] == undefined) {
-                Control.keyMapping[event.keyCode] = [];
+            console.log(event.key, event.keyCode, Control.keyMapping, Control.keyMapping[event.keyCode]);
+            if (Control.keyMapping.get(event.keyCode) == undefined) {
+                Control.keyMapping.set(event.keyCode, []);
             }
-            for (let i = 0; i < Control.keyMapping[event.keyCode].length; i++) {
-                let currentCommand = Control.keyMapping[event.keyCode][i];
+            for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
+                let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]++;
                 Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 console.log(currentCommand, Control.commandsCounter[currentCommand], Control.commands[currentCommand]);
@@ -100,11 +111,11 @@ S
 
     private static onKeyUp(event : KeyboardEvent) : boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == true) {
-            if (Control.keyMapping[event.keyCode] == undefined) {
-                Control.keyMapping[event.keyCode] = [];
+            if (Control.keyMapping.get(event.keyCode) == undefined) {
+                Control.keyMapping.set(event.keyCode, []);
             }
-            for (let i = 0; i < Control.keyMapping[event.keyCode].length; i++) {
-                let currentCommand = Control.keyMapping[event.keyCode][i];
+            for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
+                let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]--;
                 Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
             }
