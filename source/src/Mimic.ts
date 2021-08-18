@@ -24,10 +24,7 @@ export class Mimic {
         // Если мышка нажата, мы производим переселение
         if (Control.isMouseClicked()) { 
             // Пересчитываем координаты на экране в игровые координаты (Мб стоит сделать функцию трансформации в game?)
-            let coords = new geom.Vector(Control.lastMouseCoordinates().x / this.game.draw.cam.scale,
-            Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
-            coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
-
+            let coords = this.game.draw.transformBack(Control.lastMouseCoordinates())
             // Проверяем соседние entity
             for (let i = 0; i < this.game.entities.length; i++) {
 
