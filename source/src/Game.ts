@@ -82,7 +82,7 @@ export class Game {
     }
 
     public attachCamToMimic() {
-        this.draw.cam.pos = this.mimic.controlledEntity.body.center.clone();
+        this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
     }
 
     // Checks if pos is in wall

@@ -977,7 +977,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.entities.forEach(function (entity) { return entity.step(); });
         };
         Game.prototype.attachCamToMimic = function () {
-            this.draw.cam.pos = this.mimic.controlledEntity.body.center.clone();
+            this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
         };
         Game.prototype.check_wall = function (pos) {
             var posRound = new geom.Vector(Math.floor(pos.x / this.currentLevel.tileSize), Math.floor(pos.y / this.currentLevel.tileSize));
