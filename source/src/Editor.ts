@@ -25,12 +25,14 @@ export class Editor {
         let urMode = () => {this.cursor.collisionType = CollisionType.CornerUR}
         let dlMode = () => {this.cursor.collisionType = CollisionType.CornerDL}
         let drMode = () => {this.cursor.collisionType = CollisionType.CornerDR}
+        let generate = () => {this.level.serialize()}
         document.getElementById("empty").onclick = emptyMode;
         document.getElementById("full").onclick = fullMode;
         document.getElementById("ul").onclick = ulMode;
         document.getElementById("ur").onclick = urMode;
         document.getElementById("dl").onclick = dlMode;
         document.getElementById("dr").onclick = drMode;
+        document.getElementById("generate").onclick = generate;
         // Окно превью
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement, 

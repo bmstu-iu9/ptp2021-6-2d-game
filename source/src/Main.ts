@@ -5,7 +5,7 @@ import { Game } from "./Game";
 import { Level } from "./Level";
 import { Editor } from "./Editor";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
+aux.setEnvironment("file:///C:/Users/ilyin/GitHub/ptp2021-6-2d-game/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
@@ -47,16 +47,18 @@ function step() {
     }
 }
 
-// В случае если режим редактора
-let editor = new Editor();
-editor.setDraw(draw);
-function editorStep() {
-    editor.step();
-    draw.clear();
-    editor.display();
-}
 
-if (levelEditorMode)
+
+if (levelEditorMode) {
+    // В случае если режим редактора
+    let editor = new Editor();
+    editor.setDraw(draw);
+    let editorStep = function () {
+        editor.step();
+        draw.clear();
+        editor.display();
+    }
     setInterval(editorStep, 20);
+}
 else
     setInterval(step, 20);

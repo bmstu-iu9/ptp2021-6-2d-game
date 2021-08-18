@@ -1,4 +1,3 @@
-import { join } from "path/posix";
 import { Vector } from "./Geom";
 import { CollisionType, Tile } from "./Tile";
 import { MimicMapJSON } from "./Main";

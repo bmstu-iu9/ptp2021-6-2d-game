@@ -1,6 +1,8 @@
 import { Tile } from "./Tile";
 import * as geom from "./Geom";
 import { Color, Draw } from "./Draw";
+import { PathGenerator } from "./Editor/PathGenerator";
+import { replacer } from "./AuxLib";
 
 // Так выглядел старый класс, я на всякий оставил, но не думаю, что он сейчас нужен
 export class LevelJSON {
@@ -48,6 +50,27 @@ export class Level {
             pos.y > 0 &&
             pos.x < this.Grid.length * this.tileSize &&
             pos.y < this.Grid[0].length * this.tileSize;
+    }
+
+    // Заворачивает в json
+    public serialize() {
+        let newLevel : LevelJSON;
+        newLevel = {Grid: this.Grid, CollisionMesh: [], PathMatrix: new Map()};
+
+        console.log(newLevel.Grid);
+        PathGenerator.generateMatrix(newLevel);
+
+        console.log(newLevel.CollisionMesh);
+        console.log(newLevel.PathMatrix);
+
+        const blob = new Blob([JSON.stringify(newLevel, replacer)], {
+            type: 'application/json'
+        });
+
+        console.log(Array.from(newLevel.PathMatrix.keys()));
+
+        const url = window.URL.createObjectURL(blob);
+        window.open(url);
     }
 
     // Создание из прототипа

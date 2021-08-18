@@ -601,7 +601,182 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, geom, Draw_4) {
+define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function (require, exports, Geom_2, Tile_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.PathGenerator = void 0;
+    var PathGenerator = (function () {
+        function PathGenerator() {
+        }
+        PathGenerator.fillTile = function (collisionMesh, tileInfo, place) {
+            switch (tileInfo.colision) {
+                case Tile_2.CollisionType.CornerDL: {
+                    var k = -2;
+                    for (var i = -1; i <= 1; i++) {
+                        k++;
+                        for (var j = -1; j <= k; j++) {
+                            collisionMesh[place.x + i][place.y + j] = true;
+                        }
+                    }
+                    break;
+                }
+                case Tile_2.CollisionType.CornerDR: {
+                    var k = 2;
+                    for (var i = -1; i <= 1; i++) {
+                        k--;
+                        for (var j = 1; j >= k; j--) {
+                            collisionMesh[place.x + i][place.y + j] = true;
+                        }
+                    }
+                    break;
+                }
+                case Tile_2.CollisionType.CornerUL: {
+                    var k = 2;
+                    for (var i = -1; i <= 1; i++) {
+                        k--;
+                        for (var j = -1; j <= k; j++) {
+                            collisionMesh[place.x + i][place.y + j] = true;
+                        }
+                    }
+                    break;
+                }
+                case Tile_2.CollisionType.CornerUR: {
+                    var k = -2;
+                    for (var i = -1; i <= 1; i++) {
+                        k++;
+                        for (var j = 1; j >= k; j--) {
+                            collisionMesh[place.x + i][place.y + j] = true;
+                        }
+                    }
+                    break;
+                }
+                case Tile_2.CollisionType.Full: {
+                    for (var i = -1; i <= 1; i++) {
+                        for (var j = -1; j <= 1; j++) {
+                            collisionMesh[place.x + i][place.y + j] = true;
+                        }
+                    }
+                    break;
+                }
+            }
+        };
+        PathGenerator.findNearestWays = function (collisionMesh, place, distance, path) {
+            for (var i = -1; i <= 1; i++) {
+                if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
+                    continue;
+                }
+                for (var j = -1; j <= 1; j++) {
+                    if (i == 0 && j == 0) {
+                        continue;
+                    }
+                    if (place.y + j < 0 || place.y + j >= collisionMesh[place.x + i].length) {
+                        continue;
+                    }
+                    if (collisionMesh[place.x + i][place.y + j] == false) {
+                        var cur_vec = new Geom_2.Vector(place.x + i, place.y + j);
+                        distance.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), 1);
+                        path.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), cur_vec);
+                    }
+                }
+            }
+        };
+        PathGenerator.FloydWarshall = function (vertices, distance, path) {
+            for (var k = 0; k < vertices.length; k++) {
+                console.log(k, " from ", vertices.length);
+                for (var i = 0; i < vertices.length; i++) {
+                    for (var j = 0; j < vertices.length; j++) {
+                        var dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
+                        var dkj = distance.get(JSON.stringify(vertices[k])).get(JSON.stringify(vertices[j]));
+                        var dij = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j]));
+                        if (dik != undefined && dkj != undefined) {
+                            if (dij == undefined || dij > dik + dkj) {
+                                distance.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), dik + dkj);
+                                path.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), vertices[k]);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        PathGenerator.generateMatrix = function (MimicMap) {
+            var collisionMap = MimicMap.Grid;
+            var collisionMesh;
+            var distance = new Map();
+            collisionMesh = [];
+            collisionMesh[0] = [];
+            collisionMesh[0][0] = false;
+            for (var j = 0; j < collisionMap[0].length; j++) {
+                collisionMesh[0][j * 2 + 1] = false;
+                collisionMesh[0][j * 2 + 2] = false;
+            }
+            for (var i = 0; i < collisionMap.length; i++) {
+                collisionMesh[i * 2 + 1] = [];
+                collisionMesh[i * 2 + 1][0] = false;
+                collisionMesh[i * 2 + 2] = [];
+                collisionMesh[i * 2 + 2][0] = false;
+                for (var j = 0; j < collisionMap[i].length; j++) {
+                    collisionMesh[i * 2 + 1][j * 2 + 1] = false;
+                    collisionMesh[i * 2 + 1][j * 2 + 2] = false;
+                    collisionMesh[i * 2 + 2][j * 2 + 1] = false;
+                    collisionMesh[i * 2 + 2][j * 2 + 2] = false;
+                }
+            }
+            for (var i = 0; i < collisionMap.length; i++) {
+                for (var j = 0; j < collisionMap[i].length; j++) {
+                    console.log(i, j, collisionMap[i][j], i * 2 + 1, j * 2 + 1);
+                    this.fillTile(collisionMesh, collisionMap[i][j], new Geom_2.Vector(j * 2 + 1, i * 2 + 1));
+                }
+            }
+            for (var i = 0; i < collisionMesh.length; i++) {
+                var x = "";
+                for (var j = 0; j < collisionMesh[i].length; j++) {
+                    if (collisionMesh[i][j]) {
+                        x += "1";
+                    }
+                    else {
+                        x += "0";
+                    }
+                }
+                console.log(x);
+            }
+            var vertices;
+            vertices = [];
+            var path = new Map();
+            for (var i = 0; i < collisionMesh.length; i++) {
+                for (var j = 0; j < collisionMesh[i].length; j++) {
+                    if (collisionMesh[i][j] == false) {
+                        var place = new Geom_2.Vector(i, j);
+                        if (distance.get(JSON.stringify(place)) == undefined) {
+                            distance.set(JSON.stringify(place), new Map());
+                            path.set(JSON.stringify(place), new Map());
+                        }
+                        this.findNearestWays(collisionMesh, place, distance, path);
+                        vertices[vertices.length] = place;
+                    }
+                }
+            }
+            console.log(path);
+            this.FloydWarshall(vertices, distance, path);
+            console.log(path);
+            var correctPath = new Map();
+            for (var i = 0; i < vertices.length; i++) {
+                for (var j = 0; j < vertices.length; j++) {
+                    if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
+                        if (correctPath.get(vertices[i]) == undefined) {
+                            correctPath.set(vertices[i], new Map());
+                        }
+                        correctPath.get(vertices[i]).set(vertices[j], path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])));
+                    }
+                }
+            }
+            MimicMap.PathMatrix = correctPath;
+            MimicMap.CollisionMesh = collisionMesh;
+        };
+        return PathGenerator;
+    }());
+    exports.PathGenerator = PathGenerator;
+});
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib"], function (require, exports, Tile_3, geom, Draw_4, PathGenerator_1, AuxLib_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
@@ -619,7 +794,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
             for (var x = 0; x < size.x; x++) {
                 this.Grid.push([]);
                 for (var y = 0; y < size.y; y++) {
-                    this.Grid[x].push(new Tile_2.Tile());
+                    this.Grid[x].push(new Tile_3.Tile());
                 }
             }
         }
@@ -640,6 +815,20 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                 pos.y > 0 &&
                 pos.x < this.Grid.length * this.tileSize &&
                 pos.y < this.Grid[0].length * this.tileSize;
+        };
+        Level.prototype.serialize = function () {
+            var newLevel;
+            newLevel = { Grid: this.Grid, CollisionMesh: [], PathMatrix: new Map() };
+            console.log(newLevel.Grid);
+            PathGenerator_1.PathGenerator.generateMatrix(newLevel);
+            console.log(newLevel.CollisionMesh);
+            console.log(newLevel.PathMatrix);
+            var blob = new Blob([JSON.stringify(newLevel, AuxLib_1.replacer)], {
+                type: 'application/json'
+            });
+            console.log(Array.from(newLevel.PathMatrix.keys()));
+            var url = window.URL.createObjectURL(blob);
+            window.open(url);
         };
         Level.prototype.createFromPrototype = function (prototype) {
             this.Grid = prototype.Grid;
@@ -938,7 +1127,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
     }());
     exports.Mimic = Mimic;
 });
-define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, exports, aux, Geom_2) {
+define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, exports, aux, Geom_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Trigger = void 0;
@@ -961,7 +1150,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
         };
         Trigger.prototype.getCoordinates = function () {
             if (!this.isActive()) {
-                return new Geom_2.Vector(-1000, -1000);
+                return new Geom_3.Vector(-1000, -1000);
             }
             return this.boundEntity.body.center.clone();
         };
@@ -975,7 +1164,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_3, Mimic_1, Level_1, Trigger_1, Debug_3) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1059,13 +1248,13 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 return 0;
             var collisionType = this.currentLevel.Grid[posRound.x][posRound.y].colision;
             var posIn = pos.sub(posRound.mul(this.currentLevel.tileSize)).mul(1 / this.currentLevel.tileSize);
-            if (collisionType == Tile_3.CollisionType.Full ||
-                collisionType == Tile_3.CollisionType.CornerUR && posIn.y < posIn.x ||
-                collisionType == Tile_3.CollisionType.CornerDL && posIn.y > posIn.x ||
-                collisionType == Tile_3.CollisionType.CornerDR && posIn.y > 1 - posIn.x ||
-                collisionType == Tile_3.CollisionType.CornerUL && posIn.y < 1 - posIn.x)
+            if (collisionType == Tile_4.CollisionType.Full ||
+                collisionType == Tile_4.CollisionType.CornerUR && posIn.y < posIn.x ||
+                collisionType == Tile_4.CollisionType.CornerDL && posIn.y > posIn.x ||
+                collisionType == Tile_4.CollisionType.CornerDR && posIn.y > 1 - posIn.x ||
+                collisionType == Tile_4.CollisionType.CornerUL && posIn.y < 1 - posIn.x)
                 return collisionType;
-            return Tile_3.CollisionType.Empty;
+            return Tile_4.CollisionType.Empty;
         };
         Game.prototype.display = function () {
             this.draw.cam.pos = new geom.Vector(0, 0);
@@ -1080,7 +1269,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     }());
     exports.Game = Game;
 });
-define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom_3) {
+define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Debug = void 0;
@@ -1090,7 +1279,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
             this.color = color;
         }
         Point.prototype.drawPoint = function (game) {
-            var box = new Geom_3.Vector(0.1, 0.1);
+            var box = new Geom_4.Vector(0.1, 0.1);
             game.draw.fillRect(this.place, box, this.color);
         };
         return Point;
@@ -1112,7 +1301,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
     }());
     exports.Debug = Debug;
 });
-define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_7, geom, Tile_4) {
+define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_7, geom, Tile_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Cursor = exports.Mode = void 0;
@@ -1128,12 +1317,12 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
             this.pos = new geom.Vector();
             this.gridPos = new geom.Vector();
             this.mode = Mode.Wall;
-            this.collisionType = Tile_4.CollisionType.Full;
+            this.collisionType = Tile_5.CollisionType.Full;
             this.level = level;
             this.draw = draw;
         }
         Cursor.prototype.setBlock = function () {
-            var tile = new Tile_4.Tile(this.collisionType);
+            var tile = new Tile_5.Tile(this.collisionType);
             this.level.Grid[this.gridPos.x][this.gridPos.y] = tile;
         };
         Cursor.prototype.step = function () {
@@ -1143,7 +1332,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
                 this.setBlock();
         };
         Cursor.prototype.display = function () {
-            var tile = new Tile_4.Tile(this.collisionType);
+            var tile = new Tile_5.Tile(this.collisionType);
             this.drawPreview.image(tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
             if (this.level.isInBounds(this.pos))
                 this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
@@ -1152,7 +1341,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_8, Level_2, geom, Cursor_1, Tile_5) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_8, Level_2, geom, Cursor_1, Tile_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -1165,18 +1354,20 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         }
         Editor.prototype.initHTML = function () {
             var _this = this;
-            var emptyMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.Empty; };
-            var fullMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.Full; };
-            var ulMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerUL; };
-            var urMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerUR; };
-            var dlMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerDL; };
-            var drMode = function () { _this.cursor.collisionType = Tile_5.CollisionType.CornerDR; };
+            var emptyMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.Empty; };
+            var fullMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.Full; };
+            var ulMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerUL; };
+            var urMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerUR; };
+            var dlMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerDL; };
+            var drMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerDR; };
+            var generate = function () { _this.level.serialize(); };
             document.getElementById("empty").onclick = emptyMode;
             document.getElementById("full").onclick = fullMode;
             document.getElementById("ul").onclick = ulMode;
             document.getElementById("ur").onclick = urMode;
             document.getElementById("dl").onclick = dlMode;
             document.getElementById("dr").onclick = drMode;
+            document.getElementById("generate").onclick = generate;
             this.cursor.drawPreview = new Draw_8.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
         };
         Editor.prototype.moveCamera = function () {
@@ -1207,7 +1398,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("file:///C:/Users/ilyin/GitHub/ptp2021-6-2d-game/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
@@ -1236,15 +1427,16 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
             game.display();
         }
     }
-    var editor = new Editor_1.Editor();
-    editor.setDraw(draw);
-    function editorStep() {
-        editor.step();
-        draw.clear();
-        editor.display();
-    }
-    if (levelEditorMode)
+    if (levelEditorMode) {
+        var editor_1 = new Editor_1.Editor();
+        editor_1.setDraw(draw);
+        var editorStep = function () {
+            editor_1.step();
+            draw.clear();
+            editor_1.display();
+        };
         setInterval(editorStep, 20);
+    }
     else
         setInterval(step, 20);
 });
