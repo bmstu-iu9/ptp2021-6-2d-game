@@ -6,6 +6,7 @@ def deploy(athlas, config, path):
     mas = []
     l1 = []
     l2 = []
+    
     with open(config, "r") as f:
         for line in f:
             if line.find("anim", 0, len(line)) > -1:
