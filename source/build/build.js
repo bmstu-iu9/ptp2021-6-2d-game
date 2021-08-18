@@ -536,7 +536,16 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.current_state = Draw_3.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
             this.mode = "fine";
             this.direction = "right";
+            this.images = {};
         }
+        Animation.prototype.getImage = function (current) {
+            if (this.images[current]) {
+                return this.images[current];
+            }
+            console.log("loadImage");
+            this.images[current] = Draw_3.Draw.loadImage(current);
+            return this.images[current];
+        };
         Animation.prototype.changedirection = function (string, mode) {
             this.direction = string;
             this.mode = mode;
@@ -544,7 +553,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
         Animation.prototype.step = function () {
             this.counter++;
             var frame = this.counter % this.states;
-            this.current_state = Draw_3.Draw.loadImage("textures/" +
+            this.current_state = this.getImage("textures/" +
                 this.name + "/" +
                 this.direction + "_" +
                 this.mode + "_" +
