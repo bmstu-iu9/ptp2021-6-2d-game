@@ -729,7 +729,7 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
             this.game = game;
             this.body = body;
             this.myAI = new AI_1.AI(game, body);
-            this.animation = new Animation_1.Animation("igor", 3);
+            this.animation = new Animation_1.Animation("Scientist", 8);
             this.mod = mod;
             this.commands = this.myAI.commands;
         }
