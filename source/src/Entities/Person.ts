@@ -19,6 +19,8 @@ export class Person extends Entity {
     public alertLvl : number; // уровень тревоги
     public hpMax = 15; // Максимальное здоровье
     public hp = this.hpMax; // Текущее здоровье
+    public hpThresholdCorrupted = 10;
+    public hpThresholdDying = 5;
     private mode : PersonMode; // маркер состояния (переименовать по необходимости)
 
     constructor(game : Game, body : Body, mode : PersonMode) {
@@ -27,7 +29,15 @@ export class Person extends Entity {
         this.viewRadius = 3;
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
-        this.alertLvl = 0; 
+        this.alertLvl = 0;
+        this.setModeTimings(10, 5, 5);
+    }
+
+    public setModeTimings(fine : number, corrupted : number, dying : number) {
+        this.hpThresholdDying = dying;
+        this.hpThresholdCorrupted = dying + corrupted;
+        this.hpMax = dying + corrupted + fine;
+        this.hp = this.hpMax;
     }
 
     public upAlertLvl() { // поднятие уровня тревоги
@@ -86,11 +96,19 @@ export class Person extends Entity {
         }
     }
 
+    private updateMode() {
+        if (this.hp < this.hpThresholdDying)
+            this.mode = PersonMode.Dying;
+        else  if (this.hp < this.hpThresholdCorrupted)
+            this.mode = PersonMode.Corrupted;
+        else
+        this.mode = PersonMode.Fine;
+    }
+
     public step() {
         let x = 0;
         let y = 0;
         let vel = this.body.velocity;
-        //console.log("alertLvl:", this.alertLvl);
         
         // перемещение согласно commands
         if (!this.commands)
@@ -114,6 +132,9 @@ export class Person extends Entity {
         this.changedirection(x, y); // измененниие напрвления для анимаций
         this.checkTriggers();
         this.direction = new geom.Vector(x, y);
+
+        this.updateMode();
+
         super.step();
     }
 
@@ -125,7 +146,17 @@ export class Person extends Entity {
         bar.x *= this.hp / this.hpMax;
         let pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
         draw.fillRect(pos, box, new Color(25, 25, 25));
-        pos.x -= (box.x - bar.x) / 2;
-        draw.fillRect(pos, bar, new Color(25, 255, 25));
+        let posNew = pos.clone();
+        posNew.x -= (box.x - bar.x) / 2;
+        draw.fillRect(posNew, bar, new Color(25, 255, 25));
+        // Деления
+        bar.x = 2 / draw.cam.scale;
+        pos.x -= box.x / 2;
+        posNew = pos.clone();
+        posNew.x += box.x * this.hpThresholdCorrupted / this.hpMax;
+        draw.fillRect(posNew, bar, new Color(25, 25, 25));
+        posNew = pos.clone();
+        posNew.x += box.x * this.hpThresholdDying / this.hpMax;
+        draw.fillRect(posNew, bar, new Color(25, 25, 25));
     }
 }

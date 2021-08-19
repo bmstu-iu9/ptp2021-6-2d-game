@@ -1046,13 +1046,22 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             var _this = _super.call(this, game, body) || this;
             _this.hpMax = 15;
             _this.hp = _this.hpMax;
+            _this.hpThresholdCorrupted = 10;
+            _this.hpThresholdDying = 5;
             _this.mode = mode;
             _this.viewRadius = 3;
             _this.viewingAngle = Math.PI / 4;
             _this.direction = new geom.Vector(1, 0);
             _this.alertLvl = 0;
+            _this.setModeTimings(10, 5, 5);
             return _this;
         }
+        Person.prototype.setModeTimings = function (fine, corrupted, dying) {
+            this.hpThresholdDying = dying;
+            this.hpThresholdCorrupted = dying + corrupted;
+            this.hpMax = dying + corrupted + fine;
+            this.hp = this.hpMax;
+        };
         Person.prototype.upAlertLvl = function () {
             this.alertLvl++;
         };
@@ -1102,6 +1111,14 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
                 this.animation.changedirection("down", this.modeToString());
             }
         };
+        Person.prototype.updateMode = function () {
+            if (this.hp < this.hpThresholdDying)
+                this.mode = PersonMode.Dying;
+            else if (this.hp < this.hpThresholdCorrupted)
+                this.mode = PersonMode.Corrupted;
+            else
+                this.mode = PersonMode.Fine;
+        };
         Person.prototype.step = function () {
             var x = 0;
             var y = 0;
@@ -1127,6 +1144,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             this.changedirection(x, y);
             this.checkTriggers();
             this.direction = new geom.Vector(x, y);
+            this.updateMode();
             _super.prototype.step.call(this);
         };
         Person.prototype.display = function (draw) {
@@ -1136,8 +1154,17 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             bar.x *= this.hp / this.hpMax;
             var pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
             draw.fillRect(pos, box, new Draw_6.Color(25, 25, 25));
-            pos.x -= (box.x - bar.x) / 2;
-            draw.fillRect(pos, bar, new Draw_6.Color(25, 255, 25));
+            var posNew = pos.clone();
+            posNew.x -= (box.x - bar.x) / 2;
+            draw.fillRect(posNew, bar, new Draw_6.Color(25, 255, 25));
+            bar.x = 2 / draw.cam.scale;
+            pos.x -= box.x / 2;
+            posNew = pos.clone();
+            posNew.x += box.x * this.hpThresholdCorrupted / this.hpMax;
+            draw.fillRect(posNew, bar, new Draw_6.Color(25, 25, 25));
+            posNew = pos.clone();
+            posNew.x += box.x * this.hpThresholdDying / this.hpMax;
+            draw.fillRect(posNew, bar, new Draw_6.Color(25, 25, 25));
         };
         return Person;
     }(Entity_1.Entity));
