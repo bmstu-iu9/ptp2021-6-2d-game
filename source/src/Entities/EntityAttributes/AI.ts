@@ -106,7 +106,7 @@ export class AI {
             let answer : geom.Vector[];
             answer = [];
             answer[0] = this.getPointCoordinate(finish);
-            //console.log("Path from ", start, " to ", finish, " is ", answer);
+            console.log("Path from ", start, " to ", finish, " is ", answer);
             
             return answer;
         }
@@ -131,6 +131,7 @@ export class AI {
         for (let i = 0; i < localPath.length; i++) {
             this.Path[i] = localPath[i].clone();
         }
+        this.Path[this.Path.length] = point;
     }
 
     // функция, определяющая когда активируется персонаж(чтобы сбросить время ожидания вызвать wait(0))
@@ -149,6 +150,8 @@ export class AI {
             return;
         }
         if (this.Path.length != 0) { // если путь не пустой, то идти по направлению следующей точки
+            console.log(this.Path[0]);
+            
             this.go(this.Path[0]);
             //console.log(this.body.center.sub(this.Path[0]).abs(), geom.eps * 150);
             if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {                

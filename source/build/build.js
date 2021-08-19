@@ -457,6 +457,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
             event.stopPropagation();
             return false;
         };
+<<<<<<< HEAD
         Control.onMouseDown = function (event) {
             if (event.button == 0)
                 Control.mouseLeftPressed = true;
@@ -485,6 +486,10 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         Control.mouseRightPressed = false;
         Control.currentMousePos = new geom.Vector();
         Control.mouseWheelDelta = 0;
+=======
+        Control._keys = [];
+        Control.clicked = false;
+>>>>>>> master
         return Control;
     }());
     exports.Control = Control;
@@ -582,7 +587,16 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.current_state = Draw_3.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
             this.mode = "fine";
             this.direction = "right";
+            this.images = {};
         }
+        Animation.prototype.getImage = function (current) {
+            if (this.images[current]) {
+                return this.images[current];
+            }
+            console.log("loadImage");
+            this.images[current] = Draw_3.Draw.loadImage(current);
+            return this.images[current];
+        };
         Animation.prototype.changedirection = function (string, mode) {
             this.direction = string;
             this.mode = mode;
@@ -590,7 +604,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
         Animation.prototype.step = function () {
             this.counter++;
             var frame = this.counter % this.states;
-            this.current_state = Draw_3.Draw.loadImage("textures/" +
+            this.current_state = this.getImage("textures/" +
                 this.name + "/" +
                 this.direction + "_" +
                 this.mode + "_" +
@@ -601,6 +615,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
     }());
     exports.Animation = Animation;
 });
+<<<<<<< HEAD
 define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function (require, exports, Geom_2, Tile_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -777,6 +792,9 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
     exports.PathGenerator = PathGenerator;
 });
 define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib"], function (require, exports, Tile_3, geom, Draw_4, PathGenerator_1, AuxLib_1) {
+=======
+define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (require, exports, Tile_2, geom, Draw_4) {
+>>>>>>> master
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
@@ -837,13 +855,27 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         };
         Level.prototype.display = function (draw, advanced) {
             if (advanced === void 0) { advanced = false; }
+<<<<<<< HEAD
+=======
+            var str = "";
+            for (var j = 0; j < this.Grid[0].length; j++) {
+                for (var i = 0; i < this.Grid.length; i++) {
+                    str += this.Grid[i][j].colision;
+                }
+                str += "\n";
+            }
+>>>>>>> master
             for (var i = 0; i < this.Grid.length; i++) {
                 for (var j = 0; j < this.Grid[i].length; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
+<<<<<<< HEAD
                         .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.03);
+=======
+                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.01);
+>>>>>>> master
                 }
             }
         };
@@ -929,6 +961,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                 var answer_1;
                 answer_1 = [];
                 answer_1[0] = this.getPointCoordinate(finish);
+                console.log("Path from ", start, " to ", finish, " is ", answer_1);
                 return answer_1;
             }
             var middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
@@ -946,6 +979,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             for (var i = 0; i < localPath.length; i++) {
                 this.Path[i] = localPath[i].clone();
             }
+            this.Path[this.Path.length] = point;
         };
         AI.prototype.wait = function (milliseconds) {
             this.activationTime = aux.getMilliCount() + milliseconds;
@@ -958,6 +992,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                 return;
             }
             if (this.Path.length != 0) {
+                console.log(this.Path[0]);
                 this.go(this.Path[0]);
                 if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {
                     this.Path.shift();
@@ -993,7 +1028,7 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
             this.game = game;
             this.body = body;
             this.myAI = new AI_1.AI(game, body);
-            this.animation = new Animation_1.Animation("igor", 3);
+            this.animation = new Animation_1.Animation("Scientist", 8);
             this.mod = mod;
             this.commands = this.myAI.commands;
         }
@@ -1163,7 +1198,11 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
+<<<<<<< HEAD
 define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3) {
+=======
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_3, Mimic_1, Level_1, Trigger_1, Debug_3) {
+>>>>>>> master
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1397,7 +1436,11 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
+<<<<<<< HEAD
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
+=======
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game"], function (require, exports, geom, aux, Draw_7, Game_2) {
+>>>>>>> master
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/level-editor/source/env/");
@@ -1419,10 +1462,14 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
                 game.make_trigger(100000000, game.entities[1]);
+                console.log(Game_2.Game.levels["map"].PathMatrix);
                 x = true;
             }
             if (t % 100 == 0) {
                 console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
+                for (var i = 0; i < game.entities[1].myAI.Path.length; i++) {
+                    console.log(game.entities[1].myAI.Path[i]);
+                }
             }
             draw.clear();
             game.step();
