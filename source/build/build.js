@@ -157,8 +157,9 @@ define("Draw", ["require", "exports"], function (require, exports) {
         Draw.prototype.image = function (image, pos, box, angle) {
             if (angle === void 0) { angle = 0; }
             var posNew = this.transform(pos);
-            var boxNew = box.mul(this.cam.scale);
+            var boxNew = box.mul(this.cam.scale * 1.01);
             posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.imageSmoothingEnabled = false;
             this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
         Draw.prototype.fillRect = function (pos, box, color) {
@@ -550,7 +551,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
     exports.Body = void 0;
     var Body = (function () {
         function Body(center, radius) {
-            this.velocity = 0.01;
+            this.velocity = 0.05;
             this.center = center;
             this.radius = radius;
         }
@@ -859,8 +860,9 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
-                    draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.03);
+                    if (advanced)
+                        draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
+                            .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.03);
                 }
             }
         };
@@ -1183,7 +1185,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Debug"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1285,7 +1287,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             for (var i = 0; i < this.entities.length; i++) {
                 this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
             }
-            Debug_3.Debug.drawPoints(this);
         };
         return Game;
     }());

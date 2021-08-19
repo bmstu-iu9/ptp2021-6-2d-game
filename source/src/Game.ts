@@ -124,6 +124,6 @@ export class Game {
         }
 
         // Отрисовка графического дебага
-        Debug.drawPoints(this);
+        //Debug.drawPoints(this);
     }
 }
