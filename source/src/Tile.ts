@@ -21,22 +21,22 @@ export class Tile {
             return;
         }
         if (colision == 0) {
-            this.image = Draw.loadImage("textures/Empty.png");
+            this.image = Draw.loadImage("textures/tiles/Empty.png");
         }
         if (colision == 1) {
-            this.image = Draw.loadImage("textures/CornerUL.png");
+            this.image = Draw.loadImage("textures/tiles/CornerUL.png");
         }
         if (colision == 2) {
-            this.image = Draw.loadImage("textures/CornerUR.png");
+            this.image = Draw.loadImage("textures/tiles/CornerUR.png");
         }
         if (colision == 3) {
-            this.image = Draw.loadImage("textures/CornerDL.png");
+            this.image = Draw.loadImage("textures/tiles/CornerDL.png");
         }
         if (colision == 4) {
-            this.image = Draw.loadImage("textures/CornerDR.png");
+            this.image = Draw.loadImage("textures/tiles/CornerDR.png");
         }
         if (colision == 5) {
-            this.image = Draw.loadImage("textures/Full.png");
+            this.image = Draw.loadImage("textures/tiles/Full.png");
         }
     }
 
