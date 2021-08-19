@@ -1129,11 +1129,21 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             this.direction = new geom.Vector(x, y);
             _super.prototype.step.call(this);
         };
+        Person.prototype.display = function (draw) {
+            _super.prototype.display.call(this, draw);
+            var box = new geom.Vector(1, 0.1);
+            var bar = box.clone();
+            bar.x *= this.hp / this.hpMax;
+            var pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
+            draw.fillRect(pos, box, new Draw_6.Color(25, 25, 25));
+            pos.x -= (box.x - bar.x) / 2;
+            draw.fillRect(pos, bar, new Draw_6.Color(25, 255, 25));
+        };
         return Person;
     }(Entity_1.Entity));
     exports.Person = Person;
 });
-define("Mimic", ["require", "exports", "Control"], function (require, exports, Control_1) {
+define("Mimic", ["require", "exports", "Game", "Control"], function (require, exports, Game_2, Control_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -1149,6 +1159,9 @@ define("Mimic", ["require", "exports", "Control"], function (require, exports, C
         };
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
+            var person = this.controlledEntity;
+            if (person)
+                person.hp -= Game_2.Game.dt;
             if (Control_1.Control.isMouseClicked()) {
                 var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
                 for (var i = 0; i < this.game.entities.length; i++) {
@@ -1309,6 +1322,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 entity.display(this.draw);
             }
         };
+        Game.dt = 0.02;
         return Game;
     }());
     exports.Game = Game;
@@ -1441,16 +1455,16 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_3, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
-    Game_2.Game.levels = new Map();
-    Game_2.Game.loadMap("map.json", "map");
-    var game = new Game_2.Game(draw);
+    Game_3.Game.levels = new Map();
+    Game_3.Game.loadMap("map.json", "map");
+    var game = new Game_3.Game(draw);
     game.make_person(game.make_body(new geom.Vector(1, 0), 1));
     game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
     game.mimic.takeControl(game.entities[0]);
@@ -1458,12 +1472,12 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var t = 0;
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     function step() {
-        if (Game_2.Game.levels["map"] != undefined) {
+        if (Game_3.Game.levels["map"] != undefined) {
             t++;
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
                 game.make_trigger(100000000, game.entities[1]);
-                console.log(Game_2.Game.levels["map"].PathMatrix);
+                console.log(Game_3.Game.levels["map"].PathMatrix);
                 x = true;
             }
             if (t % 100 == 0) {
@@ -1488,7 +1502,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         setInterval(editorStep, 20);
     }
     else
-        setInterval(step, 20);
+        setInterval(step, Game_3.Game.dt * 1000);
 });
 define("Entities/Scientist", ["require", "exports", "Entities/Person"], function (require, exports, Person_2) {
     "use strict";

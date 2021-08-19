@@ -3,7 +3,8 @@ import { Game } from "../Game"
 import { Body } from "./EntityAttributes/Body";
 import * as geom from "../Geom";
 import { Debug } from "../Debug";
-import { Color } from "../Draw";
+import { Color, Draw } from "../Draw";
+import { SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION } from "constants";
 
 export enum PersonMode {
     Fine,
@@ -16,6 +17,8 @@ export class Person extends Entity {
     public viewingAngle : number; // угол сектора видимости
     public direction : geom.Vector; // направление взгляда
     public alertLvl : number; // уровень тревоги
+    public hpMax = 15; // Максимальное здоровье
+    public hp = this.hpMax; // Текущее здоровье
     private mode : PersonMode; // маркер состояния (переименовать по необходимости)
 
     constructor(game : Game, body : Body, mode : PersonMode) {
@@ -112,5 +115,17 @@ export class Person extends Entity {
         this.checkTriggers();
         this.direction = new geom.Vector(x, y);
         super.step();
+    }
+
+    public display(draw : Draw) {
+        super.display(draw);
+        // HP bar
+        let box = new geom.Vector(1, 0.1);
+        let bar = box.clone();
+        bar.x *= this.hp / this.hpMax;
+        let pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
+        draw.fillRect(pos, box, new Color(25, 25, 25));
+        pos.x -= (box.x - bar.x) / 2;
+        draw.fillRect(pos, bar, new Color(25, 255, 25));
     }
 }

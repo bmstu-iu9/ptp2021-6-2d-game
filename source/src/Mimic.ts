@@ -2,6 +2,7 @@ import { Game } from "./Game";
 import * as geom from "./Geom"
 import { Control, Keys } from "./Control";
 import { Entity } from "./Entities/Entity";
+import { Person, PersonMode } from "./Entities/Person";
 
 export class Mimic {
     public controlledEntity : Entity = null;
@@ -20,6 +21,10 @@ export class Mimic {
     public step() {
         // Подменяем комманды дя Entity, если мы не делаем это каждый ход, команды восстанавливаются сами (см Entity.step)
         this.controlledEntity.commands = Control.commands;
+        // Наносим урон жертве
+        let person = this.controlledEntity as Person;
+        if (person)
+            person.hp -= Game.dt;
 
         // Если мышка нажата, мы производим переселение
         if (Control.isMouseClicked()) { 
