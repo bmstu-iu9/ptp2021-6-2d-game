@@ -1,0 +1,17 @@
+size = 16 16
+frames = 3
+anim down_fine = 0 0
+anim down_corrupted = 48 0
+anim down_dying = 96 0
+anim left_fine = 144 0
+anim left_corrupted = 0 16
+anim left_dying = 48 16
+anim right_fine = 96 16
+anim right_corrupted = 144 16
+anim right_dying = 0 32
+anim stand_fine = 48 32
+anim stand_corrupted = 96 32
+anim stand_dying = 144 32
+anim top_fine = 0 48
+anim top_corrupted = 48 48
+anim top_dying = 96 48

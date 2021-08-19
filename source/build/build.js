@@ -118,6 +118,9 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.g = g;
             this.b = b;
         }
+        Color.prototype.toString = function () {
+            return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+        };
         return Color;
     }());
     exports.Color = Color;
@@ -144,6 +147,13 @@ define("Draw", ["require", "exports"], function (require, exports) {
             posNew = posNew.add(this.cam.center);
             return posNew;
         };
+        Draw.prototype.transformBack = function (pos) {
+            var posNew = pos.clone();
+            posNew = posNew.sub(this.cam.center);
+            posNew = posNew.mul(1 / this.cam.scale);
+            posNew = posNew.add(this.cam.pos);
+            return posNew;
+        };
         Draw.prototype.image = function (image, pos, box, angle) {
             if (angle === void 0) { angle = 0; }
             var posNew = this.transform(pos);
@@ -155,63 +165,63 @@ define("Draw", ["require", "exports"], function (require, exports) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fillRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
         };
         Draw.prototype.strokeRect = function (pos, box, color, lineWidth) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale);
             posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
+            this.ctx.lineWidth = lineWidth * this.cam.scale;
             this.ctx.strokeRect(posNew.x, posNew.y, boxNew.x, boxNew.y);
-            this.ctx.lineWidth = lineWidth / this.cam.scale;
         };
         Draw.prototype.fillCircle = function (pos, radius, color) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokeCircle = function (pos, radius, color, lineWidth) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, 0, Math.PI * 2, false);
-            this.ctx.lineWidth = lineWidth / this.cam.scale;
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, 0, Math.PI * 2, false);
+            this.ctx.lineWidth = lineWidth * this.cam.scale;
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         };
         Draw.prototype.fillPolygon = function (vertices, color) {
             for (var i = 0; i < vertices.length; i++) {
                 var posNew = this.transform(vertices[i]);
                 this.ctx.lineTo(posNew.x, posNew.y);
             }
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokePolygon = function (vertices, color, lineWidth) {
             for (var i = 0; i < vertices.length; i++) {
                 var posNew = this.transform(vertices[i]);
                 this.ctx.lineTo(posNew.x, posNew.y);
-                this.ctx.lineWidth = lineWidth / this.cam.scale;
+                this.ctx.lineWidth = lineWidth * this.cam.scale;
             }
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
         };
         Draw.prototype.fillSector = function (pos, radius, color, startAngle, endAngle) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, startAngle, endAngle, false);
-            this.ctx.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
+            this.ctx.fillStyle = color.toString();
             this.ctx.fill();
         };
         Draw.prototype.strokeSector = function (pos, radius, color, lineWidth, startAngle, endAngle) {
             var posNew = this.transform(pos);
             this.ctx.beginPath();
-            this.ctx.arc(posNew.x, posNew.y, radius / this.cam.scale, startAngle, endAngle, false);
-            this.ctx.lineWidth = lineWidth / this.cam.scale;
+            this.ctx.arc(posNew.x, posNew.y, radius * this.cam.scale, startAngle, endAngle, false);
+            this.ctx.lineWidth = lineWidth * this.cam.scale;
+            this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
-            this.ctx.strokeStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
         };
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
@@ -526,7 +536,16 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.current_state = Draw_3.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
             this.mode = "fine";
             this.direction = "right";
+            this.images = {};
         }
+        Animation.prototype.getImage = function (current) {
+            if (this.images[current]) {
+                return this.images[current];
+            }
+            console.log("loadImage");
+            this.images[current] = Draw_3.Draw.loadImage(current);
+            return this.images[current];
+        };
         Animation.prototype.changedirection = function (string, mode) {
             this.direction = string;
             this.mode = mode;
@@ -534,7 +553,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
         Animation.prototype.step = function () {
             this.counter++;
             var frame = this.counter % this.states;
-            this.current_state = Draw_3.Draw.loadImage("textures/" +
+            this.current_state = this.getImage("textures/" +
                 this.name + "/" +
                 this.direction + "_" +
                 this.mode + "_" +
@@ -587,7 +606,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw"], function (requir
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 1);
+                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.01);
                 }
             }
         };
@@ -740,7 +759,7 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
             this.game = game;
             this.body = body;
             this.myAI = new AI_1.AI(game, body);
-            this.animation = new Animation_1.Animation("igor", 3);
+            this.animation = new Animation_1.Animation("Scientist", 8);
             this.mod = mod;
             this.commands = this.myAI.commands;
         }
@@ -838,7 +857,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
     }(Entity_1.Entity));
     exports.Person = Person;
 });
-define("Mimic", ["require", "exports", "Geom", "Control"], function (require, exports, geom, Control_1) {
+define("Mimic", ["require", "exports", "Control"], function (require, exports, Control_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -855,8 +874,7 @@ define("Mimic", ["require", "exports", "Geom", "Control"], function (require, ex
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
             if (Control_1.Control.isMouseClicked()) {
-                var coords = new geom.Vector(Control_1.Control.lastMouseCoordinates().x / this.game.draw.cam.scale, Control_1.Control.lastMouseCoordinates().y / this.game.draw.cam.scale);
-                coords = coords.sub(this.game.draw.cam.center.mul(1.0 / this.game.draw.cam.scale));
+                var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
                 for (var i = 0; i < this.game.entities.length; i++) {
                     var target = this.game.entities[i];
                     var centerDistance = this.controlledEntity.body.center.sub(target.body.center).abs();
@@ -984,8 +1002,12 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             if (Game.levels[this.currentLevelName])
                 this.currentLevel = Game.levels[this.currentLevelName];
             this.mimic.step();
+            this.attachCamToMimic();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
+        };
+        Game.prototype.attachCamToMimic = function () {
+            this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
         };
         Game.prototype.check_wall = function (pos) {
             var posRound = new geom.Vector(Math.floor(pos.x / this.currentLevel.tileSize), Math.floor(pos.y / this.currentLevel.tileSize));
@@ -1004,7 +1026,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return Tile_3.CollisionType.Empty;
         };
         Game.prototype.display = function () {
-            this.draw.cam.pos = new geom.Vector(0, 0);
             this.draw.cam.scale = 100;
             this.currentLevel.display(this.draw);
             for (var i = 0; i < this.entities.length; i++) {
