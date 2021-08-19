@@ -514,22 +514,22 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
                 return;
             }
             if (colision == 0) {
-                this.image = Draw_2.Draw.loadImage("textures/Empty.png");
+                this.image = Draw_2.Draw.loadImage("textures/tiles/Empty.png");
             }
             if (colision == 1) {
-                this.image = Draw_2.Draw.loadImage("textures/CornerUL.png");
+                this.image = Draw_2.Draw.loadImage("textures/tiles/CornerUL.png");
             }
             if (colision == 2) {
-                this.image = Draw_2.Draw.loadImage("textures/CornerUR.png");
+                this.image = Draw_2.Draw.loadImage("textures/tiles/CornerUR.png");
             }
             if (colision == 3) {
-                this.image = Draw_2.Draw.loadImage("textures/CornerDL.png");
+                this.image = Draw_2.Draw.loadImage("textures/tiles/CornerDL.png");
             }
             if (colision == 4) {
-                this.image = Draw_2.Draw.loadImage("textures/CornerDR.png");
+                this.image = Draw_2.Draw.loadImage("textures/tiles/CornerDR.png");
             }
             if (colision == 5) {
-                this.image = Draw_2.Draw.loadImage("textures/Full.png");
+                this.image = Draw_2.Draw.loadImage("textures/tiles/Full.png");
             }
         }
         Tile.prototype.setColision = function (colision) {
@@ -1423,7 +1423,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/level-editor/source/env/");
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
