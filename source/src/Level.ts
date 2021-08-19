@@ -81,20 +81,7 @@ export class Level {
     }
 
     // Отрисовка
-<<<<<<< HEAD
     public display(draw : Draw, advanced = false) {        
-=======
-    public display(draw : Draw, advanced = false) {
-        let str = "";
-        for (let j = 0; j < this.Grid[0].length; j++) {
-            for (let i = 0; i < this.Grid.length; i++) {
-                str += this.Grid[i][j].colision;
-            }
-            str += "\n";
-        }
-        //console.log(str);
-        
->>>>>>> master
         for (let i = 0; i < this.Grid.length; i++) {
             for (let j = 0; j < this.Grid[i].length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
@@ -103,11 +90,7 @@ export class Level {
                     .add(size.mul(1 / 2)), size);
                 // Отрисовка сетки в расширенном режиме
                 draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-<<<<<<< HEAD
-                .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.03)
-=======
                 .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.01)
->>>>>>> master
             }
         }
     }
