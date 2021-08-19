@@ -953,7 +953,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var response, text;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, fetch(path)];
+                        case 0: return [4, fetch("http://127.0.0.1:8000/map.json")];
                         case 1:
                             response = _a.sent();
                             return [4, response.text()];

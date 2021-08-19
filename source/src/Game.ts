@@ -25,7 +25,9 @@ export class Game {
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
 
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
-        const response = await fetch(path)
+        //const response = await fetch(path) // Если с Гита
+        //const text = await response.text()
+        const response = await fetch("http://127.0.0.1:8000/map.json") // Если локально
         const text = await response.text()
         return text;
     }
