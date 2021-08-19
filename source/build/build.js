@@ -136,8 +136,12 @@ define("Draw", ["require", "exports"], function (require, exports) {
             this.cam.center = size.mul(1 / 2);
         }
         Draw.loadImage = function (src) {
+            if (this.images[src]) {
+                return this.images[src];
+            }
             var image = new Image();
             image.src = src;
+            this.images[src] = image;
             return image;
         };
         Draw.prototype.transform = function (pos) {
@@ -227,6 +231,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
+        Draw.images = {};
         return Draw;
     }());
     exports.Draw = Draw;
@@ -591,15 +596,9 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.current_state = Draw_3.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
             this.mode = "fine";
             this.direction = "right";
-            this.images = {};
         }
         Animation.prototype.getImage = function (current) {
-            if (this.images[current]) {
-                return this.images[current];
-            }
-            console.log("loadImage");
-            this.images[current] = Draw_3.Draw.loadImage(current);
-            return this.images[current];
+            return Draw_3.Draw.loadImage(current);
         };
         Animation.prototype.changedirection = function (string, mode) {
             this.direction = string;

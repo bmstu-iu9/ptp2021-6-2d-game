@@ -22,10 +22,15 @@ export class Color {
     }
 }
 
+type hashimages = {
+    [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
+};
+
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
     public cam = new Camera();
+    private static images : hashimages = {}; // Хеш таблица с изображениями
     constructor(canvas: HTMLCanvasElement, size: geom.Vector) {
         this.canvas = canvas;
         canvas.width = size.x;
@@ -36,8 +41,12 @@ export class Draw {
         this.cam.center = size.mul(1 / 2);
     }
     public static loadImage(src: string): HTMLImageElement {
+        if (this.images[src]) {
+            return this.images[src]; // Извлекаем из хеш таблицы
+        }
         let image = new Image();
         image.src = src;
+        this.images[src] = image;
         return image;
     }
     // Преобразование координат
