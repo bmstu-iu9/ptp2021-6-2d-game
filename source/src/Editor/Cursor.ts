@@ -17,7 +17,7 @@ export class Cursor {
     public pos = new geom.Vector();
     public gridPos = new geom.Vector();
     public mode = Mode.Wall;
-    public collisionType = CollisionType.Full;
+    public tile = new Tile(CollisionType.Full);
     public drawPreview : Draw;
 
 
@@ -27,11 +27,10 @@ export class Cursor {
     }
 
     private setBlock() {
-        let tile = new Tile(this.collisionType);
-        this.level.Grid[this.gridPos.x][this.gridPos.y] = tile;
+        this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
     }
 
-    public step() { 
+    public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
         if(Control.isMouseLeftPressed() && this.level.isInBounds(this.pos))
@@ -40,8 +39,7 @@ export class Cursor {
 
     public display() {
         // Preview
-        let tile = new Tile(this.collisionType);
-        this.drawPreview.image(tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50))
+        this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50))
         // Cursor on grid
         if(this.level.isInBounds(this.pos))
             this.draw.strokeRect(

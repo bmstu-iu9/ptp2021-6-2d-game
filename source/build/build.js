@@ -503,10 +503,15 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
         CollisionType[CollisionType["Full"] = 5] = "Full";
     })(CollisionType = exports.CollisionType || (exports.CollisionType = {}));
     var Tile = (function () {
-        function Tile(colision) {
+        function Tile(colision, image) {
             if (colision === void 0) { colision = 0; }
+            if (image === void 0) { image = null; }
             this.colision = CollisionType.Empty;
             this.colision = colision;
+            if (image) {
+                this.image = image;
+                return;
+            }
             if (colision == 0) {
                 this.image = Draw_2.Draw.loadImage("textures/Empty.png");
             }
@@ -531,6 +536,9 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
         };
         Tile.prototype.setImage = function (image) {
             this.image = image;
+        };
+        Tile.prototype.clone = function () {
+            return new Tile(this.colision, this.image);
         };
         return Tile;
     }());
@@ -852,7 +860,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size);
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.01);
+                        .add(size.mul(1 / 2)), size, new Draw_4.Color(0, 0, 0), 0.03);
                 }
             }
         };
@@ -1331,13 +1339,12 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
             this.pos = new geom.Vector();
             this.gridPos = new geom.Vector();
             this.mode = Mode.Wall;
-            this.collisionType = Tile_5.CollisionType.Full;
+            this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
             this.level = level;
             this.draw = draw;
         }
         Cursor.prototype.setBlock = function () {
-            var tile = new Tile_5.Tile(this.collisionType);
-            this.level.Grid[this.gridPos.x][this.gridPos.y] = tile;
+            this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
         };
         Cursor.prototype.step = function () {
             this.pos = this.draw.transformBack(Control_3.Control.mousePos());
@@ -1346,8 +1353,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
                 this.setBlock();
         };
         Cursor.prototype.display = function () {
-            var tile = new Tile_5.Tile(this.collisionType);
-            this.drawPreview.image(tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
+            this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
             if (this.level.isInBounds(this.pos))
                 this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
         };
@@ -1366,22 +1372,26 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.mousePrev = Control_4.Control.mousePos();
             this.initHTML();
         }
+        Editor.prototype.createTileButton = function (src, collision) {
+            var _this = this;
+            var button = document.createElement("img");
+            button.src = src;
+            button.className = "tileButton";
+            var palette = document.getElementById("palette");
+            palette.appendChild(button);
+            var applyTile = function () { _this.cursor.tile = new Tile_6.Tile(collision, button); };
+            button.onclick = applyTile;
+        };
         Editor.prototype.initHTML = function () {
             var _this = this;
-            var emptyMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.Empty; };
-            var fullMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.Full; };
-            var ulMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerUL; };
-            var urMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerUR; };
-            var dlMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerDL; };
-            var drMode = function () { _this.cursor.collisionType = Tile_6.CollisionType.CornerDR; };
             var generate = function () { _this.level.serialize(); };
-            document.getElementById("empty").onclick = emptyMode;
-            document.getElementById("full").onclick = fullMode;
-            document.getElementById("ul").onclick = ulMode;
-            document.getElementById("ur").onclick = urMode;
-            document.getElementById("dl").onclick = dlMode;
-            document.getElementById("dr").onclick = drMode;
             document.getElementById("generate").onclick = generate;
+            for (var i = 0; i < 3; i++)
+                this.createTileButton("textures/tiles/ceiling" + i + ".png", Tile_6.CollisionType.Full);
+            for (var i = 0; i < 2; i++)
+                this.createTileButton("textures/tiles/wall" + i + ".png", Tile_6.CollisionType.Full);
+            for (var i = 0; i < 2; i++)
+                this.createTileButton("textures/tiles/floor" + i + ".png", Tile_6.CollisionType.Empty);
             this.cursor.drawPreview = new Draw_8.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
         };
         Editor.prototype.moveCamera = function () {

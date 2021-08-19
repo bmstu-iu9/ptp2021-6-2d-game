@@ -3,7 +3,7 @@ import { Draw } from "./Draw";
 import { Level } from "./Level";
 import * as geom from "./Geom";
 import { Cursor, Mode } from "./Editor/Cursor";
-import { CollisionType } from "./Tile";
+import { CollisionType, Tile } from "./Tile";
 
 export class Editor {
     private mousePrev : geom.Vector;
@@ -16,23 +16,30 @@ export class Editor {
         this.initHTML();
     }
 
+    private createTileButton(src : string, collision : CollisionType) {
+        let button = document.createElement("img");
+        button.src = src;
+        button.className = "tileButton";
+        let palette = document.getElementById("palette");
+        palette.appendChild(button);
+        let applyTile = () => {this.cursor.tile = new Tile(collision, button)}
+        button.onclick = applyTile;
+    }
+
     // Инициализирует взаимодействие с HTML
     private initHTML() {
         // Обработка кнопок
-        let emptyMode = () => {this.cursor.collisionType = CollisionType.Empty}
-        let fullMode = () => {this.cursor.collisionType = CollisionType.Full}
-        let ulMode = () => {this.cursor.collisionType = CollisionType.CornerUL}
-        let urMode = () => {this.cursor.collisionType = CollisionType.CornerUR}
-        let dlMode = () => {this.cursor.collisionType = CollisionType.CornerDL}
-        let drMode = () => {this.cursor.collisionType = CollisionType.CornerDR}
         let generate = () => {this.level.serialize()}
-        document.getElementById("empty").onclick = emptyMode;
-        document.getElementById("full").onclick = fullMode;
-        document.getElementById("ul").onclick = ulMode;
-        document.getElementById("ur").onclick = urMode;
-        document.getElementById("dl").onclick = dlMode;
-        document.getElementById("dr").onclick = drMode;
         document.getElementById("generate").onclick = generate;
+
+        // Создание кнопок для тайлов
+        for (let i = 0; i < 3; i++)
+            this.createTileButton("textures/tiles/ceiling" + i + ".png", CollisionType.Full);
+        for (let i = 0; i < 2; i++)
+            this.createTileButton("textures/tiles/wall" + i + ".png", CollisionType.Full);
+            for (let i = 0; i < 2; i++)
+            this.createTileButton("textures/tiles/floor" + i + ".png", CollisionType.Empty);
+
         // Окно превью
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement, 
