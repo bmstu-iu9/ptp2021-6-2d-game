@@ -1004,7 +1004,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
     }());
     exports.AI = AI;
 });
-define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, Animation_1, AI_1) {
+define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_1, AI_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
@@ -1022,6 +1022,9 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
                 return;
             this.myAI.step();
             this.commands = this.myAI.commands;
+        };
+        Entity.prototype.display = function (draw) {
+            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1));
         };
         return Entity;
     }());
@@ -1041,6 +1044,8 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         __extends(Person, _super);
         function Person(game, body, mode) {
             var _this = _super.call(this, game, body) || this;
+            _this.hpMax = 15;
+            _this.hp = _this.hpMax;
             _this.mode = mode;
             _this.viewRadius = 3;
             _this.viewingAngle = Math.PI / 4;
@@ -1299,8 +1304,9 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.display = function () {
             this.draw.cam.scale = 100;
             this.currentLevel.display(this.draw);
-            for (var i = 0; i < this.entities.length; i++) {
-                this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
+            for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
+                var entity = _a[_i];
+                entity.display(this.draw);
             }
         };
         return Game;

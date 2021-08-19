@@ -119,8 +119,8 @@ export class Game {
         this.currentLevel.display(this.draw);
 
         // People
-        for (let i = 0; i < this.entities.length; i++) {
-            this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
+        for (let entity of this.entities) {
+            entity.display(this.draw);
         }
 
         // Отрисовка графического дебага

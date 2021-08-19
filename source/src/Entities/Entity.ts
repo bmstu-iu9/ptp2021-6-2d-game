@@ -4,6 +4,7 @@ import { Animation } from "./EntityAttributes/Animation";
 import { AI } from "./EntityAttributes/AI";
 import { Game } from "../Game";
 import { Commands } from "./EntityAttributes/Commands";
+import { Draw } from "../Draw";
 
 export class Entity {
     public game : Game;
@@ -26,5 +27,8 @@ export class Entity {
         this.myAI.step();
         // Восстанавливаем комманды
         this.commands = this.myAI.commands;
+    }
+    public display(draw : Draw) {
+        draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1));
     }
 }
