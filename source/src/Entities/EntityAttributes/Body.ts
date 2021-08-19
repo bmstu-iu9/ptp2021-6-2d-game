@@ -6,7 +6,7 @@ export class Body {
     public center : geom.Vector; // центр коллизии объекта
     public radius : number; // радиус объекта, сейчас используется только в mimic, для того чтобы перехватывать управление
     public game : Game;
-    public velocity = 0.01; // скорость объекта
+    public velocity = 0.05; // скорость объекта
 
     constructor(center : geom.Vector, radius:number) {
         this.center = center;
