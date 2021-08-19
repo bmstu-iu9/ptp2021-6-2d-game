@@ -2,7 +2,7 @@ import * as geom from "./Geom";
 import * as aux from "./AuxLib";
 import {Body} from "./Entities/EntityAttributes/Body";
 import {Entity} from "./Entities/Entity";
-import { Person } from "./Entities/Person";
+import { Person, PersonMode } from "./Entities/Person";
 import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
@@ -60,7 +60,7 @@ export class Game {
     }
 
     public make_person(body : Body) { // создаёт персонажа и возвращает ссылку
-        this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
+        this.entities[this.entities.length] = new Person(this, body,PersonMode.Fine);//последнее - маркер состояния
         this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
         return this.entities[this.entities.length - 1];
     }

@@ -1009,32 +1009,14 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
     var Entity = (function () {
-        function Entity(game, body, mod) {
+        function Entity(game, body) {
             this.commands = null;
             this.game = game;
             this.body = body;
             this.myAI = new AI_1.AI(game, body);
             this.animation = new Animation_1.Animation("Scientist", 8);
-            this.mod = mod;
             this.commands = this.myAI.commands;
         }
-        Entity.prototype.changedirection = function (x, y) {
-            if (x == 0 && y == 0) {
-                this.animation.changedirection("stand", this.mod);
-            }
-            if (x == 1) {
-                this.animation.changedirection("right", this.mod);
-            }
-            if (x == -1) {
-                this.animation.changedirection("left", this.mod);
-            }
-            if (x == 0 && y == 1) {
-                this.animation.changedirection("top", this.mod);
-            }
-            if (x == 0 && y == -1) {
-                this.animation.changedirection("down", this.mod);
-            }
-        };
         Entity.prototype.step = function () {
             if (!this.commands)
                 return;
@@ -1048,11 +1030,18 @@ define("Entities/Entity", ["require", "exports", "Entities/EntityAttributes/Anim
 define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Person = void 0;
+    exports.Person = exports.PersonMode = void 0;
+    var PersonMode;
+    (function (PersonMode) {
+        PersonMode[PersonMode["Fine"] = 0] = "Fine";
+        PersonMode[PersonMode["Corrupted"] = 1] = "Corrupted";
+        PersonMode[PersonMode["Dying"] = 2] = "Dying";
+    })(PersonMode = exports.PersonMode || (exports.PersonMode = {}));
     var Person = (function (_super) {
         __extends(Person, _super);
-        function Person(game, body, mod) {
-            var _this = _super.call(this, game, body, mod) || this;
+        function Person(game, body, mode) {
+            var _this = _super.call(this, game, body) || this;
+            _this.mode = mode;
             _this.viewRadius = 3;
             _this.viewingAngle = Math.PI / 4;
             _this.direction = new geom.Vector(1, 0);
@@ -1079,6 +1068,33 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
                         }
                     }
                 }
+            }
+        };
+        Person.prototype.modeToString = function () {
+            switch (this.mode) {
+                case PersonMode.Fine:
+                    return "fine";
+                case PersonMode.Corrupted:
+                    return "corrupted";
+                case PersonMode.Dying:
+                    return "dying";
+            }
+        };
+        Person.prototype.changedirection = function (x, y) {
+            if (x == 0 && y == 0) {
+                this.animation.changedirection("stand", this.modeToString());
+            }
+            if (x == 1) {
+                this.animation.changedirection("right", this.modeToString());
+            }
+            if (x == -1) {
+                this.animation.changedirection("left", this.modeToString());
+            }
+            if (x == 0 && y == 1) {
+                this.animation.changedirection("top", this.modeToString());
+            }
+            if (x == 0 && y == -1) {
+                this.animation.changedirection("down", this.modeToString());
             }
         };
         Person.prototype.step = function () {
@@ -1246,7 +1262,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.make_person = function (body) {
-            this.entities[this.entities.length] = new Person_1.Person(this, body, "fine");
+            this.entities[this.entities.length] = new Person_1.Person(this, body, Person_1.PersonMode.Fine);
             this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
             return this.entities[this.entities.length - 1];
         };
@@ -1474,8 +1490,8 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person"], function
     exports.Scientist = void 0;
     var Scientist = (function (_super) {
         __extends(Scientist, _super);
-        function Scientist(game, body, mod) {
-            return _super.call(this, game, body, mod) || this;
+        function Scientist(game, body, mode) {
+            return _super.call(this, game, body, mode) || this;
         }
         return Scientist;
     }(Person_2.Person));
@@ -1487,8 +1503,8 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person"], function (
     exports.Soldier = void 0;
     var Soldier = (function (_super) {
         __extends(Soldier, _super);
-        function Soldier(game, body, mod) {
-            return _super.call(this, game, body, mod) || this;
+        function Soldier(game, body, mode) {
+            return _super.call(this, game, body, mode) || this;
         }
         Soldier.prototype.step = function () {
             _super.prototype.step.call(this);
@@ -1505,8 +1521,8 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity"], f
     exports.StationaryObject = void 0;
     var StationaryObject = (function (_super) {
         __extends(StationaryObject, _super);
-        function StationaryObject(game, body, mod) {
-            return _super.call(this, game, body, mod) || this;
+        function StationaryObject(game, body) {
+            return _super.call(this, game, body) || this;
         }
         return StationaryObject;
     }(Entity_2.Entity));

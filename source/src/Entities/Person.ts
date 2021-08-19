@@ -5,14 +5,22 @@ import * as geom from "../Geom";
 import { Debug } from "../Debug";
 import { Color } from "../Draw";
 
+export enum PersonMode {
+    Fine,
+    Corrupted,
+    Dying
+}
+
 export class Person extends Entity {
     public viewRadius : number; // радиус сектора видимости
     public viewingAngle : number; // угол сектора видимости
     public direction : geom.Vector; // направление взгляда
     public alertLvl : number; // уровень тревоги
+    private mode : PersonMode; // маркер состояния (переименовать по необходимости)
 
-    constructor(game : Game, body : Body, mod : string) {
-        super(game, body, mod);
+    constructor(game : Game, body : Body, mode : PersonMode) {
+        super(game, body)
+        this.mode = mode;
         this.viewRadius = 3;
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
@@ -42,6 +50,36 @@ export class Person extends Entity {
                     }
                 }
             }
+        }
+    }
+
+    // Режим в строковом виде
+    public modeToString() : string {
+        switch (this.mode) {
+            case PersonMode.Fine:
+                return "fine";
+            case PersonMode.Corrupted:
+                return "corrupted";
+            case PersonMode.Dying:
+                return "dying";
+        }
+    }
+
+    public changedirection(x : number,y : number){
+        if(x==0 && y == 0) {
+            this.animation.changedirection("stand", this.modeToString())
+        }
+        if(x==1) {
+            this.animation.changedirection("right", this.modeToString())
+        }
+        if(x==-1) {
+            this.animation.changedirection("left", this.modeToString())
+        }
+        if(x==0 && y == 1) {
+            this.animation.changedirection("top", this.modeToString())
+        }
+        if(x==0 && y == -1) {
+            this.animation.changedirection("down", this.modeToString())
         }
     }
 

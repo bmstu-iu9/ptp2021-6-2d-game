@@ -12,32 +12,13 @@ export class Entity {
     public entityID : number;
     public myAI : AI;
     public commands : Commands = null;
-    private mod : string; //маркер состояния (переименовать по необходимости)
     
-    constructor(game : Game, body : Body, mod : string) {
+    constructor(game : Game, body : Body) {
         this.game = game;
         this.body = body;
         this.myAI = new AI(game, body);
         this.animation = new Animation("Scientist",8); // создание анимации персонажа
-        this.mod=mod; //Маркер состояния
         this.commands = this.myAI.commands;
-    }
-    public changedirection(x : number,y : number){
-        if(x==0 && y == 0) {
-            this.animation.changedirection("stand",this.mod)
-        }
-        if(x==1) {
-            this.animation.changedirection("right",this.mod)
-        }
-        if(x==-1) {
-            this.animation.changedirection("left",this.mod)
-        }
-        if(x==0 && y == 1) {
-            this.animation.changedirection("top",this.mod)
-        }
-        if(x==0 && y == -1) {
-            this.animation.changedirection("down",this.mod)
-        }
     }
     public step() {        
         if (!this.commands)
