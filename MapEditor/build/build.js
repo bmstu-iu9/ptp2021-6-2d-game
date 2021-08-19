@@ -274,7 +274,7 @@ define("PathGenerator", ["require", "exports", "Geom", "Tile"], function (requir
             for (var i = 0; i < collisionMap.length; i++) {
                 for (var j = 0; j < collisionMap[i].length; j++) {
                     console.log(i, j, collisionMap[i][j], i * 2 + 1, j * 2 + 1);
-                    this.fillTile(collisionMesh, collisionMap[i][j], new Geom_1.Vector(i * 2 + 1, j * 2 + 1));
+                    this.fillTile(collisionMesh, collisionMap[i][j], new Geom_1.Vector(j * 2 + 1, i * 2 + 1));
                 }
             }
             for (var i = 0; i < collisionMesh.length; i++) {

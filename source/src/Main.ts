@@ -23,16 +23,19 @@ function step() {
     if (Game.levels["map"] != undefined) {
         t++;
         if (x == false) {
-            //console.log(Game.grids["map"]);
+            //console.log(Game.levels["map"]);
             
             game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
             game.make_trigger(100000000, game.entities[1]);
-            //console.log(Game.grids["map"].PathMatrix); 
+            console.log(Game.levels["map"].PathMatrix); 
             x = true;
         }
         if (t % 100 == 0) {
             console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
-            
+            for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
+                console.log(game.entities[1].myAI.Path[i]);
+                
+            }
         }
         draw.clear();
         game.step();

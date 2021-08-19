@@ -127,7 +127,7 @@ export class PathGenerator {
             for (let j = 0; j < collisionMap[i].length; j++) {
                 console.log(i, j, collisionMap[i][j], i * 2 + 1, j * 2 + 1);
                 
-                this.fillTile(collisionMesh, collisionMap[i][j], new Vector(i * 2 + 1, j * 2 + 1));
+                this.fillTile(collisionMesh, collisionMap[i][j], new Vector(j * 2 + 1, i * 2 + 1));
             }
         }
         for (let i = 0; i < collisionMesh.length; i++) {
