@@ -3,8 +3,9 @@ import * as aux from "./AuxLib";
 import {Draw} from "./Draw";
 import { Game } from "./Game";
 import { Level } from "./Level";
+import { Editor } from "./Editor";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/level-editor/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
@@ -19,6 +20,11 @@ game.mimic.takeControl(game.entities[0]);
 
 let x = false;
 let t = 0;
+
+// Флаг режима редактора уровней
+let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
+
+// В случае если режим игры
 function step() {
     if (Game.levels["map"] != undefined) {
         t++;
@@ -44,4 +50,18 @@ function step() {
     }
 }
 
-setInterval(step, 20);
+
+
+if (levelEditorMode) {
+    // В случае если режим редактора
+    let editor = new Editor();
+    editor.setDraw(draw);
+    let editorStep = function () {
+        editor.step();
+        draw.clear();
+        editor.display();
+    }
+    setInterval(editorStep, 20);
+}
+else
+    setInterval(step, 20);

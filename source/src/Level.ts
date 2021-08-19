@@ -1,6 +1,8 @@
 import { Tile } from "./Tile";
 import * as geom from "./Geom";
 import { Color, Draw } from "./Draw";
+import { PathGenerator } from "./Editor/PathGenerator";
+import { replacer } from "./AuxLib";
 
 // Так выглядел старый класс, я на всякий оставил, но не думаю, что он сейчас нужен
 export class LevelJSON {
@@ -27,6 +29,50 @@ export class Level {
         }
     }
 
+
+    // Определяет, в каком квадрате сетки лежит заданный вектор
+    public gridCoordinates(pos : geom.Vector) {
+        pos = new geom.Vector(
+            Math.floor(pos.x / this.tileSize),
+            Math.floor(pos.y / this.tileSize)
+        );
+        // Проверка на границы
+        if (pos.x < 0) pos.x = 0;
+        if (pos.y < 0) pos.y = 0;
+        if (pos.x >= this.Grid.length) pos.x = this.Grid.length - 1;
+        if (pos.y >= this.Grid[0].length) pos.y = this.Grid[0].length - 1;
+        return pos;
+    }
+
+    // Проверяет, находится ли точка в пределах карты
+    public isInBounds(pos : geom.Vector) : boolean {
+        return pos.x > 0 &&
+            pos.y > 0 &&
+            pos.x < this.Grid.length * this.tileSize &&
+            pos.y < this.Grid[0].length * this.tileSize;
+    }
+
+    // Заворачивает в json
+    public serialize() {
+        let newLevel : LevelJSON;
+        newLevel = {Grid: this.Grid, CollisionMesh: [], PathMatrix: new Map()};
+
+        console.log(newLevel.Grid);
+        PathGenerator.generateMatrix(newLevel);
+
+        console.log(newLevel.CollisionMesh);
+        console.log(newLevel.PathMatrix);
+
+        const blob = new Blob([JSON.stringify(newLevel, replacer)], {
+            type: 'application/json'
+        });
+
+        console.log(Array.from(newLevel.PathMatrix.keys()));
+
+        const url = window.URL.createObjectURL(blob);
+        window.open(url);
+    }
+
     // Создание из прототипа
     public createFromPrototype(prototype : any) {
         this.Grid = prototype.Grid;
@@ -35,16 +81,7 @@ export class Level {
     }
 
     // Отрисовка
-    public display(draw : Draw, advanced = false) {
-        let str = "";
-        for (let j = 0; j < this.Grid[0].length; j++) {
-            for (let i = 0; i < this.Grid.length; i++) {
-                str += this.Grid[i][j].colision;
-            }
-            str += "\n";
-        }
-        //console.log(str);
-        
+    public display(draw : Draw, advanced = false) {        
         for (let i = 0; i < this.Grid.length; i++) {
             for (let j = 0; j < this.Grid[i].length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
@@ -52,8 +89,9 @@ export class Level {
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
                     .add(size.mul(1 / 2)), size);
                 // Отрисовка сетки в расширенном режиме
-                draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.01)
+                if (advanced)
+                    draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
+                    .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.03)
             }
         }
     }

@@ -1,0 +1,19 @@
+<style>
+    .tileButton {
+        width: 50px;
+        height: auto;
+        margin: 5px;
+    }
+</style>
+<div id="mode" style="visibility: hidden" value="editor">editor</div>
+<canvas id="gameCanvas" style="border: 1px solid black;"></canvas>
+<canvas id="preview" style="border: 1px solid black; vertical-align: top;" height=50 width = 50></canvas>
+    <button id="generate" style="color: chocolate;"> Generate </button>
+<div id="palette">
+    
+</div>
+<script src="./require.js"></script>
+<script src="build/build.js"></script>
+<script>
+    require(['Main']);
+</script>

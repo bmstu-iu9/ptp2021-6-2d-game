@@ -1,6 +1,7 @@
-import { Vector } from "./Geom";
-import { CollisionType, Tile } from "./Tile";
-import { MimicMapJSON } from "./Main";
+import { join } from "path/posix";
+import { Vector } from "../Geom";
+import { LevelJSON } from "../Level";
+import { CollisionType, Tile } from "../Tile";
 
 export class PathGenerator {
     private static fillTile(collisionMesh : boolean[][], tileInfo : Tile, place : Vector) {
@@ -97,7 +98,7 @@ export class PathGenerator {
         }
     }
 
-    public static generateMatrix(MimicMap : MimicMapJSON) {
+    public static generateMatrix(MimicMap : LevelJSON) {
         let collisionMap = MimicMap.Grid;
         let collisionMesh : boolean[][]; // Коллизионная сетка
         let distance = new Map(); // Матрица расстояний между узлами коллизионной сетки

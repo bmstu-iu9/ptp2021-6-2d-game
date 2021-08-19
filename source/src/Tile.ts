@@ -14,8 +14,12 @@ export class Tile {
     public colision = CollisionType.Empty;
     public image : HTMLImageElement;
     
-    constructor(colision : CollisionType = 0) {
+    constructor(colision : CollisionType = 0, image : HTMLImageElement = null) {
         this.colision = colision;
+        if (image) {
+            this.image = image;
+            return;
+        }
         if (colision == 0) {
             this.image = Draw.loadImage("textures/Empty.png");
         }
@@ -42,5 +46,9 @@ export class Tile {
 
     public setImage(image : HTMLImageElement) {
         this.image = image;
+    }
+
+    public clone() : Tile {
+        return new Tile(this.colision, this.image);
     }
 }
