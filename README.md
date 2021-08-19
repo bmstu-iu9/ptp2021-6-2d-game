@@ -2,7 +2,7 @@
 2D-игра (капитан Андрей Ильин)
 ## Ссылки
 [Игра](https://bmstu-iu9.github.io/ptp2021-6-2d-game/source/)
-[Редактор карт](https://bmstu-iu9.github.io/ptp2021-6-2d-game/MapEditor/)
+[Редактор карт](https://bmstu-iu9.github.io/ptp2021-6-2d-game/source/level_editor.html)
 ## Команда разработчиков
 * Андрей Ильин (Капитан) - [@StarikTenger](https://github.com/StarikTenger)  
 * Макаров Эдгар (Боцман) - [@Robby-the-paladin](https://github.com/Robby-the-paladin)  
