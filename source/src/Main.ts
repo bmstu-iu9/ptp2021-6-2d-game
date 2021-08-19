@@ -4,7 +4,8 @@ import {Draw} from "./Draw";
 import { Game } from "./Game";
 import { Level } from "./Level";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); //Эдгар, умоляю, перед сливанием приши основную ветку
+//aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
+aux.setEnvironment("http://127.0.0.1:8000/"); // Если локальный сервер
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
