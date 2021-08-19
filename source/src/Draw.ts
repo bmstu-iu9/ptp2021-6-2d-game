@@ -59,8 +59,9 @@ export class Draw {
     // Изображение
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle = 0) {
         let posNew = this.transform(pos);
-        let boxNew = box.mul(this.cam.scale);
+        let boxNew = box.mul(this.cam.scale * 1.01);
         posNew = posNew.sub(boxNew.mul(1 / 2));
+        this.ctx.imageSmoothingEnabled = false;
         this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
     }
     // Заполненный прямоугольник
