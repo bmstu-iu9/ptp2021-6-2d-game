@@ -64,4 +64,4 @@ if (levelEditorMode) {
     setInterval(editorStep, 20);
 }
 else
-    setInterval(step, 20);
+    setInterval(step, Game.dt);

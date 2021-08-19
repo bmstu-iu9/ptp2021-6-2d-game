@@ -13,6 +13,7 @@ import { Debug } from "./Debug";
 
 export class Game {
     public static levels : Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
+    public static dt = 0.02;
 
     public draw : Draw;
     private bodies : Body [] = []; // массив всех тел
