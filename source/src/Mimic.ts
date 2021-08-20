@@ -4,6 +4,7 @@ import { Control, Keys } from "./Control";
 import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
 import { Monster } from "./Entities/Monster";
+import { Corpse } from "./Entities/Corpse";
 
 export class Mimic {
     public controlledEntity : Entity = null;
@@ -50,6 +51,7 @@ export class Mimic {
                 let mouseDistance = target.body.center.sub(coords).abs();
                 if ((centerDistance < this.infectionRadius) && // Цель в радиусе поражения
                     (mouseDistance < target.body.radius) && // На цель навелись мышкой
+                    !(target instanceof Corpse) && // Нельзя переселяться в трупы
                     (this.controlledEntity != target)) { // Нельзя переселяться в себя самого
                     this.takeControl(target);   
                     break;

@@ -1196,7 +1196,38 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_1.Person));
     exports.Monster = Monster;
 });
-define("Mimic", ["require", "exports", "Game", "Control", "Entities/Person", "Entities/Monster"], function (require, exports, Game_2, Control_1, Person_2, Monster_1) {
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom"], function (require, exports, Entity_2, Draw_7, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StationaryObject = void 0;
+    var StationaryObject = (function (_super) {
+        __extends(StationaryObject, _super);
+        function StationaryObject(game, body, type) {
+            var _this = _super.call(this, game, body) || this;
+            _this.image = Draw_7.Draw.loadImage("textures/Corpses/" + type + ".png");
+            return _this;
+        }
+        StationaryObject.prototype.display = function (draw) {
+            draw.image(this.image, this.body.center, new geom.Vector(1, 1));
+        };
+        return StationaryObject;
+    }(Entity_2.Entity));
+    exports.StationaryObject = StationaryObject;
+});
+define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], function (require, exports, StationaryObject_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Corpse = void 0;
+    var Corpse = (function (_super) {
+        __extends(Corpse, _super);
+        function Corpse(game, body, type) {
+            return _super.call(this, game, body, type) || this;
+        }
+        return Corpse;
+    }(StationaryObject_1.StationaryObject));
+    exports.Corpse = Corpse;
+});
+define("Mimic", ["require", "exports", "Game", "Control", "Entities/Person", "Entities/Monster", "Entities/Corpse"], function (require, exports, Game_2, Control_1, Person_2, Monster_1, Corpse_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -1231,6 +1262,7 @@ define("Mimic", ["require", "exports", "Game", "Control", "Entities/Person", "En
                     var mouseDistance = target.body.center.sub(coords).abs();
                     if ((centerDistance < this.infectionRadius) &&
                         (mouseDistance < target.body.radius) &&
+                        !(target instanceof Corpse_1.Corpse) &&
                         (this.controlledEntity != target)) {
                         this.takeControl(target);
                         break;
@@ -1316,38 +1348,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom"], function (require, exports, Entity_2, Draw_7, geom) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.StationaryObject = void 0;
-    var StationaryObject = (function (_super) {
-        __extends(StationaryObject, _super);
-        function StationaryObject(game, body, type) {
-            var _this = _super.call(this, game, body) || this;
-            _this.image = Draw_7.Draw.loadImage("textures/Corpses/" + type + ".png");
-            return _this;
-        }
-        StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center, new geom.Vector(1, 1));
-        };
-        return StationaryObject;
-    }(Entity_2.Entity));
-    exports.StationaryObject = StationaryObject;
-});
-define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], function (require, exports, StationaryObject_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Corpse = void 0;
-    var Corpse = (function (_super) {
-        __extends(Corpse, _super);
-        function Corpse(game, body, type) {
-            return _super.call(this, game, body, type) || this;
-        }
-        return Corpse;
-    }(StationaryObject_1.StationaryObject));
-    exports.Corpse = Corpse;
-});
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_1) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1431,7 +1432,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.makeCorpse = function (pos, type) {
             var body = this.makeBody(pos, 1);
-            var entity = new Corpse_1.Corpse(this, body, type);
+            var entity = new Corpse_2.Corpse(this, body, type);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
             return entity;
