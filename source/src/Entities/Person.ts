@@ -21,7 +21,7 @@ export class Person extends Entity {
     public hp = this.hpMax; // Текущее здоровье
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
-    private mode : PersonMode; // маркер состояния (переименовать по необходимости)
+    public mode : PersonMode; // маркер состояния (переименовать по необходимости)
     protected type : string = null;
 
     constructor(game : Game, body : Body, mode : PersonMode) {
@@ -44,6 +44,12 @@ export class Person extends Entity {
     public upAlertLvl() { // поднятие уровня тревоги
         // Возможно нужны еще манипуляции (тревога по карте и т.д.)
         this.alertLvl++;
+    }
+
+    public die() {
+        this.hp = 0;
+        if (this.type)
+            this.game.makeCorpse(this.body.center, this.type);
     }
 
     public checkTriggers() { // проверка всех триггеров на попадание в сетор видимости
@@ -99,8 +105,7 @@ export class Person extends Entity {
 
     private updateMode() {
         if (this.hp < 0) {
-            if (this.type)
-                this.game.makeCorpse(this.body.center, this.type);
+            this.die();
         }
         else if (this.hp < this.hpThresholdDying)
             this.mode = PersonMode.Dying;

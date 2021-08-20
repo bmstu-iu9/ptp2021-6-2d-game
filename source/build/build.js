@@ -1081,6 +1081,11 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         Person.prototype.upAlertLvl = function () {
             this.alertLvl++;
         };
+        Person.prototype.die = function () {
+            this.hp = 0;
+            if (this.type)
+                this.game.makeCorpse(this.body.center, this.type);
+        };
         Person.prototype.checkTriggers = function () {
             var center = this.body.center;
             for (var i = 0; i < this.game.triggers.length; i++) {
@@ -1129,8 +1134,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         };
         Person.prototype.updateMode = function () {
             if (this.hp < 0) {
-                if (this.type)
-                    this.game.makeCorpse(this.body.center, this.type);
+                this.die();
             }
             else if (this.hp < this.hpThresholdDying)
                 this.mode = PersonMode.Dying;
@@ -1239,8 +1243,10 @@ define("Mimic", ["require", "exports", "Game", "Control", "Entities/Person", "En
         }
         Mimic.prototype.takeControl = function (entity) {
             console.log("biba", entity);
-            if (this.controlledEntity instanceof Monster_1.Monster) {
-                this.controlledEntity.hp = 0;
+            if (this.controlledEntity instanceof Monster_1.Monster ||
+                (this.controlledEntity instanceof Person_2.Person) &&
+                    this.controlledEntity.mode == Person_2.PersonMode.Dying) {
+                this.controlledEntity.die();
             }
             this.controlledEntity = entity;
         };
