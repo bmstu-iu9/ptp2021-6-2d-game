@@ -4,12 +4,14 @@ import { Body } from "./EntityAttributes/Body";
 import * as geom from "../Geom";
 import { Debug } from "../Debug";
 import { Color } from "../Draw";
+import { BehaviorModel } from "../BehaviorModel";
 
 export class Person extends Entity {
     public viewRadius : number; // радиус сектора видимости
     public viewingAngle : number; // угол сектора видимости
     public direction : geom.Vector; // направление взгляда
     public alertLvl : number; // уровень тревоги
+    public behaviorModel : BehaviorModel;
 
     constructor(game : Game, body : Body, mod : string) {
         super(game, body, mod);
