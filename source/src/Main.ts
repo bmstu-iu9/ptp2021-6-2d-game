@@ -13,6 +13,7 @@ Game.levels = new Map();
 Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
+aux.setGame(game);
 game.make_person(game.make_body(new geom.Vector(1, 0), 1));
 game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
 game.mimic.takeControl(game.entities[0]);
