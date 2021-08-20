@@ -7,6 +7,7 @@ export class Soldier extends Person {
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body, mode);
         this.animation = new Animation("Soldier",8);
+        this.type = "Soldier";
     }
 
     public step() {

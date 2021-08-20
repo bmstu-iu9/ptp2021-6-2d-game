@@ -22,6 +22,7 @@ export class Person extends Entity {
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     private mode : PersonMode; // маркер состояния (переименовать по необходимости)
+    protected type : string = null;
 
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body)
@@ -98,7 +99,8 @@ export class Person extends Entity {
 
     private updateMode() {
         if (this.hp < 0) {
-            // TODO: создавать труп
+            if (this.type)
+                this.game.makeCorpse(this.body.center, this.type);
         }
         else if (this.hp < this.hpThresholdDying)
             this.mode = PersonMode.Dying;

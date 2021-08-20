@@ -13,6 +13,7 @@ import { Debug } from "./Debug";
 import { Scientist } from "./Entities/Scientist";
 import { Soldier } from "./Entities/Soldier";
 import { Monster } from "./Entities/Monster";
+import { Corpse } from "./Entities/Corpse";
 
 export class Game {
     public static levels : Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -82,6 +83,14 @@ export class Game {
     public makeMonster(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
         let body = this.makeBody(pos, 1);
         let entity = new Monster(this, body);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeCorpse(pos : geom.Vector, type : string) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Corpse(this, body, type);//последнее - маркер состояния
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
         return entity;

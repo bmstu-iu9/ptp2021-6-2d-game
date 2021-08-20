@@ -1048,6 +1048,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             _this.hp = _this.hpMax;
             _this.hpThresholdCorrupted = 10;
             _this.hpThresholdDying = 5;
+            _this.type = null;
             _this.mode = mode;
             _this.viewRadius = 3;
             _this.viewingAngle = Math.PI / 4;
@@ -1113,6 +1114,8 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         };
         Person.prototype.updateMode = function () {
             if (this.hp < 0) {
+                if (this.type)
+                    this.game.makeCorpse(this.body.center, this.type);
             }
             else if (this.hp < this.hpThresholdDying)
                 this.mode = PersonMode.Dying;
@@ -1279,6 +1282,7 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities
         function Scientist(game, body, mode) {
             var _this = _super.call(this, game, body, mode) || this;
             _this.animation = new Animation_3.Animation("Scientist", 8);
+            _this.type = "Scientist";
             return _this;
         }
         return Scientist;
@@ -1294,6 +1298,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
         function Soldier(game, body, mode) {
             var _this = _super.call(this, game, body, mode) || this;
             _this.animation = new Animation_4.Animation("Soldier", 8);
+            _this.type = "Soldier";
             return _this;
         }
         Soldier.prototype.step = function () {
@@ -1305,7 +1310,38 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2) {
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom"], function (require, exports, Entity_2, Draw_7, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StationaryObject = void 0;
+    var StationaryObject = (function (_super) {
+        __extends(StationaryObject, _super);
+        function StationaryObject(game, body, type) {
+            var _this = _super.call(this, game, body) || this;
+            _this.image = Draw_7.Draw.loadImage("textures/Corpses/" + type + ".png");
+            return _this;
+        }
+        StationaryObject.prototype.display = function (draw) {
+            draw.image(this.image, this.body.center, new geom.Vector(1, 1));
+        };
+        return StationaryObject;
+    }(Entity_2.Entity));
+    exports.StationaryObject = StationaryObject;
+});
+define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], function (require, exports, StationaryObject_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Corpse = void 0;
+    var Corpse = (function (_super) {
+        __extends(Corpse, _super);
+        function Corpse(game, body, type) {
+            return _super.call(this, game, body, type) || this;
+        }
+        return Corpse;
+    }(StationaryObject_1.StationaryObject));
+    exports.Corpse = Corpse;
+});
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1383,6 +1419,13 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.makeMonster = function (pos) {
             var body = this.makeBody(pos, 1);
             var entity = new Monster_2.Monster(this, body);
+            entity.entityID = this.entities.length;
+            this.entities[this.entities.length] = entity;
+            return entity;
+        };
+        Game.prototype.makeCorpse = function (pos, type) {
+            var body = this.makeBody(pos, 1);
+            var entity = new Corpse_1.Corpse(this, body, type);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
             return entity;
@@ -1471,7 +1514,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
     }());
     exports.Debug = Debug;
 });
-define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_7, geom, Tile_5) {
+define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_8, geom, Tile_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Cursor = exports.Mode = void 0;
@@ -1503,13 +1546,13 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
         Cursor.prototype.display = function () {
             this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
             if (this.level.isInBounds(this.pos))
-                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_7.Color(0, 255, 0), 0.1);
+                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_8.Color(0, 255, 0), 0.1);
         };
         return Cursor;
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_8, Level_2, geom, Cursor_1, Tile_6) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_9, Level_2, geom, Cursor_1, Tile_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -1540,7 +1583,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 this.createTileButton("textures/tiles/wall" + i + ".png", Tile_6.CollisionType.Full);
             for (var i = 0; i < 2; i++)
                 this.createTileButton("textures/tiles/floor" + i + ".png", Tile_6.CollisionType.Empty);
-            this.cursor.drawPreview = new Draw_8.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
+            this.cursor.drawPreview = new Draw_9.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
@@ -1567,12 +1610,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_3, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_10, Game_3, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("http://127.0.0.1:8000/");
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
+    var draw = new Draw_10.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
     Game_3.Game.levels = new Map();
     Game_3.Game.loadMap("map.json", "map");
@@ -1615,18 +1658,5 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     }
     else
         setInterval(step, Game_3.Game.dt * 1000);
-});
-define("Entities/StationaryObject", ["require", "exports", "Entities/Entity"], function (require, exports, Entity_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.StationaryObject = void 0;
-    var StationaryObject = (function (_super) {
-        __extends(StationaryObject, _super);
-        function StationaryObject(game, body) {
-            return _super.call(this, game, body) || this;
-        }
-        return StationaryObject;
-    }(Entity_2.Entity));
-    exports.StationaryObject = StationaryObject;
 });
 //# sourceMappingURL=build.js.map
