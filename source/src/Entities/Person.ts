@@ -97,12 +97,15 @@ export class Person extends Entity {
     }
 
     private updateMode() {
-        if (this.hp < this.hpThresholdDying)
+        if (this.hp < 0) {
+            // TODO: создавать труп
+        }
+        else if (this.hp < this.hpThresholdDying)
             this.mode = PersonMode.Dying;
         else  if (this.hp < this.hpThresholdCorrupted)
             this.mode = PersonMode.Corrupted;
         else
-        this.mode = PersonMode.Fine;
+            this.mode = PersonMode.Fine;
     }
 
     public step() {

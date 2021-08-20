@@ -10,6 +10,9 @@ import { Mimic } from "./Mimic";
 import { Level } from "./Level";
 import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
+import { Scientist } from "./Entities/Scientist";
+import { Soldier } from "./Entities/Soldier";
+import { Monster } from "./Entities/Monster";
 
 export class Game {
     public static levels : Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -54,19 +57,37 @@ export class Game {
     }
     
 
-    public make_body(coordinates : geom.Vector, radius : number) : Body { // создаёт тело и возвращает ссылку
+    public makeBody(coordinates : geom.Vector, radius : number) : Body { // создаёт тело и возвращает ссылку
         let body = new Body(coordinates, radius);
         body.game = this;
         return this.bodies[this.bodies.length] = body;
     }
 
-    public make_person(body : Body) { // создаёт персонажа и возвращает ссылку
-        this.entities[this.entities.length] = new Person(this, body,PersonMode.Fine);//последнее - маркер состояния
-        this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
-        return this.entities[this.entities.length - 1];
+    public makeScientist(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
     }
 
-    public make_trigger(lifeTime : number, boundEntity : Entity) { // создаёт триггер и возвращает ссылку
+    public makeSoldier(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Soldier(this, body,PersonMode.Fine);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeMonster(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Monster(this, body);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeTrigger(lifeTime : number, boundEntity : Entity) { // создаёт триггер и возвращает ссылку
         return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
     }
 

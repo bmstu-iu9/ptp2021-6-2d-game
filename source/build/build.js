@@ -1112,7 +1112,9 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             }
         };
         Person.prototype.updateMode = function () {
-            if (this.hp < this.hpThresholdDying)
+            if (this.hp < 0) {
+            }
+            else if (this.hp < this.hpThresholdDying)
                 this.mode = PersonMode.Dying;
             else if (this.hp < this.hpThresholdCorrupted)
                 this.mode = PersonMode.Corrupted;
@@ -1170,7 +1172,22 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
     }(Entity_1.Entity));
     exports.Person = Person;
 });
-define("Mimic", ["require", "exports", "Game", "Control"], function (require, exports, Game_2, Control_1) {
+define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation"], function (require, exports, Person_1, Animation_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Monster = void 0;
+    var Monster = (function (_super) {
+        __extends(Monster, _super);
+        function Monster(game, body) {
+            var _this = _super.call(this, game, body, Person_1.PersonMode.Fine) || this;
+            _this.animation = new Animation_2.Animation("Monster", 3);
+            return _this;
+        }
+        return Monster;
+    }(Person_1.Person));
+    exports.Monster = Monster;
+});
+define("Mimic", ["require", "exports", "Game", "Control", "Entities/Person", "Entities/Monster"], function (require, exports, Game_2, Control_1, Person_2, Monster_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -1186,9 +1203,14 @@ define("Mimic", ["require", "exports", "Game", "Control"], function (require, ex
         };
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
-            var person = this.controlledEntity;
-            if (person)
+            if ((this.controlledEntity instanceof Person_2.Person) && !(this.controlledEntity instanceof Monster_1.Monster)) {
+                var person = this.controlledEntity;
                 person.hp -= Game_2.Game.dt;
+                if (person.hp < 0) {
+                    var monster = this.game.makeMonster(this.controlledEntity.body.center);
+                    this.controlledEntity = monster;
+                }
+            }
             if (Control_1.Control.isMouseClicked()) {
                 var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
                 for (var i = 0; i < this.game.entities.length; i++) {
@@ -1245,7 +1267,42 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger"], function (require, exports, geom, aux, Body_1, Person_1, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1) {
+define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation"], function (require, exports, Person_3, Animation_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Scientist = void 0;
+    var Scientist = (function (_super) {
+        __extends(Scientist, _super);
+        function Scientist(game, body, mode) {
+            var _this = _super.call(this, game, body, mode) || this;
+            _this.animation = new Animation_3.Animation("Scientist", 8);
+            return _this;
+        }
+        return Scientist;
+    }(Person_3.Person));
+    exports.Scientist = Scientist;
+});
+define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation"], function (require, exports, Person_4, Animation_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Soldier = void 0;
+    var Soldier = (function (_super) {
+        __extends(Soldier, _super);
+        function Soldier(game, body, mode) {
+            var _this = _super.call(this, game, body, mode) || this;
+            _this.animation = new Animation_4.Animation("Soldier", 8);
+            return _this;
+        }
+        Soldier.prototype.step = function () {
+            _super.prototype.step.call(this);
+            if (this.commands.commands["shoot"]) {
+            }
+        };
+        return Soldier;
+    }(Person_4.Person));
+    exports.Soldier = Soldier;
+});
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1301,17 +1358,33 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 });
             });
         };
-        Game.prototype.make_body = function (coordinates, radius) {
+        Game.prototype.makeBody = function (coordinates, radius) {
             var body = new Body_1.Body(coordinates, radius);
             body.game = this;
             return this.bodies[this.bodies.length] = body;
         };
-        Game.prototype.make_person = function (body) {
-            this.entities[this.entities.length] = new Person_1.Person(this, body, Person_1.PersonMode.Fine);
-            this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
-            return this.entities[this.entities.length - 1];
+        Game.prototype.makeScientist = function (pos) {
+            var body = this.makeBody(pos, 1);
+            var entity = new Scientist_1.Scientist(this, body, Person_5.PersonMode.Fine);
+            entity.entityID = this.entities.length;
+            this.entities[this.entities.length] = entity;
+            return entity;
         };
-        Game.prototype.make_trigger = function (lifeTime, boundEntity) {
+        Game.prototype.makeSoldier = function (pos) {
+            var body = this.makeBody(pos, 1);
+            var entity = new Soldier_1.Soldier(this, body, Person_5.PersonMode.Fine);
+            entity.entityID = this.entities.length;
+            this.entities[this.entities.length] = entity;
+            return entity;
+        };
+        Game.prototype.makeMonster = function (pos) {
+            var body = this.makeBody(pos, 1);
+            var entity = new Monster_2.Monster(this, body);
+            entity.entityID = this.entities.length;
+            this.entities[this.entities.length] = entity;
+            return entity;
+        };
+        Game.prototype.makeTrigger = function (lifeTime, boundEntity) {
             return this.triggers[this.triggers.length] = new Trigger_1.Trigger(lifeTime, boundEntity);
         };
         Game.prototype.step = function () {
@@ -1492,8 +1565,8 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     Game_3.Game.levels = new Map();
     Game_3.Game.loadMap("map.json", "map");
     var game = new Game_3.Game(draw);
-    game.make_person(game.make_body(new geom.Vector(1, 0), 1));
-    game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
+    game.makeScientist(new geom.Vector(1, 0));
+    game.makeSoldier(new geom.Vector(2.5, 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;
@@ -1503,7 +1576,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
             t++;
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-                game.make_trigger(100000000, game.entities[1]);
+                game.makeTrigger(100000000, game.entities[1]);
                 console.log(Game_3.Game.levels["map"].PathMatrix);
                 x = true;
             }
@@ -1530,37 +1603,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     }
     else
         setInterval(step, Game_3.Game.dt * 1000);
-});
-define("Entities/Scientist", ["require", "exports", "Entities/Person"], function (require, exports, Person_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Scientist = void 0;
-    var Scientist = (function (_super) {
-        __extends(Scientist, _super);
-        function Scientist(game, body, mode) {
-            return _super.call(this, game, body, mode) || this;
-        }
-        return Scientist;
-    }(Person_2.Person));
-    exports.Scientist = Scientist;
-});
-define("Entities/Soldier", ["require", "exports", "Entities/Person"], function (require, exports, Person_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Soldier = void 0;
-    var Soldier = (function (_super) {
-        __extends(Soldier, _super);
-        function Soldier(game, body, mode) {
-            return _super.call(this, game, body, mode) || this;
-        }
-        Soldier.prototype.step = function () {
-            _super.prototype.step.call(this);
-            if (this.commands.commands["shoot"]) {
-            }
-        };
-        return Soldier;
-    }(Person_3.Person));
-    exports.Soldier = Soldier;
 });
 define("Entities/StationaryObject", ["require", "exports", "Entities/Entity"], function (require, exports, Entity_2) {
     "use strict";

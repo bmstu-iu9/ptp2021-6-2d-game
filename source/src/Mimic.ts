@@ -3,6 +3,7 @@ import * as geom from "./Geom"
 import { Control, Keys } from "./Control";
 import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
+import { Monster } from "./Entities/Monster";
 
 export class Mimic {
     public controlledEntity : Entity = null;
@@ -21,10 +22,16 @@ export class Mimic {
     public step() {
         // Подменяем комманды дя Entity, если мы не делаем это каждый ход, команды восстанавливаются сами (см Entity.step)
         this.controlledEntity.commands = Control.commands;
-        // Наносим урон жертве
-        let person = this.controlledEntity as Person;
-        if (person)
+        // Наносим урон жертве        
+        if ((this.controlledEntity instanceof Person) && !(this.controlledEntity instanceof Monster)) {
+            let person = this.controlledEntity as Person;
             person.hp -= Game.dt;
+            // Выселяемся из человека, если он умер
+            if (person.hp < 0) {
+                let monster = this.game.makeMonster(this.controlledEntity.body.center);
+                this.controlledEntity = monster;
+            }
+        }
 
         // Если мышка нажата, мы производим переселение
         if (Control.isMouseClicked()) { 
