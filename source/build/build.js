@@ -1383,7 +1383,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity"], f
     }(Entity_2.Entity));
     exports.StationaryObject = StationaryObject;
 });
-define("AuxLib", ["require", "exports", "Draw", "Geom", "Entities/Soldier", "Entities/Scientist", "Entities/StationaryObject", "Game", "Entities/EntityAttributes/Body"], function (require, exports, Draw_6, geom, Soldier_1, Scientist_1, StationaryObject_1, Game_2, Body_2) {
+define("AuxLib", ["require", "exports", "Draw", "Geom", "Entities/Soldier", "Entities/Scientist", "Entities/StationaryObject", "Entities/EntityAttributes/Body"], function (require, exports, Draw_6, geom, Soldier_1, Scientist_1, StationaryObject_1, Body_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.reviver = exports.replacer = exports.getMilliCount = exports.setGame = exports.setEnvironment = exports.game = exports.environment = void 0;
@@ -1446,11 +1446,6 @@ define("AuxLib", ["require", "exports", "Draw", "Geom", "Entities/Soldier", "Ent
     }
     exports.replacer = replacer;
     function reviver(key, value) {
-        if (!(exports.game instanceof Game_2.Game) || exports.game == null) {
-            var canvas = document.getElementById('gameCanvas');
-            var draw = new Draw_6.Draw(canvas, new geom.Vector(640, 640));
-            var game_1 = new Game_2.Game(draw);
-        }
         if (typeof value === 'object' && value !== null) {
             if (value.dataType === 'Map') {
                 return new Map(value.value);
@@ -1575,16 +1570,16 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_3, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_9, Game_2, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:8080/");
+    aux.setEnvironment("http://127.0.0.1:4500/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_9.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
-    Game_3.Game.levels = new Map();
-    Game_3.Game.loadMap("map.json", "map");
-    var game = new Game_3.Game(draw);
+    Game_2.Game.levels = new Map();
+    Game_2.Game.loadMap("map.json", "map");
+    var game = new Game_2.Game(draw);
     aux.setGame(game);
     game.make_person(game.make_body(new geom.Vector(1, 0), 1));
     game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
@@ -1593,12 +1588,12 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var t = 0;
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     function step() {
-        if (Game_3.Game.levels["map"] != undefined) {
+        if (Game_2.Game.levels["map"] != undefined) {
             t++;
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
                 game.make_trigger(100000000, game.entities[1]);
-                console.log(Game_3.Game.levels["map"].PathMatrix);
+                console.log(Game_2.Game.levels["map"].PathMatrix);
                 x = true;
             }
             if (t % 100 == 0) {

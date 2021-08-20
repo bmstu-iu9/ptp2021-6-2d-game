@@ -74,11 +74,6 @@ export function replacer(key, value) { // функция замены класс
   }
   
 export function reviver(key, value) { // функция обратной замены классов для преобразования из JSON
-    if (!(game instanceof Game) || game == null) {
-        let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-        let draw = new Draw(canvas, new geom.Vector(640, 640));
-        let game = new Game(draw);
-    }
     if(typeof value === 'object' && value !== null) {
         if (value.dataType === 'Map') { // распаковка Map
             return new Map(value.value);
