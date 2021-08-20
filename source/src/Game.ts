@@ -91,6 +91,15 @@ export class Game {
         return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
     }
 
+    private processEntities() {
+        for (let i = 0; i < this.entities.length; i++) {
+            if (this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0) {
+                this.entities.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
     public step() {
       // Ксотыль
       if (Game.levels[this.currentLevelName])
@@ -101,6 +110,7 @@ export class Game {
       // Processing entities
       this.entities.forEach(entity => entity.animation.step());
       this.entities.forEach(entity => entity.step());
+      this.processEntities();
     }
 
     public attachCamToMimic() {

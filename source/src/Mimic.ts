@@ -16,6 +16,9 @@ export class Mimic {
 
     public takeControl(entity : Entity) {
         console.log("biba", entity);
+        if (this.controlledEntity instanceof Monster) {
+            this.controlledEntity.hp = 0;
+        }
         this.controlledEntity = entity;
     }
 

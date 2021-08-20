@@ -1199,6 +1199,9 @@ define("Mimic", ["require", "exports", "Game", "Control", "Entities/Person", "En
         }
         Mimic.prototype.takeControl = function (entity) {
             console.log("biba", entity);
+            if (this.controlledEntity instanceof Monster_1.Monster) {
+                this.controlledEntity.hp = 0;
+            }
             this.controlledEntity = entity;
         };
         Mimic.prototype.step = function () {
@@ -1387,6 +1390,14 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.makeTrigger = function (lifeTime, boundEntity) {
             return this.triggers[this.triggers.length] = new Trigger_1.Trigger(lifeTime, boundEntity);
         };
+        Game.prototype.processEntities = function () {
+            for (var i = 0; i < this.entities.length; i++) {
+                if (this.entities[i] instanceof Person_5.Person && this.entities[i].hp <= 0) {
+                    this.entities.splice(i, 1);
+                    i--;
+                }
+            }
+        };
         Game.prototype.step = function () {
             if (Game.levels[this.currentLevelName])
                 this.currentLevel = Game.levels[this.currentLevelName];
@@ -1394,6 +1405,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.attachCamToMimic();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
+            this.processEntities();
         };
         Game.prototype.attachCamToMimic = function () {
             this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
