@@ -231,6 +231,21 @@ define("Draw", ["require", "exports"], function (require, exports) {
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
+        Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
+            var bar = box.clone();
+            bar.x *= percentage;
+            this.fillRect(pos, box, frontColor);
+            var posNew = pos.clone();
+            posNew.x -= (box.x - bar.x) / 2;
+            this.fillRect(posNew, bar, backColor);
+            bar.x = 2 / this.cam.scale;
+            pos.x -= box.x / 2;
+            for (var i = 0; i < marks.length; i++) {
+                posNew = pos.clone();
+                posNew.x += box.x * marks[i];
+                this.fillRect(posNew, bar, frontColor);
+            }
+        };
         Draw.images = {};
         return Draw;
     }());
@@ -1155,21 +1170,12 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         Person.prototype.display = function (draw) {
             _super.prototype.display.call(this, draw);
             var box = new geom.Vector(1, 0.1);
-            var bar = box.clone();
-            bar.x *= this.hp / this.hpMax;
             var pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
-            draw.fillRect(pos, box, new Draw_6.Color(25, 25, 25));
-            var posNew = pos.clone();
-            posNew.x -= (box.x - bar.x) / 2;
-            draw.fillRect(posNew, bar, new Draw_6.Color(25, 255, 25));
-            bar.x = 2 / draw.cam.scale;
-            pos.x -= box.x / 2;
-            posNew = pos.clone();
-            posNew.x += box.x * this.hpThresholdCorrupted / this.hpMax;
-            draw.fillRect(posNew, bar, new Draw_6.Color(25, 25, 25));
-            posNew = pos.clone();
-            posNew.x += box.x * this.hpThresholdDying / this.hpMax;
-            draw.fillRect(posNew, bar, new Draw_6.Color(25, 25, 25));
+            var percentage = this.hp / this.hpMax;
+            var frontColor = new Draw_6.Color(25, 25, 25);
+            var backColor = new Draw_6.Color(25, 255, 25);
+            var marks = [this.hpThresholdCorrupted / this.hpMax, this.hpThresholdDying / this.hpMax];
+            draw.bar(pos, box, percentage, frontColor, backColor, marks);
         };
         return Person;
     }(Entity_1.Entity));

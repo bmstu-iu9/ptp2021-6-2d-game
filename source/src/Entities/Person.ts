@@ -144,24 +144,15 @@ export class Person extends Entity {
     }
 
     public display(draw : Draw) {
+        
         super.display(draw);
-        // HP bar
+
         let box = new geom.Vector(1, 0.1);
-        let bar = box.clone();
-        bar.x *= this.hp / this.hpMax;
         let pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
-        draw.fillRect(pos, box, new Color(25, 25, 25));
-        let posNew = pos.clone();
-        posNew.x -= (box.x - bar.x) / 2;
-        draw.fillRect(posNew, bar, new Color(25, 255, 25));
-        // Деления
-        bar.x = 2 / draw.cam.scale;
-        pos.x -= box.x / 2;
-        posNew = pos.clone();
-        posNew.x += box.x * this.hpThresholdCorrupted / this.hpMax;
-        draw.fillRect(posNew, bar, new Color(25, 25, 25));
-        posNew = pos.clone();
-        posNew.x += box.x * this.hpThresholdDying / this.hpMax;
-        draw.fillRect(posNew, bar, new Color(25, 25, 25));
+        let percentage = this.hp / this.hpMax;
+        let frontColor = new Color(25, 25, 25)
+        let backColor = new Color(25, 255, 25)
+        let marks = [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax];
+        draw.bar(pos, box, percentage, frontColor, backColor, marks)
     }
 }

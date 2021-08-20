@@ -147,4 +147,21 @@ export class Draw {
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
+    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, frontColor : Color, backColor : Color, marks: number[]){
+        //hp
+        let bar = box.clone();
+        bar.x *= percentage;
+        this.fillRect(pos, box,frontColor);
+        let posNew = pos.clone();
+        posNew.x -= (box.x - bar.x) / 2;
+        this.fillRect(posNew, bar, backColor);
+        // Деления
+        bar.x = 2 / this.cam.scale;
+        pos.x -= box.x / 2;
+        for (var i = 0; i < marks.length ; i++){
+            posNew = pos.clone();
+            posNew.x += box.x * marks[i];
+            this.fillRect(posNew, bar, frontColor);
+        }
+    }
 }
