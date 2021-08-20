@@ -14,25 +14,29 @@ export class Tile {
     public colision = CollisionType.Empty;
     public image : HTMLImageElement;
     
-    constructor(colision : CollisionType = 0) {
+    constructor(colision : CollisionType = 0, image : HTMLImageElement = null) {
         this.colision = colision;
+        if (image) {
+            this.image = image;
+            return;
+        }
         if (colision == 0) {
-            this.image = Draw.loadImage("textures/Empty.png");
+            this.image = Draw.loadImage("textures/tiles/Empty.png");
         }
         if (colision == 1) {
-            this.image = Draw.loadImage("textures/CornerUL.png");
+            this.image = Draw.loadImage("textures/tiles/CornerUL.png");
         }
         if (colision == 2) {
-            this.image = Draw.loadImage("textures/CornerUR.png");
+            this.image = Draw.loadImage("textures/tiles/CornerUR.png");
         }
         if (colision == 3) {
-            this.image = Draw.loadImage("textures/CornerDL.png");
+            this.image = Draw.loadImage("textures/tiles/CornerDL.png");
         }
         if (colision == 4) {
-            this.image = Draw.loadImage("textures/CornerDR.png");
+            this.image = Draw.loadImage("textures/tiles/CornerDR.png");
         }
         if (colision == 5) {
-            this.image = Draw.loadImage("textures/Full.png");
+            this.image = Draw.loadImage("textures/tiles/Full.png");
         }
     }
 
@@ -42,5 +46,9 @@ export class Tile {
 
     public setImage(image : HTMLImageElement) {
         this.image = image;
+    }
+
+    public clone() : Tile {
+        return new Tile(this.colision, this.image);
     }
 }

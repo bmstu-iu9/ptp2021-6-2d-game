@@ -18,7 +18,7 @@ export class Entity {
         this.game = game;
         this.body = body;
         this.myAI = new AI(game, body);
-        this.animation = new Animation("igor",3); // создание анимации персонажа
+        this.animation = new Animation("Scientist",8); // создание анимации персонажа
         this.mod=mod; //Маркер состояния
         this.commands = this.myAI.commands;
     }
@@ -26,10 +26,10 @@ export class Entity {
         if(x==0 && y == 0) {
             this.animation.changedirection("stand",this.mod)
         }
-        if(x==1 && y == 0) {
+        if(x==1) {
             this.animation.changedirection("right",this.mod)
         }
-        if(x==-1 && y == 0) {
+        if(x==-1) {
             this.animation.changedirection("left",this.mod)
         }
         if(x==0 && y == 1) {

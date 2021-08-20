@@ -84,7 +84,7 @@ export function reviver(key, value) { // функция обратной зам�
             return new Map(value.value);
         }
         if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
-          return Draw.loadImage("./textures/" + value.value);
+          return Draw.loadImage("./textures/tiles/" + value.value);
         }
         if (value.dataType === 'Vector') { // распаковка Vector
           return JSON.stringify(new geom.Vector(value.x, value.y));

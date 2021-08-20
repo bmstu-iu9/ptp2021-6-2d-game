@@ -1,5 +1,4 @@
 import { Draw } from "../../Draw";
-
 export class Animation {
     public current_state : HTMLImageElement;
     private stateMachine : HTMLImageElement [] = [];
@@ -16,8 +15,11 @@ export class Animation {
         this.states=states;
         this.current_state = Draw.loadImage("textures/"+this.name+"/right_fine_"+this.counter%this.states+".png"); //начальное положение
         this.mode="fine";
-        this.direction="right"
+        this.direction="right";
+    }
 
+    public getImage(current : string) {
+        return Draw.loadImage(current);
     }
     public changedirection(string : string, mode : string) { // шаг смены анимации
         this.direction = string; //
@@ -26,7 +28,7 @@ export class Animation {
     public step() { // шаг смены анимации
         this.counter++
         let frame = this.counter % this.states; // номер текущего кадра
-        this.current_state = Draw.loadImage("textures/" +
+        this.current_state = this.getImage("textures/" +
             this.name + "/" +
             this.direction + "_" +
             this.mode + "_" +
