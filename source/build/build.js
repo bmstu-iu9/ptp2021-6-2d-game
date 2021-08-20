@@ -1193,7 +1193,7 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/E
         __extends(Monster, _super);
         function Monster(game, body) {
             var _this = _super.call(this, game, body, Person_1.PersonMode.Fine) || this;
-            _this.animation = new Animation_2.Animation("Monster", 3);
+            _this.animation = new Animation_2.Animation("Monster", 8);
             return _this;
         }
         return Monster;
@@ -1626,7 +1626,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_10, Game_3, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:8000/");
+    aux.setEnvironment("http://127.0.0.1:4500/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_10.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
