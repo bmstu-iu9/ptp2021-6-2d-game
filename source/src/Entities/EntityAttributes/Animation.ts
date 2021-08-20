@@ -1,7 +1,4 @@
 import { Draw } from "../../Draw";
-type hashimages = {
-    [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
-};
 export class Animation {
     public current_state : HTMLImageElement;
     private stateMachine : HTMLImageElement [] = [];
@@ -10,7 +7,6 @@ export class Animation {
     private states : number; // кол-во анимаций на 1 состояние
     public mode : string;
     public direction : string; //направление движения
-    private images : hashimages; // Хеш таблица с изображениями
 
 
     constructor(person : string, states : number) {
@@ -20,16 +16,10 @@ export class Animation {
         this.current_state = Draw.loadImage("textures/"+this.name+"/right_fine_"+this.counter%this.states+".png"); //начальное положение
         this.mode="fine";
         this.direction="right";
-        this.images={};
     }
 
     public getImage(current : string) {
-        if (this.images[current]) {
-            return this.images[current]; // Извлекаем из хеш таблицы
-        }
-        console.log("loadImage");  // Грузим картинку
-        this.images[current] = Draw.loadImage(current);
-        return this.images[current];
+        return Draw.loadImage(current);
     }
     public changedirection(string : string, mode : string) { // шаг смены анимации
         this.direction = string; //
