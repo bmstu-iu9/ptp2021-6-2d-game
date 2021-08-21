@@ -12,6 +12,6 @@ export class StationaryObject extends Entity {
     }
 
     public display(draw : Draw) {
-        draw.image(this.image, this.body.center, new geom.Vector(1, 1));
+        draw.image(this.image, this.body.center, new geom.Vector(1, 1),0,0);
     }
 }

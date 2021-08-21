@@ -87,7 +87,7 @@ export class Level {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
                 draw.image(this.Grid[i][j].image, 
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
-                    .add(size.mul(1 / 2)), size);
+                    .add(size.mul(1 / 2)), size,0,0);
                 // Отрисовка сетки в расширенном режиме
                 if (advanced)
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))

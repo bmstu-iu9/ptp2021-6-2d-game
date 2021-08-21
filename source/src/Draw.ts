@@ -21,7 +21,10 @@ export class Color {
         return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
     }
 }
-
+enum Layer {
+    TileLayer, 
+    EntityLayer
+}
 type hashimages = {
     [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
 };
@@ -74,28 +77,34 @@ export class Draw {
     }
 
     // Изображение
-    public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle = 0) {
-        
-        let curqueue : queue = {image,pos,box};
-        
-        this.imagequeue.push(curqueue);
-        console.log("push",curqueue)
+    public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer) {
+        angle++;
+        if (layer == 0){ // Отрисовка сразу
+            let posNew = this.transform(pos);
+                let boxNew = box.mul(this.cam.scale * 1.01);
+                posNew = posNew.sub(boxNew.mul(1 / 2));
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        }
+        if (layer == 1){ //Отрисовка после сортировки
+            let curqueue : queue = {image,pos,box};
+            this.imagequeue.push(curqueue);
+            
+        }
     }
     public getimage(){
-        console.log(this.imagequeue)
         if (this.imagequeue.length > 0){
             this.imagequeue.sort(function (a, b) { // Сортировка
                 if (a.pos.y > b.pos.y) {
-                    return 1;
+                    return -1;
                 }
                 if (a.pos.y < b.pos.y) {
-                    return -1;
+                    return 1;
                 }
                 return 0;
             });
             for (;this.imagequeue.length > 0;){
                 let temp = this.imagequeue.pop(); //Извлечение
-                console.log("pop",temp)
                 let image = temp.image;
                 let pos = temp.pos;
                 let box=temp.box;
