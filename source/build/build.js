@@ -126,6 +126,7 @@ define("Draw", ["require", "exports"], function (require, exports) {
     exports.Color = Color;
     var Draw = (function () {
         function Draw(canvas, size) {
+            this.imagequeue = [];
             this.cam = new Camera();
             this.canvas = canvas;
             canvas.width = size.x;
@@ -160,11 +161,35 @@ define("Draw", ["require", "exports"], function (require, exports) {
         };
         Draw.prototype.image = function (image, pos, box, angle) {
             if (angle === void 0) { angle = 0; }
-            var posNew = this.transform(pos);
-            var boxNew = box.mul(this.cam.scale * 1.01);
-            posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.imageSmoothingEnabled = false;
-            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            var curqueue = { image: image, pos: pos, box: box };
+            this.imagequeue.push(curqueue);
+            console.log("push", curqueue);
+        };
+        Draw.prototype.getimage = function () {
+            console.log(this.imagequeue);
+            if (this.imagequeue.length > 0) {
+                this.imagequeue.sort(function (a, b) {
+                    if (a.pos.y > b.pos.y) {
+                        return 1;
+                    }
+                    if (a.pos.y < b.pos.y) {
+                        return -1;
+                    }
+                    return 0;
+                });
+                for (; this.imagequeue.length > 0;) {
+                    var temp = this.imagequeue.pop();
+                    console.log("pop", temp);
+                    var image = temp.image;
+                    var pos = temp.pos;
+                    var box = temp.box;
+                    var posNew = this.transform(pos);
+                    var boxNew = box.mul(this.cam.scale * 1.01);
+                    posNew = posNew.sub(boxNew.mul(1 / 2));
+                    this.ctx.imageSmoothingEnabled = false;
+                    this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                }
+            }
         };
         Draw.prototype.fillRect = function (pos, box, color) {
             var posNew = this.transform(pos);
@@ -1381,6 +1406,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var entity = _a[_i];
                 entity.display(this.draw);
             }
+            this.draw.getimage();
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {

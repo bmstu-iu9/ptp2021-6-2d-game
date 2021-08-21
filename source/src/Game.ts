@@ -164,7 +164,7 @@ export class Game {
         for (let entity of this.entities) {
             entity.display(this.draw);
         }
-
+        this.draw.getimage();
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
     }

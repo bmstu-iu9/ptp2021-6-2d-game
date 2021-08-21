@@ -25,10 +25,17 @@ export class Color {
 type hashimages = {
     [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
 };
+interface queue {
+	image?: HTMLImageElement,
+	pos?: geom.Vector,
+    box?: geom.Vector,
+}
+
 
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
+    private imagequeue : queue[] = [];
     public cam = new Camera();
     private static images : hashimages = {}; // Хеш таблица с изображениями
     constructor(canvas: HTMLCanvasElement, size: geom.Vector) {
@@ -65,13 +72,40 @@ export class Draw {
         posNew = posNew.add(this.cam.pos);
         return posNew;
     }
+
     // Изображение
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle = 0) {
-        let posNew = this.transform(pos);
-        let boxNew = box.mul(this.cam.scale * 1.01);
-        posNew = posNew.sub(boxNew.mul(1 / 2));
-        this.ctx.imageSmoothingEnabled = false;
-        this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        
+        let curqueue : queue = {image,pos,box};
+        
+        this.imagequeue.push(curqueue);
+        console.log("push",curqueue)
+    }
+    public getimage(){
+        console.log(this.imagequeue)
+        if (this.imagequeue.length > 0){
+            this.imagequeue.sort(function (a, b) { // Сортировка
+                if (a.pos.y > b.pos.y) {
+                    return 1;
+                }
+                if (a.pos.y < b.pos.y) {
+                    return -1;
+                }
+                return 0;
+            });
+            for (;this.imagequeue.length > 0;){
+                let temp = this.imagequeue.pop(); //Извлечение
+                console.log("pop",temp)
+                let image = temp.image;
+                let pos = temp.pos;
+                let box=temp.box;
+                let posNew = this.transform(pos);
+                let boxNew = box.mul(this.cam.scale * 1.01);
+                posNew = posNew.sub(boxNew.mul(1 / 2));
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            }
+        }
     }
     // Заполненный прямоугольник
     public fillRect(pos: geom.Vector, box: geom.Vector, color: Color) {
