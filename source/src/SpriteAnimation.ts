@@ -56,6 +56,6 @@ export class SpriteAnimation {
     public display(draw : Draw) {
         let state = this.getCurrentState();
         let frame = this.getCurrentFrame();
-        draw.image(frame, state.pos, state.box, state.angle);
+        draw.image(frame, state.pos, state.box, state.angle,0);
     }
 };

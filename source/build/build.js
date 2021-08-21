@@ -145,31 +145,6 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                 });
             });
         };
-<<<<<<< HEAD
-        return Color;
-    }());
-    exports.Color = Color;
-    var Layer;
-    (function (Layer) {
-        Layer[Layer["TileLayer"] = 0] = "TileLayer";
-        Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
-    })(Layer || (Layer = {}));
-    var Draw = (function () {
-        function Draw(canvas, size) {
-            this.imagequeue = [];
-            this.cam = new Camera();
-            this.canvas = canvas;
-            canvas.width = size.x;
-            canvas.height = size.y;
-            this.ctx = canvas.getContext("2d");
-            this.cam.scale = 1;
-            this.cam.pos = size.mul(1 / 2);
-            this.cam.center = size.mul(1 / 2);
-        }
-        Draw.loadImage = function (src) {
-            if (this.images[src]) {
-                return this.images[src];
-=======
         Control.loadConfig = function (path) {
             return __awaiter(this, void 0, void 0, function () {
                 var result, vals, i, j;
@@ -214,7 +189,6 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         Control.init = function () {
             for (var i = 0; i < 256; i++) {
                 Control._keys[i] = false;
->>>>>>> master
             }
             window.addEventListener("keydown", Control.onKeyDown);
             window.addEventListener("keyup", Control.onKeyUp);
@@ -239,49 +213,9 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         Control.isMouseClicked = function () {
             return Control.clicked;
         };
-<<<<<<< HEAD
-        Draw.prototype.image = function (image, pos, box, angle, layer) {
-            angle++;
-            if (layer == 0) {
-                var posNew = this.transform(pos);
-                var boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
-            }
-            if (layer == 1) {
-                var curqueue = { image: image, pos: pos, box: box };
-                this.imagequeue.push(curqueue);
-            }
-        };
-        Draw.prototype.getimage = function () {
-            if (this.imagequeue.length > 0) {
-                this.imagequeue.sort(function (a, b) {
-                    if (a.pos.y > b.pos.y) {
-                        return -1;
-                    }
-                    if (a.pos.y < b.pos.y) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                for (; this.imagequeue.length > 0;) {
-                    var temp = this.imagequeue.pop();
-                    var image = temp.image;
-                    var pos = temp.pos;
-                    var box = temp.box;
-                    var posNew = this.transform(pos);
-                    var boxNew = box.mul(this.cam.scale * 1.01);
-                    posNew = posNew.sub(boxNew.mul(1 / 2));
-                    this.ctx.imageSmoothingEnabled = false;
-                    this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
-                }
-            }
-=======
         Control.lastMouseCoordinates = function () {
             Control.clicked = false;
             return Control.commands.pointer.clone();
->>>>>>> master
         };
         Control.wheelDelta = function () {
             var delta = this.mouseWheelDelta;
@@ -580,10 +514,6 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
                 }
             }
         };
-<<<<<<< HEAD
-        Entity.prototype.display = function (draw) {
-            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1), 0, 1);
-=======
         PathGenerator.findNearestWays = function (collisionMesh, place, distance, path) {
             for (var i = -1; i <= 1; i++) {
                 if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
@@ -603,7 +533,6 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
                     }
                 }
             }
->>>>>>> master
         };
         PathGenerator.FloydWarshall = function (vertices, distance, path) {
             for (var k = 0; k < vertices.length; k++) {
@@ -766,7 +695,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 for (var j = 0; j < this.Grid[i].length; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size);
+                        .add(size.mul(1 / 2)), size, 0, 0);
                     if (advanced)
                         draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
                             .add(size.mul(1 / 2)), size, new Draw_3.Color(0, 0, 0), 0.03);
@@ -967,7 +896,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.commands = this.myAI.commands;
         };
         Entity.prototype.display = function (draw) {
-            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1));
+            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1), 0, 1);
         };
         return Entity;
     }());
@@ -986,15 +915,10 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
     var Instruction = (function () {
         function Instruction() {
         }
-<<<<<<< HEAD
-        StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center, new geom.Vector(1, 1), 0, 0);
-=======
         Instruction.prototype.addGoingToPoint = function (point) {
             var place = this.operations.length;
             this.operations[place] = Operations.goToPoint;
             this.operationsData[place] = point;
->>>>>>> master
         };
         Instruction.prototype.addWaiting = function (milliseconds) {
             var place = this.operations.length;
@@ -1212,7 +1136,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center, new geom.Vector(1, 1));
+            draw.image(this.image, this.body.center, new geom.Vector(1, 1), 0, 0);
         };
         return StationaryObject;
     }(Entity_2.Entity));
@@ -1252,18 +1176,6 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             }
             this.controlledEntity = entity;
         };
-<<<<<<< HEAD
-        Level.prototype.display = function (draw, advanced) {
-            if (advanced === void 0) { advanced = false; }
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++) {
-                    var size = new geom.Vector(this.tileSize, this.tileSize);
-                    draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, 0, 0);
-                    if (advanced)
-                        draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                            .add(size.mul(1 / 2)), size, new Draw_6.Color(0, 0, 0), 0.03);
-=======
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_2.Person) && !(this.controlledEntity instanceof Monster_1.Monster)) {
@@ -1287,7 +1199,6 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                         this.takeControl(target);
                         break;
                     }
->>>>>>> master
                 }
             }
         };
@@ -1504,11 +1415,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var entity = _a[_i];
                 entity.display(this.draw);
             }
-<<<<<<< HEAD
             this.draw.getimage();
-=======
             this.draw.step();
->>>>>>> master
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {
@@ -1628,7 +1536,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
         SpriteAnimation.prototype.display = function (draw) {
             var state = this.getCurrentState();
             var frame = this.getCurrentFrame();
-            draw.image(frame, state.pos, state.box, state.angle);
+            draw.image(frame, state.pos, state.box, state.angle, 0);
         };
         return SpriteAnimation;
     }());
@@ -1657,8 +1565,14 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
         return Color;
     }());
     exports.Color = Color;
+    var Layer;
+    (function (Layer) {
+        Layer[Layer["TileLayer"] = 0] = "TileLayer";
+        Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
+    })(Layer || (Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
+            this.imagequeue = [];
             this.cam = new Camera();
             this.spriteAnimations = [];
             this.canvas = canvas;
@@ -1692,13 +1606,43 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             posNew = posNew.add(this.cam.pos);
             return posNew;
         };
-        Draw.prototype.image = function (image, pos, box, angle) {
-            if (angle === void 0) { angle = 0; }
-            var posNew = this.transform(pos);
-            var boxNew = box.mul(this.cam.scale * 1.01);
-            posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.imageSmoothingEnabled = false;
-            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        Draw.prototype.image = function (image, pos, box, angle, layer) {
+            angle++;
+            if (layer == 0) {
+                var posNew = this.transform(pos);
+                var boxNew = box.mul(this.cam.scale * 1.01);
+                posNew = posNew.sub(boxNew.mul(1 / 2));
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            }
+            if (layer == 1) {
+                var curqueue = { image: image, pos: pos, box: box };
+                this.imagequeue.push(curqueue);
+            }
+        };
+        Draw.prototype.getimage = function () {
+            if (this.imagequeue.length > 0) {
+                this.imagequeue.sort(function (a, b) {
+                    if (a.pos.y > b.pos.y) {
+                        return -1;
+                    }
+                    if (a.pos.y < b.pos.y) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                for (; this.imagequeue.length > 0;) {
+                    var temp = this.imagequeue.pop();
+                    var image = temp.image;
+                    var pos = temp.pos;
+                    var box = temp.box;
+                    var posNew = this.transform(pos);
+                    var boxNew = box.mul(this.cam.scale * 1.01);
+                    posNew = posNew.sub(boxNew.mul(1 / 2));
+                    this.ctx.imageSmoothingEnabled = false;
+                    this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                }
+            }
         };
         Draw.prototype.fillRect = function (pos, box, color) {
             var posNew = this.transform(pos);
