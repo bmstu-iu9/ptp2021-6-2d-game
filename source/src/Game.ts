@@ -165,6 +165,9 @@ export class Game {
             entity.display(this.draw);
         }
 
+        // Анимации
+        this.draw.step();
+
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
     }
