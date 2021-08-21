@@ -1141,7 +1141,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center, new geom.Vector(1, 1), 0, 0);
+            draw.image(this.image, this.body.center, new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
         };
         return StationaryObject;
     }(Entity_2.Entity));
@@ -1551,7 +1551,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
 define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exports, SpriteAnimation_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Draw = exports.Color = exports.Camera = void 0;
+    exports.Draw = exports.Layer = exports.Color = exports.Camera = void 0;
     var Camera = (function () {
         function Camera() {
         }
@@ -1574,7 +1574,7 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
     (function (Layer) {
         Layer[Layer["TileLayer"] = 0] = "TileLayer";
         Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
-    })(Layer || (Layer = {}));
+    })(Layer = exports.Layer || (exports.Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
             this.imagequeue = [];

@@ -1,7 +1,7 @@
 import { Entity } from "./Entity";
 import { Game } from "../Game"
 import { Body } from "./EntityAttributes/Body";
-import { Draw } from "../Draw";
+import { Draw, Layer } from "../Draw";
 import * as geom from "../Geom";
 
 export class StationaryObject extends Entity {
@@ -12,6 +12,6 @@ export class StationaryObject extends Entity {
     }
 
     public display(draw : Draw) {
-        draw.image(this.image, this.body.center, new geom.Vector(1, 1),0,0);
+        draw.image(this.image, this.body.center, new geom.Vector(1, 1),0, Layer.EntityLayer);
     }
 }

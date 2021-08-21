@@ -22,7 +22,7 @@ export class Color {
         return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
     }
 }
-enum Layer {
+export enum Layer {
     TileLayer, 
     EntityLayer
 }
