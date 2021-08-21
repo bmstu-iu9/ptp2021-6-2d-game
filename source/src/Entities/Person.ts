@@ -4,7 +4,7 @@ import { Body } from "./EntityAttributes/Body";
 import * as geom from "../Geom";
 import { Debug } from "../Debug";
 import { Color, Draw } from "../Draw";
-import { SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION } from "constants";
+import { BehaviorModel } from "../BehaviorModel";
 
 export enum PersonMode {
     Fine,
@@ -23,6 +23,7 @@ export class Person extends Entity {
     public hpThresholdDying = 5;
     public mode : PersonMode; // маркер состояния (переименовать по необходимости)
     protected type : string = null;
+    public behaviorModel : BehaviorModel;
 
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body)

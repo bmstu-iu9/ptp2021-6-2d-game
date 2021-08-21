@@ -17,6 +17,7 @@ Game.loadMap("map.json", "map");
 let game = new Game(draw);
 game.makeScientist(new geom.Vector(1, 0));
 game.makeSoldier(new geom.Vector(2.5, 1));
+
 game.mimic.takeControl(game.entities[0]);
 
 let x = false;
