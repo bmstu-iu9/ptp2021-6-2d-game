@@ -1578,6 +1578,7 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
     var Draw = (function () {
         function Draw(canvas, size) {
             this.imagequeue = [];
+            this.hpqueue = [];
             this.cam = new Camera();
             this.spriteAnimations = [];
             this.canvas = canvas;
@@ -1653,6 +1654,29 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
                 for (; this.imagequeue.length > 0;) {
                     var temp = this.imagequeue.pop();
                     this.drawimage(temp.image, temp.pos, temp.box, temp.angle);
+                }
+            }
+            for (; this.hpqueue.length > 0;) {
+                console.log("remove hp");
+                var temp = this.hpqueue.pop();
+                var pos = temp.pos;
+                var box = temp.box;
+                var percentage = temp.percentage;
+                var frontColor = temp.frontColor;
+                var backColor = temp.backColor;
+                var marks = temp.marks;
+                var bar = box.clone();
+                bar.x *= percentage;
+                this.fillRect(pos, box, frontColor);
+                var posNew = pos.clone();
+                posNew.x -= (box.x - bar.x) / 2;
+                this.fillRect(posNew, bar, backColor);
+                bar.x = 2 / this.cam.scale;
+                pos.x -= box.x / 2;
+                for (var i = 0; i < marks.length; i++) {
+                    posNew = pos.clone();
+                    posNew.x += box.x * marks[i];
+                    this.fillRect(posNew, bar, frontColor);
                 }
             }
         };
@@ -1742,19 +1766,9 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
         Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
-            var bar = box.clone();
-            bar.x *= percentage;
-            this.fillRect(pos, box, frontColor);
-            var posNew = pos.clone();
-            posNew.x -= (box.x - bar.x) / 2;
-            this.fillRect(posNew, bar, backColor);
-            bar.x = 2 / this.cam.scale;
-            pos.x -= box.x / 2;
-            for (var i = 0; i < marks.length; i++) {
-                posNew = pos.clone();
-                posNew.x += box.x * marks[i];
-                this.fillRect(posNew, bar, frontColor);
-            }
+            var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
+            this.hpqueue.push(queue);
+            console.log("add hp");
         };
         Draw.images = {};
         return Draw;
