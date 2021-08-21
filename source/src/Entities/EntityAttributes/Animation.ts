@@ -25,8 +25,8 @@ export class Animation {
     async Imageloader(){
         let direction = ["top", "down", "left","right","stand"];
         let mods = ["corrupted", "dying", "fine"];
-        for (let mod in mods) {
-            for (let direct in direction) {
+        for (let mod of mods) {
+            for (let direct of direction) {
                 for (var _i = 0; _i < this.states; _i++) {
                     this.getImage("textures/" +
                     this.name + "/" +

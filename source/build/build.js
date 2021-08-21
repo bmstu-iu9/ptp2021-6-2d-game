@@ -323,12 +323,14 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "Au
         }
         Animation.prototype.Imageloader = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var direction, mods, mod, direct, _i;
-                return __generator(this, function (_a) {
+                var direction, mods, _a, mods_1, mod, _b, direction_1, direct, _i;
+                return __generator(this, function (_c) {
                     direction = ["top", "down", "left", "right", "stand"];
                     mods = ["corrupted", "dying", "fine"];
-                    for (mod in mods) {
-                        for (direct in direction) {
+                    for (_a = 0, mods_1 = mods; _a < mods_1.length; _a++) {
+                        mod = mods_1[_a];
+                        for (_b = 0, direction_1 = direction; _b < direction_1.length; _b++) {
+                            direct = direction_1[_b];
                             for (_i = 0; _i < this.states; _i++) {
                                 this.getImage("textures/" +
                                     this.name + "/" +
