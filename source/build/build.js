@@ -598,7 +598,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
     }());
     exports.Body = Body;
 });
-define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], function (require, exports, Draw_3) {
+define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "AuxLib"], function (require, exports, Draw_3, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Animation = void 0;
@@ -606,6 +606,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
         function Animation(person, states) {
             this.stateMachine = [];
             this.counter = 0;
+            this.cycles = aux.getMilliCount() / 75;
             this.name = person;
             this.states = states;
             this.current_state = Draw_3.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
@@ -620,7 +621,10 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw"], fu
             this.mode = mode;
         };
         Animation.prototype.step = function () {
-            this.counter++;
+            if (aux.getMilliCount() / 75 > this.cycles) {
+                this.cycles = aux.getMilliCount() / 75 + 1;
+                this.counter++;
+            }
             var frame = this.counter % this.states;
             this.current_state = this.getImage("textures/" +
                 this.name + "/" +
