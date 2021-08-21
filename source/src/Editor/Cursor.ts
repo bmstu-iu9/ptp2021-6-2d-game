@@ -39,7 +39,7 @@ export class Cursor {
 
     public display() {
         // Preview
-        this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50))
+        this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50),0,0)
         // Cursor on grid
         if(this.level.isInBounds(this.pos))
             this.draw.strokeRect(

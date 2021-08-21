@@ -24,7 +24,12 @@ export class Animation {
     }
     async Imageloader(){
         let direction = ["top", "down", "left","right","stand"];
-        let mods = ["corrupted", "dying", "fine"];
+        let mods:string[];
+        if (this.name == "Monster") {
+            mods = ["fine"];
+        } else {
+            mods = ["corrupted", "dying", "fine"];
+        }
         for (let mod of mods) {
             for (let direct of direction) {
                 for (var _i = 0; _i < this.states; _i++) {

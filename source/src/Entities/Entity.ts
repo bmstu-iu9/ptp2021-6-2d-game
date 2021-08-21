@@ -29,6 +29,6 @@ export class Entity {
         this.commands = this.myAI.commands;
     }
     public display(draw : Draw) {
-        draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1));
+        draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1),0,1);
     }
 }

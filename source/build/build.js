@@ -413,7 +413,12 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "Au
                 var direction, mods, _a, mods_1, mod, _b, direction_1, direct, _i;
                 return __generator(this, function (_c) {
                     direction = ["top", "down", "left", "right", "stand"];
-                    mods = ["corrupted", "dying", "fine"];
+                    if (this.name == "Monster") {
+                        mods = ["fine"];
+                    }
+                    else {
+                        mods = ["corrupted", "dying", "fine"];
+                    }
                     for (_a = 0, mods_1 = mods; _a < mods_1.length; _a++) {
                         mod = mods_1[_a];
                         for (_b = 0, direction_1 = direction; _b < direction_1.length; _b++) {
@@ -695,7 +700,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 for (var j = 0; j < this.Grid[i].length; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size);
+                        .add(size.mul(1 / 2)), size, 0, 0);
                     if (advanced)
                         draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
                             .add(size.mul(1 / 2)), size, new Draw_3.Color(0, 0, 0), 0.03);
@@ -896,7 +901,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.commands = this.myAI.commands;
         };
         Entity.prototype.display = function (draw) {
-            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1));
+            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1), 0, 1);
         };
         return Entity;
     }());
@@ -1136,7 +1141,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center, new geom.Vector(1, 1));
+            draw.image(this.image, this.body.center, new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
         };
         return StationaryObject;
     }(Entity_2.Entity));
@@ -1415,6 +1420,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var entity = _a[_i];
                 entity.display(this.draw);
             }
+            this.draw.getimage();
             this.draw.step();
         };
         Game.prototype.replacer = function (key, value) {
@@ -1535,7 +1541,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
         SpriteAnimation.prototype.display = function (draw) {
             var state = this.getCurrentState();
             var frame = this.getCurrentFrame();
-            draw.image(frame, state.pos, state.box, state.angle);
+            draw.image(frame, state.pos, state.box, state.angle, 0);
         };
         return SpriteAnimation;
     }());
@@ -1545,7 +1551,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
 define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exports, SpriteAnimation_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Draw = exports.Color = exports.Camera = void 0;
+    exports.Draw = exports.Layer = exports.Color = exports.Camera = void 0;
     var Camera = (function () {
         function Camera() {
         }
@@ -1564,8 +1570,14 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
         return Color;
     }());
     exports.Color = Color;
+    var Layer;
+    (function (Layer) {
+        Layer[Layer["TileLayer"] = 0] = "TileLayer";
+        Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
+    })(Layer = exports.Layer || (exports.Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
+            this.imagequeue = [];
             this.cam = new Camera();
             this.spriteAnimations = [];
             this.canvas = canvas;
@@ -1599,13 +1611,43 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             posNew = posNew.add(this.cam.pos);
             return posNew;
         };
-        Draw.prototype.image = function (image, pos, box, angle) {
-            if (angle === void 0) { angle = 0; }
-            var posNew = this.transform(pos);
-            var boxNew = box.mul(this.cam.scale * 1.01);
-            posNew = posNew.sub(boxNew.mul(1 / 2));
-            this.ctx.imageSmoothingEnabled = false;
-            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        Draw.prototype.image = function (image, pos, box, angle, layer) {
+            angle++;
+            if (layer == 0) {
+                var posNew = this.transform(pos);
+                var boxNew = box.mul(this.cam.scale * 1.01);
+                posNew = posNew.sub(boxNew.mul(1 / 2));
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            }
+            if (layer == 1) {
+                var curqueue = { image: image, pos: pos, box: box };
+                this.imagequeue.push(curqueue);
+            }
+        };
+        Draw.prototype.getimage = function () {
+            if (this.imagequeue.length > 0) {
+                this.imagequeue.sort(function (a, b) {
+                    if (a.pos.y > b.pos.y) {
+                        return -1;
+                    }
+                    if (a.pos.y < b.pos.y) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                for (; this.imagequeue.length > 0;) {
+                    var temp = this.imagequeue.pop();
+                    var image = temp.image;
+                    var pos = temp.pos;
+                    var box = temp.box;
+                    var posNew = this.transform(pos);
+                    var boxNew = box.mul(this.cam.scale * 1.01);
+                    posNew = posNew.sub(boxNew.mul(1 / 2));
+                    this.ctx.imageSmoothingEnabled = false;
+                    this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                }
+            }
         };
         Draw.prototype.fillRect = function (pos, box, color) {
             var posNew = this.transform(pos);
@@ -1796,7 +1838,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
                 this.setBlock();
         };
         Cursor.prototype.display = function () {
-            this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50));
+            this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
             if (this.level.isInBounds(this.pos))
                 this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_10.Color(0, 255, 0), 0.1);
         };

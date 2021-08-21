@@ -164,6 +164,7 @@ export class Game {
         for (let entity of this.entities) {
             entity.display(this.draw);
         }
+        this.draw.getimage();
 
         // Анимации
         this.draw.step();
