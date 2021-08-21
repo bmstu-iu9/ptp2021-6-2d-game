@@ -1,9 +1,17 @@
 import { Entity } from "./Entity";
 import { Game } from "../Game"
 import { Body } from "./EntityAttributes/Body";
+import { Draw } from "../Draw";
+import * as geom from "../Geom";
 
 export class StationaryObject extends Entity {
-    constructor(game : Game, body : Body, mod : string) {
-        super(game, body, mod);
+    image : HTMLImageElement;
+    constructor(game : Game, body : Body, type : string) {
+        super(game, body);
+        this.image = Draw.loadImage("textures/Corpses/" + type + ".png");
+    }
+
+    public display(draw : Draw) {
+        draw.image(this.image, this.body.center, new geom.Vector(1, 1));
     }
 }

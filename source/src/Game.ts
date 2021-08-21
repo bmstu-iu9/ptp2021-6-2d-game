@@ -2,7 +2,7 @@ import * as geom from "./Geom";
 import * as aux from "./AuxLib";
 import {Body} from "./Entities/EntityAttributes/Body";
 import {Entity} from "./Entities/Entity";
-import { Person } from "./Entities/Person";
+import { Person, PersonMode } from "./Entities/Person";
 import {Control, Keys} from "./Control";
 import {Draw, Color} from "./Draw";
 import { Tile, CollisionType } from "./Tile";
@@ -10,9 +10,15 @@ import { Mimic } from "./Mimic";
 import { Level } from "./Level";
 import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
+import { Scientist } from "./Entities/Scientist";
+import { Soldier } from "./Entities/Soldier";
+import { Monster } from "./Entities/Monster";
+import { Corpse } from "./Entities/Corpse";
+import { StationaryObject } from "./Entities/StationaryObject";
 
 export class Game {
     public static levels : Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
+    public static dt = 0.02;
 
     public draw : Draw;
     private bodies : Body [] = []; // массив всех тел
@@ -53,20 +59,55 @@ export class Game {
     }
     
 
-    public make_body(coordinates : geom.Vector, radius : number) : Body { // создаёт тело и возвращает ссылку
+    public makeBody(coordinates : geom.Vector, radius : number) : Body { // создаёт тело и возвращает ссылку
         let body = new Body(coordinates, radius);
         body.game = this;
         return this.bodies[this.bodies.length] = body;
     }
 
-    public make_person(body : Body) { // создаёт персонажа и возвращает ссылку
-        this.entities[this.entities.length] = new Person(this, body,"fine");//последнее - маркер состояния
-        this.entities[this.entities.length - 1].entityID = this.entities.length - 1;
-        return this.entities[this.entities.length - 1];
+    public makeScientist(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
     }
 
-    public make_trigger(lifeTime : number, boundEntity : Entity) { // создаёт триггер и возвращает ссылку
+    public makeSoldier(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Soldier(this, body,PersonMode.Fine);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeMonster(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Monster(this, body);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeCorpse(pos : geom.Vector, type : string) : Entity { // создаёт персонажа и возвращает ссылку
+        let body = this.makeBody(pos, 1);
+        let entity = new Corpse(this, body, type);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeTrigger(lifeTime : number, boundEntity : Entity) { // создаёт триггер и возвращает ссылку
         return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
+    }
+
+    private processEntities() {
+        for (let i = 0; i < this.entities.length; i++) {
+            if (this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0) {
+                this.entities.splice(i, 1);
+                i--;
+            }
+        }
     }
 
     public step() {
@@ -79,6 +120,7 @@ export class Game {
       // Processing entities
       this.entities.forEach(entity => entity.animation.step());
       this.entities.forEach(entity => entity.step());
+      this.processEntities();
     }
 
     public attachCamToMimic() {
@@ -119,11 +161,87 @@ export class Game {
         this.currentLevel.display(this.draw);
 
         // People
-        for (let i = 0; i < this.entities.length; i++) {
-            this.draw.image(this.entities[i].animation.current_state, this.entities[i].body.center, new geom.Vector(1, 1));
+        for (let entity of this.entities) {
+            entity.display(this.draw);
         }
 
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
+    }
+
+    public replacer(key, value) { // функция замены классов для преобразования в JSON
+        if(value instanceof Map) { // упаковка Map
+          return {
+              dataType: 'Map', 
+              value: Array.from(value.entries()), // or with spread: value: [...value]
+            };
+        }
+        if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
+          // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
+          let name = value.src;
+          let nameSplit = name.split("/");
+          let lastSplit = nameSplit[nameSplit.length - 1];
+      
+          return {
+            dataType: 'HTMLImageElement',
+            value: lastSplit
+          };
+        }
+        if (value instanceof geom.Vector) { // упаковка Vector
+          return {
+            dataType: 'Vector',
+            x: value.x,
+            y: value.y
+          };
+        }
+        if (value instanceof Soldier) {
+          return {
+            dataType: 'Soldier',
+            place: value.body.center,
+            behaviorModel: value.behaviorModel
+          }
+        }
+        if (value instanceof Scientist) {
+          return {
+            dataType: 'Scientist',
+            place: value.body.center,
+            behaviorModel: value.behaviorModel
+          }
+        }
+        if (value instanceof StationaryObject) {
+          return {
+            dataType: 'StationaryObject',
+            place: value.body.center,
+          }
+        }
+        return value;
+      }
+      
+      public reviver(key, value) { // функция обратной замены классов для преобразования из JSON
+        if(typeof value === 'object' && value !== null) {
+            if (value.dataType === 'Map') { // распаковка Map
+                return new Map(value.value);
+            }
+            if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
+              return Draw.loadImage("./textures/tiles/" + value.value);
+            }
+            if (value.dataType === 'Vector') { // распаковка Vector
+              return JSON.stringify(new geom.Vector(value.x, value.y));
+            }
+            if (value.dataType == 'Soldier') {
+              let soldier = this.makeSoldier(value.place) as Soldier;
+              soldier.behaviorModel = value.behaviorModel;
+              return soldier;
+            }
+            if (value.dataType == 'Scientist') {
+              let scientist = this.makeScientist(value.place) as Scientist;
+              scientist.behaviorModel = value.behaviorModel;
+              return scientist;
+            }
+            if (value.dataType == 'StationaryObject') {
+              let stationaryObject = new StationaryObject(this, new Body(value.place, 1), "fine");
+            }
+        }
+        return value;
     }
 }

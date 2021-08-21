@@ -5,8 +5,8 @@ import { Game } from "./Game";
 import { Level } from "./Level";
 import { Editor } from "./Editor";
 
-//aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
-aux.setEnvironment("http://127.0.0.1:4500/"); // Если локальный сервер
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
+//aux.setEnvironment("http://127.0.0.1:4500/"); // Если локальный сервер
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
@@ -15,9 +15,9 @@ Game.levels = new Map();
 Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
-aux.setGame(game);
-game.make_person(game.make_body(new geom.Vector(1, 0), 1));
-game.make_person(game.make_body(new geom.Vector(2.5, 1), 1));
+game.makeScientist(new geom.Vector(1, 0));
+game.makeSoldier(new geom.Vector(2.5, 1));
+
 game.mimic.takeControl(game.entities[0]);
 
 let x = false;
@@ -34,7 +34,7 @@ function step() {
             //console.log(Game.levels["map"]);
             
             game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-            game.make_trigger(100000000, game.entities[1]);
+            game.makeTrigger(100000000, game.entities[1]);
             console.log(Game.levels["map"].PathMatrix); 
             x = true;
         }
@@ -66,4 +66,4 @@ if (levelEditorMode) {
     setInterval(editorStep, 20);
 }
 else
-    setInterval(step, 20);
+    setInterval(step, Game.dt * 1000);
