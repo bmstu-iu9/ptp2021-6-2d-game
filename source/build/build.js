@@ -1657,7 +1657,6 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
                 }
             }
             for (; this.hpqueue.length > 0;) {
-                console.log("remove hp");
                 var temp = this.hpqueue.pop();
                 var pos = temp.pos;
                 var box = temp.box;
@@ -1768,7 +1767,6 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
         Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
             var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
             this.hpqueue.push(queue);
-            console.log("add hp");
         };
         Draw.images = {};
         return Draw;
