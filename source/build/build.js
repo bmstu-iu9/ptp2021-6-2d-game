@@ -1616,10 +1616,21 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             var boxNew = box.mul(this.cam.scale * 1.01);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.imageSmoothingEnabled = false;
-            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            if (angle % (2 * Math.PI) == 0) {
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            }
+            else {
+                var buffer = document.createElement('canvas');
+                buffer.width = boxNew.x * 2;
+                buffer.height = boxNew.y * 2;
+                var bctx = buffer.getContext('2d');
+                bctx.translate(boxNew.x, boxNew.y);
+                bctx.rotate(angle);
+                bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
+                this.ctx.drawImage(buffer, posNew.x, posNew.y);
+            }
         };
         Draw.prototype.image = function (image, pos, box, angle, layer) {
-            angle++;
             if (layer == 0) {
                 this.drawimage(image, pos, box, angle);
             }
