@@ -6,7 +6,7 @@ import { Level } from "./Level";
 import { Editor } from "./Editor";
 
 //aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
-aux.setEnvironment("http://127.0.0.1:8000/"); // Если локальный сервер
+aux.setEnvironment("http://127.0.0.1:4500/"); // Если локальный сервер
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas, new geom.Vector(640, 640));
@@ -17,6 +17,7 @@ Game.loadMap("map.json", "map");
 let game = new Game(draw);
 game.makeScientist(new geom.Vector(1, 0));
 game.makeSoldier(new geom.Vector(2.5, 1));
+
 game.mimic.takeControl(game.entities[0]);
 
 let x = false;
