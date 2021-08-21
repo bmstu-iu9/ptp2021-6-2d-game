@@ -1796,7 +1796,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_11, Game_3, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:4500/");
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_11.Draw(canvas, new geom.Vector(640, 640));
     draw.cam.scale = 0.4;
