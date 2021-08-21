@@ -40,7 +40,7 @@ interface queue {
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
-    private imagequeue : queue[] = [];
+    private imagequeue : queue[] = []; // Очередь для изображений
     public cam = new Camera();
     private spriteAnimations : SpriteAnimation[] = [];
     private static images : hashimages = {}; // Хеш таблица с изображениями
@@ -78,16 +78,19 @@ export class Draw {
         posNew = posNew.add(this.cam.pos);
         return posNew;
     }
-
-    // Изображение
+    // Функция для отрисовки изображения
+    public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number){ 
+        let posNew = this.transform(pos);
+        let boxNew = box.mul(this.cam.scale * 1.01);
+        posNew = posNew.sub(boxNew.mul(1 / 2));
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+    }
+    // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer) {
         angle++;
         if (layer == 0){ // Отрисовка сразу
-            let posNew = this.transform(pos);
-                let boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+               this.drawimage(image,pos,box,angle);
         }
         if (layer == 1){ //Отрисовка после сортировки
             let curqueue : queue = {image,pos,box,angle};
@@ -95,6 +98,7 @@ export class Draw {
             
         }
     }
+    // Обработка слоев изображения
     public getimage(){
         if (this.imagequeue.length > 0){
             this.imagequeue.sort(function (a, b) { // Сортировка
@@ -108,15 +112,7 @@ export class Draw {
             });
             for (;this.imagequeue.length > 0;){
                 let temp = this.imagequeue.pop(); //Извлечение
-                let image = temp.image;
-                let pos = temp.pos;
-                let box = temp.box;
-                let angle = temp.angle;
-                let posNew = this.transform(pos);
-                let boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                this.drawimage(temp.image,temp.pos,temp.box,temp.angle)
             }
         }
     }

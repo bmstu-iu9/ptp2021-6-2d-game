@@ -1611,17 +1611,20 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             posNew = posNew.add(this.cam.pos);
             return posNew;
         };
+        Draw.prototype.drawimage = function (image, pos, box, angle) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale * 1.01);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+        };
         Draw.prototype.image = function (image, pos, box, angle, layer) {
             angle++;
             if (layer == 0) {
-                var posNew = this.transform(pos);
-                var boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                this.drawimage(image, pos, box, angle);
             }
             if (layer == 1) {
-                var curqueue = { image: image, pos: pos, box: box };
+                var curqueue = { image: image, pos: pos, box: box, angle: angle };
                 this.imagequeue.push(curqueue);
             }
         };
@@ -1638,14 +1641,7 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
                 });
                 for (; this.imagequeue.length > 0;) {
                     var temp = this.imagequeue.pop();
-                    var image = temp.image;
-                    var pos = temp.pos;
-                    var box = temp.box;
-                    var posNew = this.transform(pos);
-                    var boxNew = box.mul(this.cam.scale * 1.01);
-                    posNew = posNew.sub(boxNew.mul(1 / 2));
-                    this.ctx.imageSmoothingEnabled = false;
-                    this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                    this.drawimage(temp.image, temp.pos, temp.box, temp.angle);
                 }
             }
         };
