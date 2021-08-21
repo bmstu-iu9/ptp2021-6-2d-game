@@ -39,7 +39,7 @@ function step() {
             x = true;
         }
         if (t % 100 == 0) {
-            console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
+            //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
             for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
                 console.log(game.entities[1].myAI.Path[i]);
                 
