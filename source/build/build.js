@@ -806,7 +806,7 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/E
         __extends(Monster, _super);
         function Monster(game, body) {
             var _this = _super.call(this, game, body, Person_1.PersonMode.Fine) || this;
-            _this.animation = new Animation_2.Animation("Monster", 3);
+            _this.animation = new Animation_2.Animation("Monster", 8);
             return _this;
         }
         return Monster;
