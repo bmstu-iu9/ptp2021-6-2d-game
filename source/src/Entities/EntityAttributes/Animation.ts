@@ -20,8 +20,24 @@ export class Animation {
         this.current_state = Draw.loadImage("textures/"+this.name+"/right_fine_"+this.counter%this.states+".png"); //начальное положение
         this.mode="fine";
         this.direction="right";
+        this.Imageloader();
     }
-
+    async Imageloader(){
+        let direction = ["top", "down", "left","right","stand"];
+        let mods = ["corrupted", "dying", "fine"];
+        for (let mod in mods) {
+            for (let direct in direction) {
+                for (var _i = 0; _i < this.states; _i++) {
+                    this.getImage("textures/" +
+                    this.name + "/" +
+                    direct + "_" +
+                    mod + "_" +
+                    _i + ".png")
+                }
+            }
+        }
+    }
+    
     public getImage(current : string) {
         return Draw.loadImage(current);
     }
