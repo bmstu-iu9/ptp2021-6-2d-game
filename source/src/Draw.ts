@@ -1,4 +1,5 @@
 import * as geom from "./Geom";
+import { AnimationState, SpriteAnimation } from "./SpriteAnimation";
 
 export class Camera {
     public center : geom.Vector;
@@ -40,6 +41,7 @@ export class Draw {
     public ctx: CanvasRenderingContext2D;
     private imagequeue : queue[] = [];
     public cam = new Camera();
+    private spriteAnimations : SpriteAnimation[] = [];
     private static images : hashimages = {}; // Хеш таблица с изображениями
     constructor(canvas: HTMLCanvasElement, size: geom.Vector) {
         this.canvas = canvas;
@@ -186,6 +188,38 @@ export class Draw {
         this.ctx.lineWidth = lineWidth * this.cam.scale;  // ширина контура
         this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.stroke();       
+    }
+    // Создание анимации
+    public spriteAnimation(
+        name : string, 
+        framesNumber : number, 
+        initialState : AnimationState, 
+        finalState : AnimationState, 
+        duration : number, 
+        frameDuration : number) {
+
+        let animation = new SpriteAnimation();
+        animation.loadFrames(name, framesNumber);
+        animation.initialState = initialState;
+        animation.finalState = finalState;
+        animation.duration = duration;
+        animation.frameDuration = frameDuration;
+
+        this.spriteAnimations.push(animation);
+    }
+    // Step
+    public step() {
+        // Обработка анимаций
+        this.spriteAnimations.forEach(animation => animation.step());
+        // Удаление отработавших анимаций
+        for (let i = 0; i < this.spriteAnimations.length; i++) {
+            if (this.spriteAnimations[i].isOver()) {
+                this.spriteAnimations.splice(i, 1);
+                i--;
+            }
+        }
+        // Отрисовка
+        this.spriteAnimations.forEach(animation => animation.display(this));
     }
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);

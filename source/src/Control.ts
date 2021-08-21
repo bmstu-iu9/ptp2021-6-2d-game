@@ -127,12 +127,9 @@ export class Control {
                 let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]++;
                 Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
-                console.log(currentCommand, Control.commandsCounter[currentCommand], Control.commands[currentCommand]);
             }
         }
         Control._keys[event.keyCode] = true;
-        console.log(event.key);
-        console.log(Control.commandsCounter);
         event.preventDefault();
         event.stopPropagation();
         return false;

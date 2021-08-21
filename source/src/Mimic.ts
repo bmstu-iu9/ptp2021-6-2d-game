@@ -5,6 +5,8 @@ import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
 import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
+import { Draw } from "./Draw";
+import { AnimationState } from "./SpriteAnimation";
 
 export class Mimic {
     public controlledEntity : Entity = null;
@@ -17,6 +19,13 @@ export class Mimic {
 
     public takeControl(entity : Entity) {
         console.log("biba", entity);
+        if (this.controlledEntity)
+            this.game.draw.spriteAnimation(
+                "MimicTransfer", 3,
+                new AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0),
+                new AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0),
+                0.2, 0.2/3
+            );
         if (this.controlledEntity instanceof Monster || 
             (this.controlledEntity instanceof Person) && 
             (this.controlledEntity as Person).mode == PersonMode.Dying) {
