@@ -33,6 +33,7 @@ interface queue {
 	image?: HTMLImageElement,
 	pos?: geom.Vector,
     box?: geom.Vector,
+    angle? : number,
 }
 
 
@@ -89,7 +90,7 @@ export class Draw {
                 this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
         }
         if (layer == 1){ //Отрисовка после сортировки
-            let curqueue : queue = {image,pos,box};
+            let curqueue : queue = {image,pos,box,angle};
             this.imagequeue.push(curqueue);
             
         }
@@ -109,7 +110,8 @@ export class Draw {
                 let temp = this.imagequeue.pop(); //Извлечение
                 let image = temp.image;
                 let pos = temp.pos;
-                let box=temp.box;
+                let box = temp.box;
+                let angle = temp.angle;
                 let posNew = this.transform(pos);
                 let boxNew = box.mul(this.cam.scale * 1.01);
                 posNew = posNew.sub(boxNew.mul(1 / 2));
