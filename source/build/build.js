@@ -413,7 +413,12 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "Au
                 var direction, mods, _a, mods_1, mod, _b, direction_1, direct, _i;
                 return __generator(this, function (_c) {
                     direction = ["top", "down", "left", "right", "stand"];
-                    mods = ["corrupted", "dying", "fine"];
+                    if (this.name == "Monster") {
+                        mods = ["fine"];
+                    }
+                    else {
+                        mods = ["corrupted", "dying", "fine"];
+                    }
                     for (_a = 0, mods_1 = mods; _a < mods_1.length; _a++) {
                         mod = mods_1[_a];
                         for (_b = 0, direction_1 = direction; _b < direction_1.length; _b++) {
