@@ -366,22 +366,28 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
     var Body = (function () {
         function Body(center, radius) {
             this.velocity = 0.05;
+            this.width = 0.3;
+            this.length = 0.8;
             this.center = center;
             this.radius = radius;
         }
         Body.prototype.move = function (delta) {
-            var collision = this.game.check_wall(this.center.add(delta));
-            if (collision == Tile_1.CollisionType.Full)
+            var delta1 = delta.add(new geom.Vector(0.4, 0.3));
+            var collisionUR = this.game.check_wall(this.center.add(delta1));
+            var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.length, 0))));
+            var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.length, this.width))));
+            var collisionDR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, this.width))));
+            if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full)
                 delta = new geom.Vector();
-            else if (collision != Tile_1.CollisionType.Empty) {
+            else if (collisionUL != Tile_1.CollisionType.Empty) {
                 var norm = void 0;
-                if (collision == Tile_1.CollisionType.CornerDL)
+                if (collisionUL == Tile_1.CollisionType.CornerDL)
                     norm = new geom.Vector(1, -1);
-                if (collision == Tile_1.CollisionType.CornerDR)
+                if (collisionUL == Tile_1.CollisionType.CornerDR)
                     norm = new geom.Vector(-1, -1);
-                if (collision == Tile_1.CollisionType.CornerUL)
+                if (collisionUL == Tile_1.CollisionType.CornerUL)
                     norm = new geom.Vector(1, 1);
-                if (collision == Tile_1.CollisionType.CornerUR)
+                if (collisionUL == Tile_1.CollisionType.CornerUR)
                     norm = new geom.Vector(-1, 1);
                 delta = delta.sub(norm.mul(delta.dot(norm) / norm.dot(norm))).add(norm.mul(1 / 10000));
             }
