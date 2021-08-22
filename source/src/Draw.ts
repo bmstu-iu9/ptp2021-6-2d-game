@@ -22,24 +22,34 @@ export class Color {
         return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
     }
 }
-export enum Layer {
+export enum Layer { // Индентификатор текстуры (тайл или персонаж)
     TileLayer, 
     EntityLayer
 }
 type hashimages = {
     [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
 };
-interface queue {
+interface queue { // Для правильной отрисовки слоев
 	image?: HTMLImageElement,
 	pos?: geom.Vector,
     box?: geom.Vector,
+    angle? : number,
 }
+interface bar_queue { // Для отрисовки Hp бара
 
+    pos?: geom.Vector, 
+    box?: geom.Vector, 
+    percentage? : number, 
+    frontColor : Color, 
+    backColor? : Color, 
+    marks?: number[],
+}
 
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
-    private imagequeue : queue[] = [];
+    private imagequeue : queue[] = []; // Очередь для изображений
+    private hpqueue : bar_queue[] = []; // Очередь для hp бара
     public cam = new Camera();
     private spriteAnimations : SpriteAnimation[] = [];
     private static images : hashimages = {}; // Хеш таблица с изображениями
@@ -77,25 +87,39 @@ export class Draw {
         posNew = posNew.add(this.cam.pos);
         return posNew;
     }
-
-    // Изображение
+    // Функция для отрисовки изображения
+    public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number){ 
+        let posNew = this.transform(pos);
+        let boxNew = box.mul(this.cam.scale * 1.01);
+        posNew = posNew.sub(boxNew.mul(1 / 2));
+        this.ctx.imageSmoothingEnabled = false;
+        if (angle%(2*Math.PI) == 0){
+            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y); // Без поворота (Много ресурсов на поворот уходит(даже на 0))
+        } else {
+            var buffer = document.createElement('canvas'); // Поворот
+            buffer.width = boxNew.x*2;
+            buffer.height = boxNew.y*2;
+            var bctx = buffer.getContext('2d');
+            bctx.translate(boxNew.x, boxNew.y);
+            bctx.rotate(angle);
+            bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
+            this.ctx.drawImage(buffer, posNew.x, posNew.y);
+        }
+    }
+    // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer) {
-        angle++;
         if (layer == 0){ // Отрисовка сразу
-            let posNew = this.transform(pos);
-                let boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+               this.drawimage(image,pos,box,angle);
         }
         if (layer == 1){ //Отрисовка после сортировки
-            let curqueue : queue = {image,pos,box};
+            let curqueue : queue = {image,pos,box,angle};
             this.imagequeue.push(curqueue);
             
         }
     }
+    // Обработка слоев изображения
     public getimage(){
-        if (this.imagequeue.length > 0){
+        if (this.imagequeue.length > 0){ // Отрисовка изображений
             this.imagequeue.sort(function (a, b) { // Сортировка
                 if (a.pos.y > b.pos.y) {
                     return -1;
@@ -107,14 +131,31 @@ export class Draw {
             });
             for (;this.imagequeue.length > 0;){
                 let temp = this.imagequeue.pop(); //Извлечение
-                let image = temp.image;
-                let pos = temp.pos;
-                let box=temp.box;
-                let posNew = this.transform(pos);
-                let boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                this.drawimage(temp.image,temp.pos,temp.box,temp.angle)
+            }
+        }
+        for (;this.hpqueue.length > 0;){ // Отрисовка hp бара
+            let temp = this.hpqueue.pop();
+            let pos = temp.pos;
+            let box = temp.box; 
+            let percentage = temp.percentage;
+            let frontColor = temp.frontColor; 
+            let backColor = temp.backColor;
+            let marks = temp.marks;
+            // hp бар
+            let bar = box.clone();
+            bar.x *= percentage;
+            this.fillRect(pos, box,frontColor);
+            let posNew = pos.clone();
+            posNew.x -= (box.x - bar.x) / 2;
+            this.fillRect(posNew, bar, backColor);
+            // Деления
+            bar.x = 2 / this.cam.scale;
+            pos.x -= box.x / 2;
+            for (var i = 0; i < marks.length ; i++){
+                posNew = pos.clone();
+                posNew.x += box.x * marks[i];
+                this.fillRect(posNew, bar, frontColor);
             }
         }
     }
@@ -224,21 +265,11 @@ export class Draw {
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
+    // hp бар 
     public bar(pos: geom.Vector, box: geom.Vector, percentage : number, frontColor : Color, backColor : Color, marks: number[]){
-        //hp
-        let bar = box.clone();
-        bar.x *= percentage;
-        this.fillRect(pos, box,frontColor);
-        let posNew = pos.clone();
-        posNew.x -= (box.x - bar.x) / 2;
-        this.fillRect(posNew, bar, backColor);
-        // Деления
-        bar.x = 2 / this.cam.scale;
-        pos.x -= box.x / 2;
-        for (var i = 0; i < marks.length ; i++){
-            posNew = pos.clone();
-            posNew.x += box.x * marks[i];
-            this.fillRect(posNew, bar, frontColor);
-        }
+        let queue : bar_queue = {pos,box,percentage,frontColor,backColor,marks};
+        this.hpqueue.push(queue); // Добавляем в очередь на отрисовку
+
+        
     }
 }

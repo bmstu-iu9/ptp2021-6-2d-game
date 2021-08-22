@@ -1578,6 +1578,7 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
     var Draw = (function () {
         function Draw(canvas, size) {
             this.imagequeue = [];
+            this.hpqueue = [];
             this.cam = new Camera();
             this.spriteAnimations = [];
             this.canvas = canvas;
@@ -1611,17 +1612,31 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             posNew = posNew.add(this.cam.pos);
             return posNew;
         };
-        Draw.prototype.image = function (image, pos, box, angle, layer) {
-            angle++;
-            if (layer == 0) {
-                var posNew = this.transform(pos);
-                var boxNew = box.mul(this.cam.scale * 1.01);
-                posNew = posNew.sub(boxNew.mul(1 / 2));
-                this.ctx.imageSmoothingEnabled = false;
+        Draw.prototype.drawimage = function (image, pos, box, angle) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale * 1.01);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            this.ctx.imageSmoothingEnabled = false;
+            if (angle % (2 * Math.PI) == 0) {
                 this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
             }
+            else {
+                var buffer = document.createElement('canvas');
+                buffer.width = boxNew.x * 2;
+                buffer.height = boxNew.y * 2;
+                var bctx = buffer.getContext('2d');
+                bctx.translate(boxNew.x, boxNew.y);
+                bctx.rotate(angle);
+                bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
+                this.ctx.drawImage(buffer, posNew.x, posNew.y);
+            }
+        };
+        Draw.prototype.image = function (image, pos, box, angle, layer) {
+            if (layer == 0) {
+                this.drawimage(image, pos, box, angle);
+            }
             if (layer == 1) {
-                var curqueue = { image: image, pos: pos, box: box };
+                var curqueue = { image: image, pos: pos, box: box, angle: angle };
                 this.imagequeue.push(curqueue);
             }
         };
@@ -1638,14 +1653,29 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
                 });
                 for (; this.imagequeue.length > 0;) {
                     var temp = this.imagequeue.pop();
-                    var image = temp.image;
-                    var pos = temp.pos;
-                    var box = temp.box;
-                    var posNew = this.transform(pos);
-                    var boxNew = box.mul(this.cam.scale * 1.01);
-                    posNew = posNew.sub(boxNew.mul(1 / 2));
-                    this.ctx.imageSmoothingEnabled = false;
-                    this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+                    this.drawimage(temp.image, temp.pos, temp.box, temp.angle);
+                }
+            }
+            for (; this.hpqueue.length > 0;) {
+                var temp = this.hpqueue.pop();
+                var pos = temp.pos;
+                var box = temp.box;
+                var percentage = temp.percentage;
+                var frontColor = temp.frontColor;
+                var backColor = temp.backColor;
+                var marks = temp.marks;
+                var bar = box.clone();
+                bar.x *= percentage;
+                this.fillRect(pos, box, frontColor);
+                var posNew = pos.clone();
+                posNew.x -= (box.x - bar.x) / 2;
+                this.fillRect(posNew, bar, backColor);
+                bar.x = 2 / this.cam.scale;
+                pos.x -= box.x / 2;
+                for (var i = 0; i < marks.length; i++) {
+                    posNew = pos.clone();
+                    posNew.x += box.x * marks[i];
+                    this.fillRect(posNew, bar, frontColor);
                 }
             }
         };
@@ -1735,19 +1765,8 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
         Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
-            var bar = box.clone();
-            bar.x *= percentage;
-            this.fillRect(pos, box, frontColor);
-            var posNew = pos.clone();
-            posNew.x -= (box.x - bar.x) / 2;
-            this.fillRect(posNew, bar, backColor);
-            bar.x = 2 / this.cam.scale;
-            pos.x -= box.x / 2;
-            for (var i = 0; i < marks.length; i++) {
-                posNew = pos.clone();
-                posNew.x += box.x * marks[i];
-                this.fillRect(posNew, bar, frontColor);
-            }
+            var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
+            this.hpqueue.push(queue);
         };
         Draw.images = {};
         return Draw;
