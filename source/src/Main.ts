@@ -16,11 +16,11 @@ Game.levels = new Map();
 Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
-game.makeScientist(new geom.Vector(1, 0));
+game.makeScientist(new geom.Vector(1, 1));
 let soldier = game.makeSoldier(new geom.Vector(2.5, 1));
 soldier.behaviorModel.instructions["test"] = new Instruction();
 soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
-soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(0, 0));
+soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
 soldier.behaviorModel.changeCurrentInstruction("test");
 
 game.mimic.takeControl(game.entities[0]);

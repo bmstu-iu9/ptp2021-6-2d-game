@@ -158,7 +158,6 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                                     localStorage.setItem("commands", result);
                                 })
                                     .then(function (result) {
-                                    console.log(Array.from(Control.keyMapping.values()));
                                     var vals = Array.from(Control.keyMapping.values());
                                     for (var i = 0; i < vals.length; i++) {
                                         for (var j = 0; j < vals[i].length; j++) {
@@ -171,7 +170,6 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                             result = _a.sent();
                             return [3, 3];
                         case 2:
-                            console.log("loading from local storage");
                             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
                             vals = Array.from(Control.keyMapping.values());
                             for (i = 0; i < vals.length; i++) {
@@ -198,14 +196,10 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
             window.addEventListener("mousedown", Control.onMouseDown);
             window.addEventListener("mouseup", Control.onMouseUp);
             window.addEventListener("contextmenu", function (e) { return e.preventDefault(); });
-            console.log("lets do it!!");
             Control.keyMapping = new Map();
             Control.commandsCounter = new Map();
             Control.commands = new Commands_1.Commands();
             Control.loadConfig("keys.json");
-            console.log("Done!!", Control.keyMapping);
-            console.log(Control.commands["MoveUp"]);
-            console.log(Control.commands);
         };
         Control.isKeyDown = function (key) {
             return Control._keys[key];
@@ -234,7 +228,6 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
         };
         Control.onKeyDown = function (event) {
             if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
-                console.log(event.key, event.keyCode, Control.keyMapping, Control.keyMapping[event.keyCode]);
                 if (Control.keyMapping.get(event.keyCode) == undefined) {
                     Control.keyMapping.set(event.keyCode, []);
                 }
@@ -547,7 +540,6 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
         };
         PathGenerator.FloydWarshall = function (vertices, distance, path) {
             for (var k = 0; k < vertices.length; k++) {
-                console.log(k, " from ", vertices.length);
                 for (var i = 0; i < vertices.length; i++) {
                     for (var j = 0; j < vertices.length; j++) {
                         var dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
@@ -769,25 +761,26 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             this.commands["MoveUp"] = false;
         };
         AI.prototype.go = function (point) {
-            if (this.body.center.x < point.x) {
+            var eps = 0.01;
+            if (this.body.center.x < point.x + eps) {
                 this.commands["MoveRight"] = true;
             }
             else {
                 this.commands["MoveRight"] = false;
             }
-            if (this.body.center.x > point.x) {
+            if (this.body.center.x > point.x - eps) {
                 this.commands["MoveLeft"] = true;
             }
             else {
                 this.commands["MoveLeft"] = false;
             }
-            if (this.body.center.y < point.y) {
+            if (this.body.center.y < point.y + eps) {
                 this.commands["MoveDown"] = true;
             }
             else {
                 this.commands["MoveDown"] = false;
             }
-            if (this.body.center.y > point.y) {
+            if (this.body.center.y > point.y - eps) {
                 this.commands["MoveUp"] = true;
             }
             else {
@@ -800,10 +793,9 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
         AI.prototype.chooseMeshPoint = function (currentPoint) {
             var CollisionMesh = Game_1.Game.levels[this.game.currentLevelName].CollisionMesh;
             var Grid = Game_1.Game.levels[this.game.currentLevelName].Grid;
-            var posRound = new geom.Vector(Math.floor(this.body.center.x / this.game.currentLevel.tileSize), Math.floor(this.body.center.y / this.game.currentLevel.tileSize));
+            var posRound = new geom.Vector(Math.floor(currentPoint.x / this.game.currentLevel.tileSize), Math.floor(currentPoint.y / this.game.currentLevel.tileSize));
             var place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
             var answer = new geom.Vector(0, 0);
-            console.log("here");
             for (var i = -5; i <= 5; i++) {
                 for (var j = -5; j <= 5; j++) {
                     if (place.x + i < CollisionMesh.length && place.x + i > 0) {
@@ -817,6 +809,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                     }
                 }
             }
+            console.log(currentPoint, answer);
             return answer;
         };
         AI.prototype.makePath = function (start, finish) {
@@ -863,7 +856,6 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                 return;
             }
             if (this.Path.length != 0) {
-                console.log(this.Path[0]);
                 this.go(this.Path[0]);
                 if (this.body.center.sub(this.Path[0]).abs() < 0.2) {
                     this.Path.shift();
@@ -964,9 +956,7 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.changeCurrentInstruction(this.currentInstruction);
         };
         BehaviorModel.prototype.step = function () {
-            console.log(this.myAI.Path, this.myAI.getWaitingTime());
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions[this.currentInstruction]) {
-                console.log("bibba");
                 this.operationNum++;
                 this.operationNum %= this.instructions[this.currentInstruction].operations.length;
                 var operation = this.instructions[this.currentInstruction].operations[this.operationNum];
@@ -1961,11 +1951,11 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     Game_4.Game.levels = new Map();
     Game_4.Game.loadMap("map.json", "map");
     var game = new Game_4.Game(draw);
-    game.makeScientist(new geom.Vector(1, 0));
+    game.makeScientist(new geom.Vector(1, 1));
     var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
     soldier.behaviorModel.instructions["test"] = new BehaviorModel_2.Instruction();
     soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
-    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(0, 0));
+    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
     soldier.behaviorModel.changeCurrentInstruction("test");
     game.mimic.takeControl(game.entities[0]);
     var x = false;

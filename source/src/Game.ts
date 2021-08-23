@@ -172,7 +172,7 @@ export class Game {
         this.draw.step();
 
         // Отрисовка графического дебага
-        Debug.drawPoints(this);
+        //Debug.drawPoints(this);
     }
 
     //public drawCollisionCheck(pos, box, color){

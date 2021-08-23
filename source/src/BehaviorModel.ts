@@ -54,9 +54,7 @@ export class BehaviorModel {
     }
 
     public step() {
-        console.log(this.myAI.Path, this.myAI.getWaitingTime());
         if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions[this.currentInstruction]) {
-            console.log("bibba");
             this.operationNum++;
             this.operationNum %= this.instructions[this.currentInstruction].operations.length;
             let operation = this.instructions[this.currentInstruction].operations[this.operationNum];

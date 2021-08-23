@@ -34,7 +34,6 @@ export class Control {
                 localStorage.setItem("commands", result);
             })
             .then(result => {
-                console.log(Array.from(Control.keyMapping.values()));
                 
                 let vals = Array.from(Control.keyMapping.values());
                 for (let i = 0; i < vals.length; i++) {
@@ -45,7 +44,6 @@ export class Control {
                 }
             });
         } else {
-            console.log("loading from local storage");
             
             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
             let vals = Array.from(Control.keyMapping.values());
@@ -72,16 +70,11 @@ export class Control {
         // Блокировка контекстного меню по ПКМ
         window.addEventListener("contextmenu", e => e.preventDefault());
         
-        console.log("lets do it!!");
         
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Commands();
         Control.loadConfig("keys.json");       
-
-        console.log("Done!!", Control.keyMapping);
-        console.log(Control.commands["MoveUp"]);
-        console.log(Control.commands);
         
     }
 
@@ -119,7 +112,6 @@ export class Control {
 
     private static onKeyDown(event : KeyboardEvent) : boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
-            console.log(event.key, event.keyCode, Control.keyMapping, Control.keyMapping[event.keyCode]);
             if (Control.keyMapping.get(event.keyCode) == undefined) {
                 Control.keyMapping.set(event.keyCode, []);
             }
