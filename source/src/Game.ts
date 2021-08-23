@@ -163,6 +163,8 @@ export class Game {
         // People
         for (let entity of this.entities) {
             entity.display(this.draw);
+            //let pos = entity.body.center.clone().add(new geom.Vector(0,0.4));
+            //this.drawCollisionCheck(pos, new geom.Vector(0.8, 0.3), new Color(0, 0, 255));
         }
         this.draw.getimage();
 
@@ -172,6 +174,10 @@ export class Game {
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
     }
+
+    //public drawCollisionCheck(pos, box, color){
+    //  this.draw.fillRect(pos, box,color)
+    //}
 
     public replacer(key, value) { // функция замены классов для преобразования в JSON
         if(value instanceof Map) { // упаковка Map
