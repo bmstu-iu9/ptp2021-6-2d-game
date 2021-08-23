@@ -40,6 +40,9 @@ export class Mimic {
                     0.4, 0.4/8
                 );
             }
+            if (this.controlledEntity instanceof Person) {
+                this.controlledEntity.behaviorModel.refreshInstruction();
+            }
         }
         if (this.controlledEntity instanceof Monster || 
             (this.controlledEntity instanceof Person) && 

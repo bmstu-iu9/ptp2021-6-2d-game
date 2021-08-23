@@ -10,7 +10,7 @@ import { Color } from "../../Draw";
 
 export class AI {
     private destination : geom.Vector = new geom.Vector(0, 0); // конечная точка, куда направляется персонаж(нужна для дебага)
-    private activationTime : number; // время, с которого объект перестаёт ждать и становится активным
+    private activationTime : number = 0; // время, с которого объект перестаёт ждать и становится активным
 
     private body : Body; // тело объекта
     public Path : geom.Vector[]; // путь к конечной точке
@@ -122,6 +122,7 @@ export class AI {
     }
 
     public goToPoint(point : geom.Vector) { // функция, прокладывающая путь до точки
+        console.log("q");
         this.destination = point;   
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
@@ -146,7 +147,7 @@ export class AI {
     }
 
     public getWaitingTime() {
-        return aux.getMilliCount() - this.activationTime;
+        return this.activationTime - aux.getMilliCount();
     }
 
     public step() {
@@ -158,7 +159,7 @@ export class AI {
             
             this.go(this.Path[0]);
             //console.log(this.body.center.sub(this.Path[0]).abs(), geom.eps * 150);
-            if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {                
+            if (this.body.center.sub(this.Path[0]).abs() < 0.2) {                
                 this.Path.shift();
             }
         } else { // иначе остановится

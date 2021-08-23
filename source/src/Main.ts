@@ -4,6 +4,7 @@ import {Draw} from "./Draw";
 import { Game } from "./Game";
 import { Level } from "./Level";
 import { Editor } from "./Editor";
+import { Instruction } from "./BehaviorModel";
 
 aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
 //aux.setEnvironment("http://127.0.0.1:4500/server.py"); // Если локальный сервер
@@ -16,7 +17,11 @@ Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
 game.makeScientist(new geom.Vector(1, 0));
-game.makeSoldier(new geom.Vector(2.5, 1));
+let soldier = game.makeSoldier(new geom.Vector(2.5, 1));
+soldier.behaviorModel.instructions["test"] = new Instruction();
+soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
+soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(0, 0));
+soldier.behaviorModel.changeCurrentInstruction("test");
 
 game.mimic.takeControl(game.entities[0]);
 

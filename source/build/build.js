@@ -366,17 +366,17 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
     var Body = (function () {
         function Body(center, radius) {
             this.velocity = 0.05;
-            this.width = 0.3;
-            this.length = 0.8;
+            this.height = 0.3;
+            this.width = 0.5;
             this.center = center;
             this.radius = radius;
         }
         Body.prototype.move = function (delta) {
-            var delta1 = delta.add(new geom.Vector(0.4, 0.3));
+            var delta1 = delta.add(new geom.Vector(this.width / 2, this.height / 2));
             var collisionUR = this.game.check_wall(this.center.add(delta1));
-            var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.length, 0))));
-            var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.length, this.width))));
-            var collisionDR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, this.width))));
+            var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.width, 0))));
+            var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.width, -this.height))));
+            var collisionDR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.height))));
             if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full)
                 delta = new geom.Vector();
             else if (collisionUL != Tile_1.CollisionType.Empty) {
@@ -756,6 +756,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
     var AI = (function () {
         function AI(game, body) {
             this.destination = new geom.Vector(0, 0);
+            this.activationTime = 0;
             this.game = game;
             this.body = body;
             this.commands = new Commands_2.Commands();
@@ -837,6 +838,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             return answer;
         };
         AI.prototype.goToPoint = function (point) {
+            console.log("q");
             this.destination = point;
             this.Path = [];
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
@@ -854,7 +856,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             this.goToPoint(this.game.ghost);
         };
         AI.prototype.getWaitingTime = function () {
-            return aux.getMilliCount() - this.activationTime;
+            return this.activationTime - aux.getMilliCount();
         };
         AI.prototype.step = function () {
             if (this.activationTime > aux.getMilliCount()) {
@@ -863,7 +865,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             if (this.Path.length != 0) {
                 console.log(this.Path[0]);
                 this.go(this.Path[0]);
-                if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {
+                if (this.body.center.sub(this.Path[0]).abs() < 0.2) {
                     this.Path.shift();
                 }
             }
@@ -907,7 +909,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.commands = this.myAI.commands;
         };
         Entity.prototype.display = function (draw) {
-            draw.image(this.animation.current_state, this.body.center, new geom.Vector(1, 1), 0, 1);
+            draw.image(this.animation.current_state, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.height / 2)), new geom.Vector(1, 1), 0, 1);
         };
         return Entity;
     }());
@@ -916,7 +918,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
 define("BehaviorModel", ["require", "exports", "Geom"], function (require, exports, Geom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BehaviorModel = void 0;
+    exports.BehaviorModel = exports.Instruction = void 0;
     var Operations;
     (function (Operations) {
         Operations[Operations["goToPoint"] = 0] = "goToPoint";
@@ -925,6 +927,8 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
     })(Operations || (Operations = {}));
     var Instruction = (function () {
         function Instruction() {
+            this.operations = [];
+            this.operationsData = [];
         }
         Instruction.prototype.addGoingToPoint = function (point) {
             var place = this.operations.length;
@@ -942,9 +946,11 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
         };
         return Instruction;
     }());
+    exports.Instruction = Instruction;
     var BehaviorModel = (function () {
         function BehaviorModel(myAI) {
             this.operationNum = 0;
+            this.instructions = new Map();
             this.myAI = myAI;
             this.instructions = new Map;
         }
@@ -954,8 +960,13 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.myAI.wait(0);
             this.currentInstruction = newInstruction;
         };
+        BehaviorModel.prototype.refreshInstruction = function () {
+            this.changeCurrentInstruction(this.currentInstruction);
+        };
         BehaviorModel.prototype.step = function () {
-            if (this.myAI.Path == [] && this.myAI.getWaitingTime() < Geom_4.eps) {
+            console.log(this.myAI.Path, this.myAI.getWaitingTime());
+            if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions[this.currentInstruction]) {
+                console.log("bibba");
                 this.operationNum++;
                 this.operationNum %= this.instructions[this.currentInstruction].operations.length;
                 var operation = this.instructions[this.currentInstruction].operations[this.operationNum];
@@ -980,7 +991,7 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
     }());
     exports.BehaviorModel = BehaviorModel;
 });
-define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw"], function (require, exports, Entity_1, geom, Debug_2, Draw_5) {
+define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw", "BehaviorModel"], function (require, exports, Entity_1, geom, Debug_2, Draw_5, BehaviorModel_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Person = exports.PersonMode = void 0;
@@ -1004,6 +1015,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             _this.viewingAngle = Math.PI / 4;
             _this.direction = new geom.Vector(1, 0);
             _this.alertLvl = 0;
+            _this.behaviorModel = new BehaviorModel_1.BehaviorModel(_this.myAI);
             _this.setModeTimings(10, 5, 5);
             return _this;
         }
@@ -1104,12 +1116,13 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             this.checkTriggers();
             this.direction = new geom.Vector(x, y);
             this.updateMode();
+            this.behaviorModel.step();
             _super.prototype.step.call(this);
         };
         Person.prototype.display = function (draw) {
             _super.prototype.display.call(this, draw);
             var box = new geom.Vector(1, 0.1);
-            var pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
+            var pos = this.body.center.clone().add(new geom.Vector(0, -1));
             var percentage = this.hp / this.hpMax;
             var frontColor = new Draw_5.Color(25, 25, 25);
             var backColor = new Draw_5.Color(25, 255, 25);
@@ -1183,6 +1196,9 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                 this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_1.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_1.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_1.Monster) {
                     this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_1.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_1.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
+                }
+                if (this.controlledEntity instanceof Person_2.Person) {
+                    this.controlledEntity.behaviorModel.refreshInstruction();
                 }
             }
             if (this.controlledEntity instanceof Monster_1.Monster ||
@@ -1296,7 +1312,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_7, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_7, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1433,6 +1449,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
             this.draw.getimage();
             this.draw.step();
+            Debug_3.Debug.drawPoints(this);
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {
@@ -1934,7 +1951,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_12, Game_4, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_12, Game_4, Editor_1, BehaviorModel_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
@@ -1945,7 +1962,11 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     Game_4.Game.loadMap("map.json", "map");
     var game = new Game_4.Game(draw);
     game.makeScientist(new geom.Vector(1, 0));
-    game.makeSoldier(new geom.Vector(2.5, 1));
+    var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
+    soldier.behaviorModel.instructions["test"] = new BehaviorModel_2.Instruction();
+    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
+    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(0, 0));
+    soldier.behaviorModel.changeCurrentInstruction("test");
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;

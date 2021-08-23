@@ -32,6 +32,7 @@ export class Person extends Entity {
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
         this.alertLvl = 0;
+        this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
     }
 
@@ -145,6 +146,7 @@ export class Person extends Entity {
         this.direction = new geom.Vector(x, y);
 
         this.updateMode();
+        this.behaviorModel.step();
 
         super.step();
     }
@@ -154,7 +156,7 @@ export class Person extends Entity {
         super.display(draw);
 
         let box = new geom.Vector(1, 0.1);
-        let pos = this.body.center.clone().add(new geom.Vector(0, -0.6));
+        let pos = this.body.center.clone().add(new geom.Vector(0, -1));
         let percentage = this.hp / this.hpMax;
         let frontColor = new Color(25, 25, 25)
         let backColor = new Color(25, 255, 25)
