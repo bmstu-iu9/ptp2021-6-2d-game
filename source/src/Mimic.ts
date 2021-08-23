@@ -19,13 +19,28 @@ export class Mimic {
 
     public takeControl(entity : Entity) {
         console.log("biba", entity);
-        if (this.controlledEntity)
+        if (this.controlledEntity) {
             this.game.draw.spriteAnimation(
                 "MimicTransfer", 3,
                 new AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0),
                 new AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0),
                 0.2, 0.2/3
             );
+            this.game.draw.spriteAnimation(
+                "Blood", 6,
+                new AnimationState(entity.body.center, new geom.Vector(1, 1), 0),
+                new AnimationState(entity.body.center, new geom.Vector(1, 1), 0),
+                0.5, 0.5/6
+            );
+            if (this.controlledEntity instanceof Monster) {
+                this.game.draw.spriteAnimation(
+                    "MonsterDisappearance", 8,
+                    new AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0),
+                    new AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0),
+                    0.4, 0.4/8
+                );
+            }
+        }
         if (this.controlledEntity instanceof Monster || 
             (this.controlledEntity instanceof Person) && 
             (this.controlledEntity as Person).mode == PersonMode.Dying) {
