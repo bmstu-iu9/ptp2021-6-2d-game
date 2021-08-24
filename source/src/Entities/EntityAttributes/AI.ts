@@ -10,7 +10,7 @@ import { Color } from "../../Draw";
 
 export class AI {
     private destination : geom.Vector = new geom.Vector(0, 0); // конечная точка, куда направляется персонаж(нужна для дебага)
-    private activationTime : number; // время, с которого объект перестаёт ждать и становится активным
+    private activationTime : number = 0; // время, с которого объект перестаёт ждать и становится активным
 
     private body : Body; // тело объекта
     public Path : geom.Vector[]; // путь к конечной точке
@@ -32,25 +32,26 @@ export class AI {
     }
 
     private go(point : geom.Vector) { // функция движения в направлении к точке
-        if (this.body.center.x < point.x) {
+        let eps = 0.01;
+        if (this.body.center.x < point.x + eps) {
             this.commands["MoveRight"] = true;
         }
         else {
             this.commands["MoveRight"] = false;
         }
-        if (this.body.center.x > point.x) {
+        if (this.body.center.x > point.x - eps) {
             this.commands["MoveLeft"] = true;
         }
         else {
             this.commands["MoveLeft"] = false;
         }
-        if (this.body.center.y < point.y) {
+        if (this.body.center.y < point.y + eps) {
             this.commands["MoveDown"] = true;
         }
         else {
             this.commands["MoveDown"] = false;
         }
-        if (this.body.center.y > point.y) {
+        if (this.body.center.y > point.y - eps) {
             this.commands["MoveUp"] = true;
         }
         else {
@@ -68,12 +69,11 @@ export class AI {
         let CollisionMesh = Game.levels[this.game.currentLevelName].CollisionMesh;
         let Grid = Game.levels[this.game.currentLevelName].Grid;
         let posRound = new geom.Vector(
-            Math.floor(this.body.center.x / this.game.currentLevel.tileSize), 
-            Math.floor(this.body.center.y / this.game.currentLevel.tileSize)
+            Math.floor(currentPoint.x / this.game.currentLevel.tileSize), 
+            Math.floor(currentPoint.y / this.game.currentLevel.tileSize)
         );
         let place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
         let answer = new geom.Vector(0, 0);
-        console.log("here");
         
         for(let i = -5; i <= 5; i++) {
             for (let j = -5; j <= 5; j++) {
@@ -89,6 +89,7 @@ export class AI {
                 }
             }
         }
+        console.log(currentPoint, answer)
         return answer;
     }
 
@@ -122,6 +123,7 @@ export class AI {
     }
 
     public goToPoint(point : geom.Vector) { // функция, прокладывающая путь до точки
+        console.log("q");
         this.destination = point;   
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
@@ -146,7 +148,7 @@ export class AI {
     }
 
     public getWaitingTime() {
-        return aux.getMilliCount() - this.activationTime;
+        return this.activationTime - aux.getMilliCount();
     }
 
     public step() {
@@ -154,11 +156,10 @@ export class AI {
             return;
         }
         if (this.Path.length != 0) { // если путь не пустой, то идти по направлению следующей точки
-            console.log(this.Path[0]);
             
             this.go(this.Path[0]);
             //console.log(this.body.center.sub(this.Path[0]).abs(), geom.eps * 150);
-            if (this.body.center.sub(this.Path[0]).abs() < geom.eps * 150) {                
+            if (this.body.center.sub(this.Path[0]).abs() < 0.2) {                
                 this.Path.shift();
             }
         } else { // иначе остановится

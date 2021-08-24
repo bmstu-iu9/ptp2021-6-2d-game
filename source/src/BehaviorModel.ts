@@ -9,9 +9,9 @@ enum Operations {
     pursuit
 }
 
-class Instruction {
-    public operations : number[];
-    public operationsData : any[];
+export class Instruction {
+    public operations : number[] = [];
+    public operationsData : any[] = [];
 
     public addGoingToPoint(point : Vector) {
         let place = this.operations.length;
@@ -34,7 +34,7 @@ class Instruction {
 export class BehaviorModel {
     private operationNum = 0;
     private currentInstruction : string;
-    public instructions : Map<string, Instruction>;
+    public instructions = new Map<string, Instruction>();
     public myAI : AI;
 
     constructor(myAI : AI) {
@@ -49,8 +49,12 @@ export class BehaviorModel {
         this.currentInstruction = newInstruction;
     }
 
+    public refreshInstruction() {
+        this.changeCurrentInstruction(this.currentInstruction);
+    }
+
     public step() {
-        if (this.myAI.Path == [] && this.myAI.getWaitingTime() < eps) {
+        if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions[this.currentInstruction]) {
             this.operationNum++;
             this.operationNum %= this.instructions[this.currentInstruction].operations.length;
             let operation = this.instructions[this.currentInstruction].operations[this.operationNum];

@@ -53,10 +53,17 @@ export class Draw {
     public cam = new Camera();
     private spriteAnimations : SpriteAnimation[] = [];
     private static images : hashimages = {}; // Хеш таблица с изображениями
-    constructor(canvas: HTMLCanvasElement, size: geom.Vector) {
+    constructor(canvas: HTMLCanvasElement, size: geom.Vector = null) {
         this.canvas = canvas;
-        canvas.width = size.x;
-        canvas.height = size.y;
+        if (size) {
+            canvas.width = size.x;
+            canvas.height = size.y;
+        }
+        else {
+            size = new geom.Vector();
+            size.x = canvas.width;
+            size.y = canvas.height;
+        }
         this.ctx = canvas.getContext("2d");
         this.cam.scale = 1;
         this.cam.pos = size.mul(1 / 2);

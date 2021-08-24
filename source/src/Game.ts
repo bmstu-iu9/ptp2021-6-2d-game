@@ -65,7 +65,7 @@ export class Game {
         return this.bodies[this.bodies.length] = body;
     }
 
-    public makeScientist(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+    public makeScientist(pos : geom.Vector) : Scientist { // создаёт персонажа и возвращает ссылку
         let body = this.makeBody(pos, 1);
         let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -73,7 +73,7 @@ export class Game {
         return entity;
     }
 
-    public makeSoldier(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+    public makeSoldier(pos : geom.Vector) : Soldier { // создаёт персонажа и возвращает ссылку
         let body = this.makeBody(pos, 1);
         let entity = new Soldier(this, body,PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -81,7 +81,7 @@ export class Game {
         return entity;
     }
 
-    public makeMonster(pos : geom.Vector) : Entity { // создаёт персонажа и возвращает ссылку
+    public makeMonster(pos : geom.Vector) : Monster { // создаёт персонажа и возвращает ссылку
         let body = this.makeBody(pos, 1);
         let entity = new Monster(this, body);//последнее - маркер состояния
         entity.entityID = this.entities.length;

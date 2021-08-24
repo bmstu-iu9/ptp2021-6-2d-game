@@ -80,7 +80,6 @@ export class PathGenerator {
 
     private static FloydWarshall(vertices : Vector[], distance : Map<any, any>, path : Map<any, any>) {
         for (let k = 0; k < vertices.length; k++) {
-            console.log(k, " from ", vertices.length);
             for (let i = 0; i < vertices.length; i++) {
                 for (let j = 0; j < vertices.length; j++) {
                     let dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
