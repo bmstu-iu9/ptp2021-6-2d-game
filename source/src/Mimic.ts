@@ -10,10 +10,30 @@ import { AnimationState } from "./SpriteAnimation";
 import { Biomass } from "./Entities/Biomass";
 import { Projectile } from "./Entities/Projectile";
 
+export class Aim {
+    public vel = 0;
+    public charge = 0; // Заряд
+    public chargeMax = 5; // Максимальный заряд
+    public chargingTime = 1; // Время для полного заряда
+    public step() {
+        if (Control.isMouseLeftPressed()) {
+            if (this.charge < this.chargeMax) {
+                this.charge += Game.dt * this.chargeMax / this.chargingTime;
+            }
+        }
+        else
+            this.charge = 0;
+    }
+    public getVel(dir : geom.Vector) : geom.Vector{
+        return dir.norm().mul(this.charge);
+    }
+}
+
 export class Mimic {
     public controlledEntity : Entity = null;
     public infectionRadius = 100;
     public game : Game;
+    public aim = new Aim();
 
     constructor(game : Game) {
         this.game = game;
@@ -80,10 +100,10 @@ export class Mimic {
         }
 
         // Если мышка нажата, мы производим переселение
-        if (Control.isMouseClicked() && !(this.controlledEntity instanceof Biomass)) { 
+        if (!Control.isMouseLeftPressed() && this.aim.charge != 0 && !(this.controlledEntity instanceof Biomass)) { 
             // Пересчитываем координаты на экране в игровые координаты
             let coords = this.game.draw.transformBack(Control.lastMouseCoordinates())
-            let biomass = this.ejectBiomass(coords.sub(this.controlledEntity.body.center));   
+            let biomass = this.ejectBiomass(this.aim.getVel(coords.sub(this.controlledEntity.body.center)));
         }
 
         // Переселение через биомассу
@@ -92,11 +112,12 @@ export class Mimic {
             if (target) {
                 this.controlledEntity.alive = false;
                 this.takeControl(target);
-            }
-            if (this.controlledEntity.hasStopped()) {
+            } else if (this.controlledEntity.hasStopped()) {
                 this.controlledEntity.alive = false;
                 this.escape();
             }
         }
+
+        this.aim.step();
     }
 }

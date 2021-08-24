@@ -1240,11 +1240,34 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
 define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "SpriteAnimation", "Entities/Biomass"], function (require, exports, Game_3, geom, Control_1, Person_2, Monster_1, SpriteAnimation_2, Biomass_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Mimic = void 0;
+    exports.Mimic = exports.Aim = void 0;
+    var Aim = (function () {
+        function Aim() {
+            this.vel = 0;
+            this.charge = 0;
+            this.chargeMax = 5;
+            this.chargingTime = 1;
+        }
+        Aim.prototype.step = function () {
+            if (Control_1.Control.isMouseLeftPressed()) {
+                if (this.charge < this.chargeMax) {
+                    this.charge += Game_3.Game.dt * this.chargeMax / this.chargingTime;
+                }
+            }
+            else
+                this.charge = 0;
+        };
+        Aim.prototype.getVel = function (dir) {
+            return dir.norm().mul(this.charge);
+        };
+        return Aim;
+    }());
+    exports.Aim = Aim;
     var Mimic = (function () {
         function Mimic(game) {
             this.controlledEntity = null;
             this.infectionRadius = 100;
+            this.aim = new Aim();
             this.game = game;
         }
         Mimic.prototype.takeControl = function (entity) {
@@ -1284,9 +1307,9 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                     this.escape();
                 }
             }
-            if (Control_1.Control.isMouseClicked() && !(this.controlledEntity instanceof Biomass_1.Biomass)) {
+            if (!Control_1.Control.isMouseLeftPressed() && this.aim.charge != 0 && !(this.controlledEntity instanceof Biomass_1.Biomass)) {
                 var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
-                var biomass = this.ejectBiomass(coords.sub(this.controlledEntity.body.center));
+                var biomass = this.ejectBiomass(this.aim.getVel(coords.sub(this.controlledEntity.body.center)));
             }
             if (this.controlledEntity instanceof Biomass_1.Biomass) {
                 var target = this.controlledEntity.checkTarget();
@@ -1294,11 +1317,12 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                     this.controlledEntity.alive = false;
                     this.takeControl(target);
                 }
-                if (this.controlledEntity.hasStopped()) {
+                else if (this.controlledEntity.hasStopped()) {
                     this.controlledEntity.alive = false;
                     this.escape();
                 }
             }
+            this.aim.step();
         };
         return Mimic;
     }());
@@ -1515,7 +1539,11 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return Tile_4.CollisionType.Empty;
         };
         Game.prototype.display = function () {
-            this.draw.cam.scale = 100;
+            this.draw.cam.scale = 80 * (1 + 0.1 * (this.mimic.aim.charge / this.mimic.aim.chargeMax));
+            if (this.mimic.aim.charge > 0) {
+                this.draw.cam.pos.x += Math.sin(aux.getMilliCount() * 0.01) * 0.01;
+                this.draw.cam.pos.y += Math.cos(aux.getMilliCount() * 0.01) * 0.01;
+            }
             this.currentLevel.display(this.draw);
             for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
                 var entity = _a[_i];

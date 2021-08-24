@@ -166,8 +166,12 @@ export class Game {
     }
 
     public display() {
-        //this.draw.cam.pos = new geom.Vector(0, 0);
-        this.draw.cam.scale = 100;
+        // Масштаб с учётом прицела
+        this.draw.cam.scale = 80 * (1 + 0.1 * (this.mimic.aim.charge / this.mimic.aim.chargeMax));
+        if (this.mimic.aim.charge > 0) {
+            this.draw.cam.pos.x += Math.sin(aux.getMilliCount() * 0.01) * 0.01;
+            this.draw.cam.pos.y += Math.cos(aux.getMilliCount() * 0.01) * 0.01;
+        }
         // Tiles
         this.currentLevel.display(this.draw);
 
