@@ -10,7 +10,7 @@ aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-gam
 //aux.setEnvironment("http://127.0.0.1:4500"); // Если локальный сервер
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-let draw = new Draw(canvas, new geom.Vector(640, 640));
+let draw = new Draw(canvas);
 draw.cam.scale = 0.4;
 Game.levels = new Map();
 Game.loadMap("map.json", "map");
