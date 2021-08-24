@@ -9,7 +9,7 @@ import { Entity } from "./Entity";
 import { Corpse } from "./Corpse";
 
 export class Biomass extends Projectile {
-    private velLimit = 0.01; // Скорость при которой мы считаем, что остановились
+    private velLimit = 1; // Скорость при которой мы считаем, что остановились
     private spriteAnimation : SpriteAnimation;
     public baseEntity : Entity;
     public alive = true;
@@ -29,7 +29,7 @@ export class Biomass extends Projectile {
     public display(draw : Draw) {
         draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Layer.EntityLayer);
     }
-    public haveStopped() : boolean {
+    public hasStopped() : boolean {
         return this.vel.abs() < this.velLimit;
     }
     public checkTarget() : Entity {

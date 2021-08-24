@@ -1201,7 +1201,7 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
         __extends(Biomass, _super);
         function Biomass(game, body, vel) {
             var _this = _super.call(this, game, body, vel) || this;
-            _this.velLimit = 0.01;
+            _this.velLimit = 1;
             _this.alive = true;
             _this.viscousFriction = 10;
             _this.vel = _this.vel.mul(_this.viscousFriction);
@@ -1218,7 +1218,7 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
         Biomass.prototype.display = function (draw) {
             draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_7.Layer.EntityLayer);
         };
-        Biomass.prototype.haveStopped = function () {
+        Biomass.prototype.hasStopped = function () {
             return this.vel.abs() < this.velLimit;
         };
         Biomass.prototype.checkTarget = function () {
@@ -1266,6 +1266,10 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             }
             this.controlledEntity = entity;
         };
+        Mimic.prototype.escape = function () {
+            var monster = this.game.makeMonster(this.controlledEntity.body.center);
+            this.controlledEntity = monster;
+        };
         Mimic.prototype.ejectBiomass = function (vel) {
             var biomass = this.game.makeBiomass(this.controlledEntity.body.center, vel);
             biomass.baseEntity = this.controlledEntity;
@@ -1277,8 +1281,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                 var person = this.controlledEntity;
                 person.hp -= Game_3.Game.dt;
                 if (person.hp < 0) {
-                    var monster = this.game.makeMonster(this.controlledEntity.body.center);
-                    this.controlledEntity = monster;
+                    this.escape();
                 }
             }
             if (Control_1.Control.isMouseClicked() && !(this.controlledEntity instanceof Biomass_1.Biomass)) {
@@ -1290,6 +1293,10 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                 if (target) {
                     this.controlledEntity.alive = false;
                     this.takeControl(target);
+                }
+                if (this.controlledEntity.hasStopped()) {
+                    this.controlledEntity.alive = false;
+                    this.escape();
                 }
             }
         };
@@ -1462,7 +1469,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.makeBiomass = function (pos, vel) {
             var body = this.makeBody(pos, 1);
-            body.collisionBox = new geom.Vector(0.2, 0.2);
             var entity = new Biomass_2.Biomass(this, body, vel);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;

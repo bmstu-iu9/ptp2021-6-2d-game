@@ -54,7 +54,13 @@ export class Mimic {
         this.controlledEntity = entity;
     }
 
-    public ejectBiomass(vel: geom.Vector) {
+    // Выход из тела и создание монстра
+    private escape() {
+        let monster = this.game.makeMonster(this.controlledEntity.body.center);
+        this.controlledEntity = monster;
+    }
+
+    private ejectBiomass(vel: geom.Vector) {
         let biomass = this.game.makeBiomass(this.controlledEntity.body.center, vel);
         biomass.baseEntity = this.controlledEntity;
         this.takeControl(biomass);
@@ -69,8 +75,7 @@ export class Mimic {
             person.hp -= Game.dt;
             // Выселяемся из человека, если он умер
             if (person.hp < 0) {
-                let monster = this.game.makeMonster(this.controlledEntity.body.center);
-                this.controlledEntity = monster;
+                this.escape();
             }
         }
 
@@ -87,6 +92,10 @@ export class Mimic {
             if (target) {
                 this.controlledEntity.alive = false;
                 this.takeControl(target);
+            }
+            if (this.controlledEntity.hasStopped()) {
+                this.controlledEntity.alive = false;
+                this.escape();
             }
         }
     }

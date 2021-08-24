@@ -100,7 +100,6 @@ export class Game {
 
     public makeBiomass(pos: geom.Vector, vel: geom.Vector): Biomass {
         let body = this.makeBody(pos, 1);
-        body.collisionBox = new geom.Vector(0.2, 0.2);
         let entity = new Biomass(this, body, vel);
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
