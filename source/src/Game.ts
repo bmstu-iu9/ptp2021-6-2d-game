@@ -113,7 +113,9 @@ export class Game {
 
     private processEntities() {
         for (let i = 0; i < this.entities.length; i++) {
-            if (this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0) {
+            if (this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0 ||
+                this.entities[i] instanceof Biomass && !(this.entities[i] as Biomass).alive) 
+                {
                 this.entities.splice(i, 1);
                 i--;
             }

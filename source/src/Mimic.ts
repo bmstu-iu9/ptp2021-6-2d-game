@@ -7,6 +7,8 @@ import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { Draw } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
+import { Biomass } from "./Entities/Biomass";
+import { Projectile } from "./Entities/Projectile";
 
 export class Mimic {
     public controlledEntity : Entity = null;
@@ -53,7 +55,9 @@ export class Mimic {
     }
 
     public ejectBiomass(vel: geom.Vector) {
-        this.game.makeBiomass(this.controlledEntity.body.center, vel);
+        let biomass = this.game.makeBiomass(this.controlledEntity.body.center, vel);
+        biomass.baseEntity = this.controlledEntity;
+        this.takeControl(biomass);
     }
 
     public step() {
@@ -71,25 +75,18 @@ export class Mimic {
         }
 
         // Если мышка нажата, мы производим переселение
-        if (Control.isMouseClicked()) { 
+        if (Control.isMouseClicked() && !(this.controlledEntity instanceof Biomass)) { 
             // Пересчитываем координаты на экране в игровые координаты
             let coords = this.game.draw.transformBack(Control.lastMouseCoordinates())
-            this.ejectBiomass(coords.sub(this.controlledEntity.body.center));
-            // Проверяем соседние entity
-            for (let i = 0; i < this.game.entities.length; i++) {
+            let biomass = this.ejectBiomass(coords.sub(this.controlledEntity.body.center));   
+        }
 
-                let target = this.game.entities[i];
-                // Расстояние между сущностями
-                let centerDistance = this.controlledEntity.body.center.sub(target.body.center).abs();
-                // Расстояние от мышки до цели
-                let mouseDistance = target.body.center.sub(coords).abs();
-                if ((centerDistance < this.infectionRadius) && // Цель в радиусе поражения
-                    (mouseDistance < target.body.radius) && // На цель навелись мышкой
-                    !(target instanceof Corpse) && // Нельзя переселяться в трупы
-                    (this.controlledEntity != target)) { // Нельзя переселяться в себя самого
-                    this.takeControl(target);   
-                    break;
-                }
+        // Переселение через биомассу
+        if (this.controlledEntity instanceof Biomass) {
+            let target = this.controlledEntity.checkTarget();
+            if (target) {
+                this.controlledEntity.alive = false;
+                this.takeControl(target);
             }
         }
     }

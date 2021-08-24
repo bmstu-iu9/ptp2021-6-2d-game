@@ -52,7 +52,7 @@ var __extends = (this && this.__extends) || (function () {
 define("Geom", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Vector = exports.eps = void 0;
+    exports.dist = exports.Vector = exports.eps = void 0;
     exports.eps = 1e-4;
     var Vector = (function () {
         function Vector(x, y) {
@@ -101,6 +101,10 @@ define("Geom", ["require", "exports"], function (require, exports) {
         return Vector;
     }());
     exports.Vector = Vector;
+    function dist(a, b) {
+        return a.sub(b).abs();
+    }
+    exports.dist = dist;
 });
 define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], function (require, exports, Geom_1) {
     "use strict";
@@ -1168,7 +1172,72 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], f
     }(StationaryObject_1.StationaryObject));
     exports.Corpse = Corpse;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Entities/Corpse", "SpriteAnimation"], function (require, exports, Game_2, geom, Control_1, Person_2, Monster_1, Corpse_1, SpriteAnimation_1) {
+define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", "Game"], function (require, exports, Entity_3, geom, Game_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Projectile = void 0;
+    var Projectile = (function (_super) {
+        __extends(Projectile, _super);
+        function Projectile(game, body, vel) {
+            var _this = _super.call(this, game, body) || this;
+            _this.vel = new geom.Vector();
+            _this.viscousFriction = 0;
+            _this.vel = vel;
+            return _this;
+        }
+        Projectile.prototype.step = function () {
+            this.body.move(this.vel.mul(Game_2.Game.dt));
+            this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_2.Game.dt));
+        };
+        return Projectile;
+    }(Entity_3.Entity));
+    exports.Projectile = Projectile;
+});
+define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom", "SpriteAnimation", "Draw", "Entities/Corpse"], function (require, exports, Projectile_1, geom, SpriteAnimation_1, Draw_7, Corpse_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Biomass = void 0;
+    var Biomass = (function (_super) {
+        __extends(Biomass, _super);
+        function Biomass(game, body, vel) {
+            var _this = _super.call(this, game, body, vel) || this;
+            _this.velLimit = 0.01;
+            _this.alive = true;
+            _this.viscousFriction = 10;
+            _this.vel = _this.vel.mul(_this.viscousFriction);
+            _this.spriteAnimation = new SpriteAnimation_1.SpriteAnimation();
+            _this.spriteAnimation.loadFrames("Biomass", 3);
+            _this.spriteAnimation.duration = 1000;
+            _this.spriteAnimation.frameDuration = 0.1;
+            return _this;
+        }
+        Biomass.prototype.step = function () {
+            _super.prototype.step.call(this);
+            this.spriteAnimation.step();
+        };
+        Biomass.prototype.display = function (draw) {
+            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_7.Layer.EntityLayer);
+        };
+        Biomass.prototype.haveStopped = function () {
+            return this.vel.abs() < this.velLimit;
+        };
+        Biomass.prototype.checkTarget = function () {
+            var target = null;
+            for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
+                var entity = _a[_i];
+                if (entity instanceof Projectile_1.Projectile || entity instanceof Corpse_1.Corpse || entity == this.baseEntity)
+                    continue;
+                if (geom.dist(this.body.center, entity.body.center) < 1) {
+                    target = entity;
+                }
+            }
+            return target;
+        };
+        return Biomass;
+    }(Projectile_1.Projectile));
+    exports.Biomass = Biomass;
+});
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "SpriteAnimation", "Entities/Biomass"], function (require, exports, Game_3, geom, Control_1, Person_2, Monster_1, SpriteAnimation_2, Biomass_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -1181,10 +1250,10 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
         Mimic.prototype.takeControl = function (entity) {
             console.log("biba", entity);
             if (this.controlledEntity) {
-                this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_1.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_1.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
-                this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_1.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_1.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
+                this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
+                this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_1.Monster) {
-                    this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_1.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_1.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
+                    this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
                 }
                 if (this.controlledEntity instanceof Person_2.Person) {
                     this.controlledEntity.behaviorModel.refreshInstruction();
@@ -1198,32 +1267,29 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.controlledEntity = entity;
         };
         Mimic.prototype.ejectBiomass = function (vel) {
-            this.game.makeBiomass(this.controlledEntity.body.center, vel);
+            var biomass = this.game.makeBiomass(this.controlledEntity.body.center, vel);
+            biomass.baseEntity = this.controlledEntity;
+            this.takeControl(biomass);
         };
         Mimic.prototype.step = function () {
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_2.Person) && !(this.controlledEntity instanceof Monster_1.Monster)) {
                 var person = this.controlledEntity;
-                person.hp -= Game_2.Game.dt;
+                person.hp -= Game_3.Game.dt;
                 if (person.hp < 0) {
                     var monster = this.game.makeMonster(this.controlledEntity.body.center);
                     this.controlledEntity = monster;
                 }
             }
-            if (Control_1.Control.isMouseClicked()) {
+            if (Control_1.Control.isMouseClicked() && !(this.controlledEntity instanceof Biomass_1.Biomass)) {
                 var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
-                this.ejectBiomass(coords.sub(this.controlledEntity.body.center));
-                for (var i = 0; i < this.game.entities.length; i++) {
-                    var target = this.game.entities[i];
-                    var centerDistance = this.controlledEntity.body.center.sub(target.body.center).abs();
-                    var mouseDistance = target.body.center.sub(coords).abs();
-                    if ((centerDistance < this.infectionRadius) &&
-                        (mouseDistance < target.body.radius) &&
-                        !(target instanceof Corpse_1.Corpse) &&
-                        (this.controlledEntity != target)) {
-                        this.takeControl(target);
-                        break;
-                    }
+                var biomass = this.ejectBiomass(coords.sub(this.controlledEntity.body.center));
+            }
+            if (this.controlledEntity instanceof Biomass_1.Biomass) {
+                var target = this.controlledEntity.checkTarget();
+                if (target) {
+                    this.controlledEntity.alive = false;
+                    this.takeControl(target);
                 }
             }
         };
@@ -1305,55 +1371,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", "Game"], function (require, exports, Entity_3, geom, Game_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Projectile = void 0;
-    var Projectile = (function (_super) {
-        __extends(Projectile, _super);
-        function Projectile(game, body, vel) {
-            var _this = _super.call(this, game, body) || this;
-            _this.vel = new geom.Vector();
-            _this.viscousFriction = 0;
-            _this.vel = vel;
-            return _this;
-        }
-        Projectile.prototype.step = function () {
-            this.body.move(this.vel.mul(Game_3.Game.dt));
-            this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_3.Game.dt));
-        };
-        return Projectile;
-    }(Entity_3.Entity));
-    exports.Projectile = Projectile;
-});
-define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom", "SpriteAnimation", "Draw"], function (require, exports, Projectile_1, geom, SpriteAnimation_2, Draw_7) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Biomass = void 0;
-    var Biomass = (function (_super) {
-        __extends(Biomass, _super);
-        function Biomass(game, body, vel) {
-            var _this = _super.call(this, game, body, vel) || this;
-            _this.velLimit = 0.01;
-            _this.viscousFriction = 1;
-            _this.spriteAnimation = new SpriteAnimation_2.SpriteAnimation();
-            _this.spriteAnimation.loadFrames("Biomass", 3);
-            _this.spriteAnimation.duration = 1000;
-            _this.spriteAnimation.frameDuration = 0.1;
-            return _this;
-        }
-        Biomass.prototype.step = function () {
-            _super.prototype.step.call(this);
-            this.spriteAnimation.step();
-        };
-        Biomass.prototype.display = function (draw) {
-            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_7.Layer.EntityLayer);
-        };
-        return Biomass;
-    }(Projectile_1.Projectile));
-    exports.Biomass = Biomass;
-});
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_8, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_1) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_8, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1445,7 +1463,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.makeBiomass = function (pos, vel) {
             var body = this.makeBody(pos, 1);
             body.collisionBox = new geom.Vector(0.2, 0.2);
-            var entity = new Biomass_1.Biomass(this, body, vel);
+            var entity = new Biomass_2.Biomass(this, body, vel);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
             return entity;
@@ -1455,7 +1473,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.processEntities = function () {
             for (var i = 0; i < this.entities.length; i++) {
-                if (this.entities[i] instanceof Person_5.Person && this.entities[i].hp <= 0) {
+                if (this.entities[i] instanceof Person_5.Person && this.entities[i].hp <= 0 ||
+                    this.entities[i] instanceof Biomass_2.Biomass && !this.entities[i].alive) {
                     this.entities.splice(i, 1);
                     i--;
                 }
