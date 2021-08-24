@@ -11,15 +11,17 @@ export class Color {
     public r : number;
     public g : number;
     public b : number;
+    public a : number;
 
-    constructor(r: number, g: number, b: number) {
+    constructor(r: number, g: number, b: number, a = 255) {
         this.r = r;
         this.g = g;
         this.b = b;
+        this.a = a;
     }
 
     public toString() : string {
-        return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+        return "rgba(" + this.r + "," + this.g + "," + this.b  + "," + this.a + ")";
     }
 }
 export enum Layer { // Индентификатор текстуры (тайл или персонаж)
