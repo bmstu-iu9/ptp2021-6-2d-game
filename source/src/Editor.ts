@@ -37,7 +37,7 @@ export class Editor {
             this.createTileButton("textures/tiles/ceiling" + i + ".png", CollisionType.Full);
         for (let i = 0; i < 2; i++)
             this.createTileButton("textures/tiles/wall" + i + ".png", CollisionType.Full);
-            for (let i = 0; i < 2; i++)
+        for (let i = 0; i < 2; i++)
             this.createTileButton("textures/tiles/floor" + i + ".png", CollisionType.Empty);
 
         // Окно превью
