@@ -46,7 +46,7 @@ export class Editor {
             new geom.Vector(50, 50));
 
         document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
-        document.getElementById("gameCanvas")["style"].width = window.innerWidth - 650 + "px";
+        document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px"
 
         document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
