@@ -634,7 +634,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
     }());
     exports.PathGenerator = PathGenerator;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib"], function (require, exports, Tile_3, geom, Draw_3, PathGenerator_1, AuxLib_1) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib", "AuxLib"], function (require, exports, Tile_3, geom, Draw_3, PathGenerator_1, AuxLib_1, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
@@ -710,7 +710,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             for (var i = 0; i < this.Grid.length; i++) {
                 for (var j = 0; j < this.Grid[i].length; j++)
                     if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
-                        draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_3.Color(0, 255, 0, 0.5));
+                        draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_3.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
                     }
             }
         };
@@ -1317,7 +1317,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     exports.Game = void 0;
     var Game = (function () {
         function Game(draw) {
-            var _this = this;
             this.bodies = [];
             this.entities = [];
             this.triggers = [];
@@ -1331,11 +1330,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw = draw;
             this.currentLevel.Grid = [];
             this.mimic = new Mimic_1.Mimic(this);
-            var collide = function () {
-                _this.vidimost = true;
-                console.log("402");
-            };
-            document.getElementById("showcolision").onclick = collide;
         }
         Game.readTextFile = function (path) {
             return __awaiter(this, void 0, void 0, function () {
@@ -1455,9 +1449,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
             this.draw.getimage();
             this.draw.step();
-            if (this.vidimost == true) {
-                this.currentLevel.displayColisionGrid(this.draw);
-            }
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {

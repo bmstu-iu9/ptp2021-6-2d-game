@@ -3,6 +3,8 @@ import * as geom from "./Geom";
 import { Color, Draw } from "./Draw";
 import { PathGenerator } from "./Editor/PathGenerator";
 import { replacer } from "./AuxLib";
+import { sign } from "crypto";
+import * as aux from "./AuxLib";
 
 // Так выглядел старый класс, я на всякий оставил, но не думаю, что он сейчас нужен
 export class LevelJSON {
@@ -100,7 +102,7 @@ export class Level {
         for(let i = 0; i < this.Grid.length; i++){
             for (let j = 0; j < this.Grid[i].length; j++)
             if (this.Grid[i][j].colision == CollisionType.Full) {
-                draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5));
+                draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5*Math.sin(aux.getMilliCount()*0.005) + 0.5));
             }
         }
     }
