@@ -42,7 +42,7 @@ export class Editor {
 
         // Окно превью
         this.cursor.drawPreview = new Draw(
-            document.getElementById("preview") as HTMLCanvasElement, 
+            document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
     }
 

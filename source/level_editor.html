@@ -1,19 +1,58 @@
+<html>
 <style>
+    .layer, .layer2, .layer3 {position: absolute}
+    /*.layer, .layer2, .layer3 {overflow-x: auto; padding: 10px;}*/
     .tileButton {
         width: 50px;
         height: auto;
         margin: 5px;
     }
+    .layer {
+        overflow: scroll; /* Добавляем полосы прокрутки */
+        width: 300px; /* Ширина блока */
+        height: 150px; /* Высота блока */
+        padding: 5px; /* Поля вокруг текста */
+        border: solid 1px black; /* Параметры рамки */
+        right: 0px;
+        top: 0px;
+   }
+   .layer2 {
+        overflow: scroll; /* Добавляем полосы прокрутки */
+        width: 300px; /* Ширина блока */
+        height: 150px; /* Высота блока */
+        padding: 5px; /* Поля вокруг текста */
+        border: solid 1px black; /* Параметры рамки */
+        right: 0px;
+        top: 162px;
+   }
+   .layer3 {
+        overflow: scroll; /* Добавляем полосы прокрутки */
+        width: 300px; /* Ширина блока */
+        height: 150px; /* Высота блока */
+        padding: 5px; /* Поля вокруг текста */
+        border: solid 1px black; /* Параметры рамки */
+        right: 0px;
+        top: 324px;
+   }
 </style>
 <div id="mode" style="visibility: hidden" value="editor">editor</div>
 <canvas id="gameCanvas" style="border: 1px solid black;"></canvas>
 <canvas id="preview" style="border: 1px solid black; vertical-align: top;" height=50 width = 50></canvas>
-    <button id="generate" style="color: chocolate;"> Generate </button>
-<div id="palette">
-    
+<button id="generate" style="color: chocolate;"> Generate </button>
+<div>
+    <div id="palette" class="layer">
+
+    </div>
+    <div id="palette2" class="layer2">
+
+    </div>
+    <div id="palette3" class="layer3">
+
+    </div>
 </div>
 <script src="./require.js"></script>
 <script src="build/build.js"></script>
 <script>
     require(['Main']);
 </script>
+</html>
