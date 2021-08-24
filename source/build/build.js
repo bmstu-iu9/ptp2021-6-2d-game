@@ -1893,7 +1893,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/Entity", "Entities/EntityAttributes/Body"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Entity_3, Body_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -1911,8 +1911,26 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             button.className = "tileButton";
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
-            var applyTile = function () { _this.cursor.tile = new Tile_6.Tile(collision, button); };
+            var applyTile = function () { _this.cursor.mode = Cursor_1.Mode.Wall; _this.cursor.tile = new Tile_6.Tile(collision, button); };
             button.onclick = applyTile;
+        };
+        Editor.prototype.createEntityButton = function (entityType, type) {
+            var _this = this;
+            var button = document.createElement("img");
+            if (entityType == "Soldier") {
+                button.src = "Soldier/stand_fine_0.png";
+            }
+            if (entityType == "Scientist") {
+                button.src = "Scientist/stand_fine_0.png";
+            }
+            if (entityType == "Monster") {
+                button.src = "Monster/stand_fine_0.png";
+            }
+            button.className = "entityButton";
+            var palette = document.getElementById("palette" + type);
+            palette.appendChild(button);
+            var applyEntity = function () { _this.cursor.mode = Cursor_1.Mode.Entity; _this.cursor.entity = new Entity_3.Entity(null, new Body_2.Body(new geom.Vector(0, 0), 1)); };
+            button.onclick = applyEntity;
         };
         Editor.prototype.initHTML = function () {
             var _this = this;
@@ -1924,40 +1942,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 this.createTileButton("textures/tiles/walls/wall" + i + ".png", Tile_6.CollisionType.Full, "2");
             for (var i = 0; i < 76; i++)
                 this.createTileButton("textures/tiles/floors/floor" + i + ".png", Tile_6.CollisionType.Empty, "3");
-            for (var i = 0; i < 4; i++) {
-                this.createTileButton("textures/tiles/entities/entity" + i + ".png", Tile_6.CollisionType.Empty, "4");
-            }
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
-            document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
-            document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px";
-            document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette")["style"].top = "10px";
-            document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
-            document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
-            document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
-            document.getElementById("preview")["style"].top = "0px";
-            document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
-            document.getElementById("generate")["style"].top = "62px";
-            document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
-        };
-        Editor.prototype.isInCanvas = function (mouseCoords) {
-            if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x && mouseCoords.x <= document.getElementById("gameCanvas")["height"] && document.getElementById("gameCanvas").clientTop <= mouseCoords.y && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
-                return true;
-            }
-            return false;
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
-            if (this.isInCanvas(mouseCoords)) {
-                this.draw.cam.scale *= Math.pow(1.001, -Control_4.Control.wheelDelta());
-            }
-            else {
-                Control_4.Control.clearWheelDelta();
-            }
-            if (Control_4.Control.isMouseRightPressed() && this.isInCanvas(mouseCoords)) {
+            this.draw.cam.scale *= Math.pow(1.001, -Control_4.Control.wheelDelta());
+            if (Control_4.Control.isMouseRightPressed()) {
                 var delta = mouseCoords.sub(this.mousePrev);
                 this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
             }
