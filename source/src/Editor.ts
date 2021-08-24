@@ -16,11 +16,11 @@ export class Editor {
         this.initHTML();
     }
 
-    private createTileButton(src : string, collision : CollisionType) {
+    private createTileButton(src : string, collision : CollisionType, type: string) {
         let button = document.createElement("img");
         button.src = src;
         button.className = "tileButton";
-        let palette = document.getElementById("palette");
+        let palette = document.getElementById("palette" + type);
         palette.appendChild(button);
         let applyTile = () => {this.cursor.tile = new Tile(collision, button)}
         button.onclick = applyTile;
@@ -33,12 +33,12 @@ export class Editor {
         document.getElementById("generate").onclick = generate;
 
         // Создание кнопок для тайлов
-        for (let i = 0; i < 3; i++)
-            this.createTileButton("textures/tiles/ceiling" + i + ".png", CollisionType.Full);
-        for (let i = 0; i < 2; i++)
-            this.createTileButton("textures/tiles/wall" + i + ".png", CollisionType.Full);
-        for (let i = 0; i < 2; i++)
-            this.createTileButton("textures/tiles/floor" + i + ".png", CollisionType.Empty);
+        for (let i = 0; i < 47; i++)
+            this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
+        for (let i = 0; i < 64; i++)
+            this.createTileButton("textures/tiles/walls/wall" + i + ".png", CollisionType.Full, "2");
+        for (let i = 0; i < 76; i++)
+            this.createTileButton("textures/tiles/floors/floor" + i + ".png", CollisionType.Empty, "3");
 
         // Окно превью
         this.cursor.drawPreview = new Draw(

@@ -1,11 +1,11 @@
 <html>
 <style>
-    .layer, .layer2, .layer3 {position: absolute}
-    /*.layer, .layer2, .layer3 {overflow-x: auto; padding: 10px;}*/
+    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3 {position: absolute}
+    /*.layer, .layer2, .layer3 {overflow: auto; padding: 10px;}*/
     .tileButton {
         width: 50px;
         height: auto;
-        margin: 5px;
+        margin: 1px;
     }
     .layer {
         overflow: scroll; /* Добавляем полосы прокрутки */
@@ -34,11 +34,29 @@
         right: 0px;
         top: 324px;
    }
+   .canvass {
+       left: 0px;
+       top: 0px;
+       border: 1px solid black;
+   }
+   .prevCanvass {
+        top: 0px;
+        left: 652px;
+        border: 2px solid greenyellow;
+        vertical-align: top;
+        height: 50px;
+        width: 50px;
+   }
+   .buttonGen {
+       top: 62px;
+       left: 652px;
+       color: chocolate;
+   }
 </style>
 <div id="mode" style="visibility: hidden" value="editor">editor</div>
-<canvas id="gameCanvas" style="border: 1px solid black;" width=640 height=640></canvas>
-<canvas id="preview" style="border: 1px solid black; vertical-align: top;" height=50 width = 50></canvas>
-<button id="generate" style="color: chocolate;"> Generate </button>
+<canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
+<canvas id="preview" class="prevCanvass"></canvas>
+<button id="generate" class = "buttonGen"> Generate </button>
 <div>
     <div id="palette" class="layer">
 

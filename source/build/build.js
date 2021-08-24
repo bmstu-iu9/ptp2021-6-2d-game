@@ -1901,12 +1901,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.mousePrev = Control_4.Control.mousePos();
             this.initHTML();
         }
-        Editor.prototype.createTileButton = function (src, collision) {
+        Editor.prototype.createTileButton = function (src, collision, type) {
             var _this = this;
             var button = document.createElement("img");
             button.src = src;
             button.className = "tileButton";
-            var palette = document.getElementById("palette");
+            var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTile = function () { _this.cursor.tile = new Tile_6.Tile(collision, button); };
             button.onclick = applyTile;
@@ -1915,12 +1915,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var _this = this;
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
-            for (var i = 0; i < 3; i++)
-                this.createTileButton("textures/tiles/ceiling" + i + ".png", Tile_6.CollisionType.Full);
-            for (var i = 0; i < 2; i++)
-                this.createTileButton("textures/tiles/wall" + i + ".png", Tile_6.CollisionType.Full);
-            for (var i = 0; i < 2; i++)
-                this.createTileButton("textures/tiles/floor" + i + ".png", Tile_6.CollisionType.Empty);
+            for (var i = 0; i < 47; i++)
+                this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", Tile_6.CollisionType.Full, "");
+            for (var i = 0; i < 64; i++)
+                this.createTileButton("textures/tiles/walls/wall" + i + ".png", Tile_6.CollisionType.Full, "2");
+            for (var i = 0; i < 76; i++)
+                this.createTileButton("textures/tiles/floors/floor" + i + ".png", Tile_6.CollisionType.Empty, "3");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
         };
         Editor.prototype.moveCamera = function () {
