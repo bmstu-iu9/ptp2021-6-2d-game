@@ -1922,6 +1922,16 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             for (var i = 0; i < 76; i++)
                 this.createTileButton("textures/tiles/floors/floor" + i + ".png", Tile_6.CollisionType.Empty, "3");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
+            document.getElementById("gameCanvas")["style"].height = window.innerHeight + "px";
+            document.getElementById("gameCanvas")["style"].width = window.innerWidth - 650 + "px";
+            document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("palette")["style"].top = "10px";
+            document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 20 + "px";
+            document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + 30 + "px";
+            console.log(document.getElementById("palette")["height"]);
+            console.log(document.getElementById("palette")["style"].top);
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();

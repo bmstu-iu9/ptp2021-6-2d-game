@@ -44,6 +44,20 @@ export class Editor {
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
+        
+        document.getElementById("gameCanvas")["style"].height = window.innerHeight + "px";
+        document.getElementById("gameCanvas")["style"].width = window.innerWidth - 650 + "px";
+
+        document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) + "px";
+        document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) + "px";
+        document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) + "px";
+
+        document.getElementById("palette")["style"].top = "10px";
+        document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 20 + "px";
+        document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + 30 + "px";
+
+        console.log(document.getElementById("palette")["height"])
+        console.log(document.getElementById("palette")["style"].top)
     }
 
     // Двигает камеру в соответствии с движениями мышки
