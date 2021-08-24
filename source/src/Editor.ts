@@ -45,19 +45,25 @@ export class Editor {
             document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
         
-        document.getElementById("gameCanvas")["style"].height = window.innerHeight + "px";
+        document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
         document.getElementById("gameCanvas")["style"].width = window.innerWidth - 650 + "px";
 
-        document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) + "px";
-        document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) + "px";
-        document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) + "px";
+        document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+        document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+        document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
 
         document.getElementById("palette")["style"].top = "10px";
-        document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 20 + "px";
-        document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + 30 + "px";
+        document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+        document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
+        
+        document.getElementById("preview")["style"].top = "0px";
+        document.getElementById("preview")["style"].left = document.getElementById("gameCanvas")["width"] + 12 + "px";
 
-        console.log(document.getElementById("palette")["height"])
-        console.log(document.getElementById("palette")["style"].top)
+        document.getElementById("generate")["style"].top = "62px";
+        document.getElementById("generate")["style"].left = document.getElementById("gameCanvas")["width"] + 12 + "px";
+        
+        /*console.log(document.getElementById("palette")["height"])
+        console.log(document.getElementById("palette")["style"].top)*/
     }
 
     // Двигает камеру в соответствии с движениями мышки
@@ -66,7 +72,9 @@ export class Editor {
         let mouseCoords = Control.mousePos().clone();
 
         // Двигаем камеру
-        this.draw.cam.scale *= Math.pow(1.001, -Control.wheelDelta());
+        if (mouseCoords.x < document.getElementById("gameCanvas")["height"] && mouseCoords.y < document.getElementById("gameCanvas")["width"]) {
+            this.draw.cam.scale *= Math.pow(1.001, -Control.wheelDelta());
+        }
         if (Control.isMouseRightPressed()) {
             let delta = mouseCoords.sub(this.mousePrev);
             this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));

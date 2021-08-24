@@ -1922,20 +1922,24 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             for (var i = 0; i < 76; i++)
                 this.createTileButton("textures/tiles/floors/floor" + i + ".png", Tile_6.CollisionType.Empty, "3");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
-            document.getElementById("gameCanvas")["style"].height = window.innerHeight + "px";
+            document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
             document.getElementById("gameCanvas")["style"].width = window.innerWidth - 650 + "px";
-            document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) + "px";
-            document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) + "px";
-            document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette")["style"].top = "10px";
-            document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 20 + "px";
-            document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + 30 + "px";
-            console.log(document.getElementById("palette")["height"]);
-            console.log(document.getElementById("palette")["style"].top);
+            document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("preview")["style"].top = "0px";
+            document.getElementById("preview")["style"].left = document.getElementById("gameCanvas")["width"] + 12 + "px";
+            document.getElementById("generate")["style"].top = "62px";
+            document.getElementById("generate")["style"].left = document.getElementById("gameCanvas")["width"] + 12 + "px";
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
-            this.draw.cam.scale *= Math.pow(1.001, -Control_4.Control.wheelDelta());
+            if (mouseCoords.x < document.getElementById("gameCanvas")["height"] && mouseCoords.y < document.getElementById("gameCanvas")["width"]) {
+                this.draw.cam.scale *= Math.pow(1.001, -Control_4.Control.wheelDelta());
+            }
             if (Control_4.Control.isMouseRightPressed()) {
                 var delta = mouseCoords.sub(this.mousePrev);
                 this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
