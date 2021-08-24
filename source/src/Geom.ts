@@ -36,6 +36,10 @@ export class Vector {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    public dist(a : Vector, b : Vector) : number {
+        return a.sub(b).abs();
+    }
+
     public norm() : Vector {
         if (this.abs() < eps) {
             return new Vector(0, 0);
