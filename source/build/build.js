@@ -1576,13 +1576,15 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
     }());
     exports.Camera = Camera;
     var Color = (function () {
-        function Color(r, g, b) {
+        function Color(r, g, b, a) {
+            if (a === void 0) { a = 255; }
             this.r = r;
             this.g = g;
             this.b = b;
+            this.a = a;
         }
         Color.prototype.toString = function () {
-            return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+            return "rgba(" + this.r + "," + this.g + "," + this.b + "," + this.a + ")";
         };
         return Color;
     }());
