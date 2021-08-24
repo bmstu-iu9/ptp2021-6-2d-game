@@ -15,6 +15,7 @@ import { Soldier } from "./Entities/Soldier";
 import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
+import { Biomass } from "./Entities/Biomass";
 
 export class Game {
     public static levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -92,6 +93,15 @@ export class Game {
     public makeCorpse(pos: geom.Vector, type: string): Entity { // создаёт персонажа и возвращает ссылку
         let body = this.makeBody(pos, 1);
         let entity = new Corpse(this, body, type);//последнее - маркер состояния
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
+    public makeBiomass(pos: geom.Vector, vel: geom.Vector): Biomass {
+        let body = this.makeBody(pos, 1);
+        body.collisionBox = new geom.Vector(0.2, 0.2);
+        let entity = new Biomass(this, body, vel);
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
         return entity;

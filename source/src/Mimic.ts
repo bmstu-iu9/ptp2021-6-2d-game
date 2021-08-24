@@ -52,6 +52,10 @@ export class Mimic {
         this.controlledEntity = entity;
     }
 
+    public ejectBiomass(vel: geom.Vector) {
+        this.game.makeBiomass(this.controlledEntity.body.center, vel);
+    }
+
     public step() {
         // Подменяем комманды дя Entity, если мы не делаем это каждый ход, команды восстанавливаются сами (см Entity.step)
         this.controlledEntity.commands = Control.commands;
@@ -68,8 +72,9 @@ export class Mimic {
 
         // Если мышка нажата, мы производим переселение
         if (Control.isMouseClicked()) { 
-            // Пересчитываем координаты на экране в игровые координаты (Мб стоит сделать функцию трансформации в game?)
+            // Пересчитываем координаты на экране в игровые координаты
             let coords = this.game.draw.transformBack(Control.lastMouseCoordinates())
+            this.ejectBiomass(coords.sub(this.controlledEntity.body.center));
             // Проверяем соседние entity
             for (let i = 0; i < this.game.entities.length; i++) {
 
