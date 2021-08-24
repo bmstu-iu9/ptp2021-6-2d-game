@@ -1302,7 +1302,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_7, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_7, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1439,7 +1439,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
             this.draw.getimage();
             this.draw.step();
-            Debug_3.Debug.drawPoints(this);
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {
@@ -1577,13 +1576,15 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
     }());
     exports.Camera = Camera;
     var Color = (function () {
-        function Color(r, g, b) {
+        function Color(r, g, b, a) {
+            if (a === void 0) { a = 255; }
             this.r = r;
             this.g = g;
             this.b = b;
+            this.a = a;
         }
         Color.prototype.toString = function () {
-            return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+            return "rgba(" + this.r + "," + this.g + "," + this.b + "," + this.a + ")";
         };
         return Color;
     }());
