@@ -1931,9 +1931,11 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("preview")["style"].top = "0px";
-            document.getElementById("preview")["style"].left = document.getElementById("gameCanvas")["width"] + 12 + "px";
+            document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             document.getElementById("generate")["style"].top = "62px";
-            document.getElementById("generate")["style"].left = document.getElementById("gameCanvas")["width"] + 12 + "px";
+            document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+            console.log(window.innerHeight);
+            console.log(window.outerHeight);
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
