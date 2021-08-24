@@ -29,12 +29,13 @@ export class Game {
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
     public mimic : Mimic; // объект мимик, за который играет игрок
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
-
+    private vidimost = false;
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
         return text;
     }
+    
 
     public static async loadMap(path : string, name : string) { // загрузка карты по ссылке и названию
         let result = await this.readTextFile(aux.environment + path)
@@ -50,11 +51,10 @@ export class Game {
 
     constructor(draw : Draw) {
         console.log("im here!!");
-        
+        //document.getElementById("showcolision").onclick = collide
         Control.init();
         this.draw = draw;
         this.currentLevel.Grid = [];
-
         this.mimic = new Mimic(this);
     }
     
@@ -170,7 +170,6 @@ export class Game {
 
         // Анимации
         this.draw.step();
-
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
     }
