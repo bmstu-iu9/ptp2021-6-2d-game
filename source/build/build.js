@@ -216,6 +216,9 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
             this.mouseWheelDelta = 0;
             return delta;
         };
+        Control.clearWheelDelta = function () {
+            this.mouseWheelDelta = 0;
+        };
         Control.mousePos = function () {
             var canvas = document.getElementById("gameCanvas");
             return this.currentMousePos.sub(new geom.Vector(canvas.offsetLeft, canvas.offsetTop));
@@ -1921,28 +1924,40 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 this.createTileButton("textures/tiles/walls/wall" + i + ".png", Tile_6.CollisionType.Full, "2");
             for (var i = 0; i < 76; i++)
                 this.createTileButton("textures/tiles/floors/floor" + i + ".png", Tile_6.CollisionType.Empty, "3");
+            for (var i = 0; i < 4; i++) {
+                this.createTileButton("textures/tiles/entities/entity" + i + ".png", Tile_6.CollisionType.Empty, "4");
+            }
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
             document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
             document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px";
             document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette")["style"].top = "10px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("preview")["style"].top = "0px";
             document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             document.getElementById("generate")["style"].top = "62px";
             document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
-            console.log(window.innerHeight);
-            console.log(window.outerHeight);
+        };
+        Editor.prototype.isInCanvas = function (mouseCoords) {
+            if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x && mouseCoords.x <= document.getElementById("gameCanvas")["height"] && document.getElementById("gameCanvas").clientTop <= mouseCoords.y && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
+                return true;
+            }
+            return false;
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
-            if (mouseCoords.x < document.getElementById("gameCanvas")["height"] && mouseCoords.y < document.getElementById("gameCanvas")["width"]) {
+            if (this.isInCanvas(mouseCoords)) {
                 this.draw.cam.scale *= Math.pow(1.001, -Control_4.Control.wheelDelta());
             }
-            if (Control_4.Control.isMouseRightPressed()) {
+            else {
+                Control_4.Control.clearWheelDelta();
+            }
+            if (Control_4.Control.isMouseRightPressed() && this.isInCanvas(mouseCoords)) {
                 var delta = mouseCoords.sub(this.mousePrev);
                 this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
             }

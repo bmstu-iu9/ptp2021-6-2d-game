@@ -97,6 +97,10 @@ export class Control {
         return delta;
     }
 
+    public static clearWheelDelta() {
+        this.mouseWheelDelta = 0;
+    }
+
     public static mousePos() : geom.Vector {
         let canvas = document.getElementById("gameCanvas");
         return this.currentMousePos.sub(new geom.Vector(canvas.offsetLeft, canvas.offsetTop));

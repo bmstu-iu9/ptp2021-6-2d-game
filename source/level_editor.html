@@ -1,7 +1,6 @@
 <html>
 <style>
-    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3 {position: absolute}
-    /*.layer, .layer2, .layer3 {overflow: auto; padding: 10px;}*/
+    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4 {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
@@ -28,6 +27,13 @@
         border: solid 1px black; /* Параметры рамки */
         right: 0px;
    }
+   .layer4 {
+        /*overflow-y: scroll; */
+        width: 54px; /* Ширина блока */
+        padding: 2px; /* Поля вокруг текста */
+        border: solid 1px black; /* Параметры рамки */
+        right: 320px;
+   }
    .canvass {
        left: 0px;
        top: 0px;
@@ -43,18 +49,25 @@
        color: chocolate;
    }
 </style>
+
+<!-- Невероятная важная невидимая вещь!!! -->
 <div id="mode" style="display: none" value="editor">editor</div>
+
+<!-- Не менять размер канваса, а то шквах -->
 <canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
 <canvas id="preview" class="prevCanvass"></canvas>
 <button id="generate" class = "buttonGen"> Generate </button>
 <div>
-    <div id="palette" class="layer">
+    <div id="palette" class="layer"> <!-- Палитра краев стен -->
 
     </div>
-    <div id="palette2" class="layer2">
+    <div id="palette2" class="layer2"> <!-- Палитра стен -->
 
     </div>
-    <div id="palette3" class="layer3">
+    <div id="palette3" class="layer3"> <!-- Палитра полов -->
+
+    </div>
+    <div id="palette4" class="layer4"> <!-- Палитра существ (ломай тут Эдгр) -->
 
     </div>
 </div>

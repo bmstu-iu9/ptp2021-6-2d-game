@@ -39,6 +39,11 @@ export class Editor {
             this.createTileButton("textures/tiles/walls/wall" + i + ".png", CollisionType.Full, "2");
         for (let i = 0; i < 76; i++)
             this.createTileButton("textures/tiles/floors/floor" + i + ".png", CollisionType.Empty, "3");
+        
+        // Тут существа как тайлы создаются, Эдгр ломай тут
+        for (let i = 0; i < 4; i++) {
+            this.createTileButton("textures/tiles/entities/entity" + i + ".png", CollisionType.Empty, "4");
+        }
 
         // Окно превью
         this.cursor.drawPreview = new Draw(
@@ -51,19 +56,28 @@ export class Editor {
         document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-        
+        document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+
         document.getElementById("palette")["style"].top = "10px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
-        
+        document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
+
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
         
         document.getElementById("generate")["style"].top = "62px";
         document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
         
-        console.log(window.innerHeight)
-        console.log(window.outerHeight)
+        /*console.log(window.innerHeight)
+        console.log(window.outerHeight)*/
+    }
+
+    private isInCanvas(mouseCoords : geom.Vector) : boolean {
+        if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x && mouseCoords.x <= document.getElementById("gameCanvas")["height"] && document.getElementById("gameCanvas").clientTop <= mouseCoords.y && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
+            return true;
+        }
+        return false;
     }
 
     // Двигает камеру в соответствии с движениями мышки
@@ -72,10 +86,13 @@ export class Editor {
         let mouseCoords = Control.mousePos().clone();
 
         // Двигаем камеру
-        if (mouseCoords.x < document.getElementById("gameCanvas")["height"] && mouseCoords.y < document.getElementById("gameCanvas")["width"]) {
+        // console.log(document.getElementById("gameCanvas").clientTop)
+        if (this.isInCanvas(mouseCoords)) {
             this.draw.cam.scale *= Math.pow(1.001, -Control.wheelDelta());
+        } else {
+            Control.clearWheelDelta();
         }
-        if (Control.isMouseRightPressed()) {
+        if (Control.isMouseRightPressed() && this.isInCanvas(mouseCoords)) {
             let delta = mouseCoords.sub(this.mousePrev);
             this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
         }
