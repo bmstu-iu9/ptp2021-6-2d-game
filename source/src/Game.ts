@@ -188,6 +188,9 @@ export class Game {
         }
         this.draw.getimage();
 
+        // Мимик
+        this.mimic.display(this.draw);
+
         // Анимации
         this.draw.step();
 

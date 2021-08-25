@@ -5,7 +5,7 @@ import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
 import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
-import { Draw } from "./Draw";
+import { Draw, Layer } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
 import { Biomass } from "./Entities/Biomass";
 import { Projectile } from "./Entities/Projectile";
@@ -15,7 +15,11 @@ export class Aim {
     public charge = 0; // Заряд
     public chargeMax = 5; // Максимальный заряд
     public chargingTime = 1; // Время для полного заряда
+    public dir = new geom.Vector();
+    public mimic : Mimic;
     public step() {
+        let coords = this.mimic.game.draw.transformBack(Control.mousePos());
+        this.dir = coords.sub(this.mimic.controlledEntity.body.center).norm();
         if (Control.isMouseLeftPressed()) {
             if (this.charge < this.chargeMax) {
                 this.charge += Game.dt * this.chargeMax / this.chargingTime;
@@ -24,8 +28,8 @@ export class Aim {
         else
             this.charge = 0;
     }
-    public getVel(dir : geom.Vector) : geom.Vector{
-        return dir.norm().mul(this.charge);
+    public getVel() : geom.Vector {
+        return this.dir.mul(this.charge);
     }
 }
 
@@ -37,6 +41,7 @@ export class Mimic {
 
     constructor(game : Game) {
         this.game = game;
+        this.aim.mimic = this;
     }
 
     public takeControl(entity : Entity) {
@@ -100,10 +105,9 @@ export class Mimic {
         }
 
         // Если мышка нажата, мы производим переселение
-        if (!Control.isMouseLeftPressed() && this.aim.charge != 0 && !(this.controlledEntity instanceof Biomass)) { 
+        if (!Control.isMouseLeftPressed() && this.aim.charge && !(this.controlledEntity instanceof Biomass)) { 
             // Пересчитываем координаты на экране в игровые координаты
-            let coords = this.game.draw.transformBack(Control.lastMouseCoordinates())
-            let biomass = this.ejectBiomass(this.aim.getVel(coords.sub(this.controlledEntity.body.center)));
+            let biomass = this.ejectBiomass(this.aim.getVel());
         }
 
         // Переселение через биомассу
@@ -119,5 +123,19 @@ export class Mimic {
         }
 
         this.aim.step();
+    }
+
+    // Рисует интерфейс
+    public display(draw : Draw) {
+        // Aim
+        if (this.aim.charge) {
+            let numberOfArrows = 5;
+            let dist = this.aim.charge / numberOfArrows;
+            for (let i = 1; i < numberOfArrows; i++) {
+                let pos = this.controlledEntity.body.center.add(this.aim.dir.mul(dist * i));
+                let arrow = Draw.loadImage("textures/HudElements/arrow.png");
+                draw.image(arrow, pos, new geom.Vector(1, 1), this.aim.dir.angle(), Layer.HudLayer);
+            }
+        }
     }
 }

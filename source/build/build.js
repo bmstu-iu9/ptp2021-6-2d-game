@@ -98,6 +98,9 @@ define("Geom", ["require", "exports"], function (require, exports) {
         Vector.prototype.dot = function (v) {
             return this.x * v.x + this.y * v.y;
         };
+        Vector.prototype.angle = function () {
+            return Math.atan2(this.y, this.x);
+        };
         return Vector;
     }());
     exports.Vector = Vector;
@@ -1237,7 +1240,7 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
     }(Projectile_1.Projectile));
     exports.Biomass = Biomass;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "SpriteAnimation", "Entities/Biomass"], function (require, exports, Game_3, geom, Control_1, Person_2, Monster_1, SpriteAnimation_2, Biomass_1) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Biomass"], function (require, exports, Game_3, geom, Control_1, Person_2, Monster_1, Draw_8, SpriteAnimation_2, Biomass_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
@@ -1247,8 +1250,11 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.charge = 0;
             this.chargeMax = 5;
             this.chargingTime = 1;
+            this.dir = new geom.Vector();
         }
         Aim.prototype.step = function () {
+            var coords = this.mimic.game.draw.transformBack(Control_1.Control.mousePos());
+            this.dir = coords.sub(this.mimic.controlledEntity.body.center).norm();
             if (Control_1.Control.isMouseLeftPressed()) {
                 if (this.charge < this.chargeMax) {
                     this.charge += Game_3.Game.dt * this.chargeMax / this.chargingTime;
@@ -1257,8 +1263,8 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             else
                 this.charge = 0;
         };
-        Aim.prototype.getVel = function (dir) {
-            return dir.norm().mul(this.charge);
+        Aim.prototype.getVel = function () {
+            return this.dir.mul(this.charge);
         };
         return Aim;
     }());
@@ -1269,6 +1275,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.infectionRadius = 100;
             this.aim = new Aim();
             this.game = game;
+            this.aim.mimic = this;
         }
         Mimic.prototype.takeControl = function (entity) {
             console.log("biba", entity);
@@ -1307,9 +1314,8 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                     this.escape();
                 }
             }
-            if (!Control_1.Control.isMouseLeftPressed() && this.aim.charge != 0 && !(this.controlledEntity instanceof Biomass_1.Biomass)) {
-                var coords = this.game.draw.transformBack(Control_1.Control.lastMouseCoordinates());
-                var biomass = this.ejectBiomass(this.aim.getVel(coords.sub(this.controlledEntity.body.center)));
+            if (!Control_1.Control.isMouseLeftPressed() && this.aim.charge && !(this.controlledEntity instanceof Biomass_1.Biomass)) {
+                var biomass = this.ejectBiomass(this.aim.getVel());
             }
             if (this.controlledEntity instanceof Biomass_1.Biomass) {
                 var target = this.controlledEntity.checkTarget();
@@ -1323,6 +1329,17 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                 }
             }
             this.aim.step();
+        };
+        Mimic.prototype.display = function (draw) {
+            if (this.aim.charge) {
+                var numberOfArrows = 5;
+                var dist = this.aim.charge / numberOfArrows;
+                for (var i = 1; i < numberOfArrows; i++) {
+                    var pos = this.controlledEntity.body.center.add(this.aim.dir.mul(dist * i));
+                    var arrow = Draw_8.Draw.loadImage("textures/HudElements/arrow.png");
+                    draw.image(arrow, pos, new geom.Vector(1, 1), this.aim.dir.angle(), Draw_8.Layer.HudLayer);
+                }
+            }
         };
         return Mimic;
     }());
@@ -1402,7 +1419,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_8, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_9, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1553,6 +1570,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 entity.display(this.draw);
             }
             this.draw.getimage();
+            this.mimic.display(this.draw);
             this.draw.step();
         };
         Game.prototype.replacer = function (key, value) {
@@ -1606,7 +1624,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return new Map(value.value);
                 }
                 if (value.dataType === 'HTMLImageElement') {
-                    return Draw_8.Draw.loadImage("./textures/tiles/" + value.value);
+                    return Draw_9.Draw.loadImage("./textures/tiles/" + value.value);
                 }
                 if (value.dataType === 'Vector') {
                     return JSON.stringify(new geom.Vector(value.x, value.y));
@@ -1632,7 +1650,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     }());
     exports.Game = Game;
 });
-define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_9, Game_4) {
+define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_10, Game_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpriteAnimation = exports.AnimationState = void 0;
@@ -1652,7 +1670,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
         SpriteAnimation.prototype.loadFrames = function (name, framesNumber) {
             this.frames = [];
             for (var i = 0; i < framesNumber; i++) {
-                this.frames[i] = Draw_9.Draw.loadImage("textures/" + name + "/" + i + ".png");
+                this.frames[i] = Draw_10.Draw.loadImage("textures/" + name + "/" + i + ".png");
             }
         };
         SpriteAnimation.prototype.getCurrentState = function () {
@@ -1706,6 +1724,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
     (function (Layer) {
         Layer[Layer["TileLayer"] = 0] = "TileLayer";
         Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
+        Layer[Layer["HudLayer"] = 2] = "HudLayer";
     })(Layer = exports.Layer || (exports.Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
@@ -1765,30 +1784,33 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 buffer.width = boxNew.x * 2;
                 buffer.height = boxNew.y * 2;
                 var bctx = buffer.getContext('2d');
+                bctx.imageSmoothingEnabled = false;
                 bctx.translate(boxNew.x, boxNew.y);
                 bctx.rotate(angle);
-                bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
-                this.ctx.drawImage(buffer, posNew.x, posNew.y);
+                bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+                this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
             }
         };
         Draw.prototype.image = function (image, pos, box, angle, layer) {
             if (layer == 0) {
                 this.drawimage(image, pos, box, angle);
             }
-            if (layer == 1) {
-                var curqueue = { image: image, pos: pos, box: box, angle: angle };
+            else {
+                var curqueue = { image: image, pos: pos, box: box, angle: angle, layer: layer };
                 this.imagequeue.push(curqueue);
             }
         };
         Draw.prototype.getimage = function () {
             if (this.imagequeue.length > 0) {
                 this.imagequeue.sort(function (a, b) {
-                    if (a.pos.y > b.pos.y) {
+                    if (a.layer > b.layer)
                         return -1;
-                    }
-                    if (a.pos.y < b.pos.y) {
+                    if (a.layer < b.layer)
                         return 1;
-                    }
+                    if (a.pos.y > b.pos.y)
+                        return -1;
+                    if (a.pos.y < b.pos.y)
+                        return 1;
                     return 0;
                 });
                 for (; this.imagequeue.length > 0;) {
@@ -1913,7 +1935,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
     }());
     exports.Draw = Draw;
 });
-define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_10, geom) {
+define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_11, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
@@ -1957,7 +1979,7 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
                 return new Map(value.value);
             }
             if (value.dataType === 'HTMLImageElement') {
-                return Draw_10.Draw.loadImage("./textures/tiles/" + value.value);
+                return Draw_11.Draw.loadImage("./textures/tiles/" + value.value);
             }
             if (value.dataType === 'Vector') {
                 return JSON.stringify(new geom.Vector(value.x, value.y));
@@ -1967,7 +1989,7 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
     }
     exports.reviver = reviver;
 });
-define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_11, geom, Tile_5) {
+define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_12, geom, Tile_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Cursor = exports.Mode = void 0;
@@ -1999,13 +2021,13 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"
         Cursor.prototype.display = function () {
             this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
             if (this.level.isInBounds(this.pos))
-                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_11.Color(0, 255, 0), 0.1);
+                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_12.Color(0, 255, 0), 0.1);
         };
         return Cursor;
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_12, Level_2, geom, Cursor_1, Tile_6) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile"], function (require, exports, Control_4, Draw_13, Level_2, geom, Cursor_1, Tile_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -2036,7 +2058,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 this.createTileButton("textures/tiles/wall" + i + ".png", Tile_6.CollisionType.Full);
             for (var i = 0; i < 2; i++)
                 this.createTileButton("textures/tiles/floor" + i + ".png", Tile_6.CollisionType.Empty);
-            this.cursor.drawPreview = new Draw_12.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
+            this.cursor.drawPreview = new Draw_13.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
         };
         Editor.prototype.moveCamera = function () {
             var mouseCoords = Control_4.Control.mousePos().clone();
@@ -2063,12 +2085,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_13, Game_5, Editor_1, BehaviorModel_2) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_14, Game_5, Editor_1, BehaviorModel_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_13.Draw(canvas);
+    var draw = new Draw_14.Draw(canvas);
     draw.cam.scale = 0.4;
     Game_5.Game.levels = new Map();
     Game_5.Game.loadMap("map.json", "map");
