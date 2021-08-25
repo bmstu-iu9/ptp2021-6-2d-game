@@ -9,6 +9,7 @@ import { Soldier } from "../Entities/Soldier";
 import * as geom from "../Geom";
 import { Level } from "../Level";
 import { CollisionType, Tile } from "../Tile";
+import * as aux from "../AuxLib";
 
 export enum Mode {
     Eraser = 0,
@@ -29,6 +30,7 @@ export class Cursor {
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
     public drawPreview : Draw;
     private mouseLeftButtonClicked = true;
+    private entityLocations : Map<any, number> = new Map();
 
 
     constructor(level : Level = null, draw : Draw = null) {
@@ -41,17 +43,22 @@ export class Cursor {
     }
 
     private setEntity() {
+        let currentLocation = this.level.Entities.length;
+        if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+            currentLocation = this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)];
+        }
+        this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = currentLocation;
         if (this.entity instanceof Soldier) {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
-            this.level.Entities[this.level.Entities.length] = new Soldier(null, new Body(pos, 1), PersonMode.Fine);
+            this.level.Entities[currentLocation] = new Soldier(null, new Body(pos, 1), PersonMode.Fine);
         }
         if (this.entity instanceof Scientist) {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
-            this.level.Entities[this.level.Entities.length] = new Scientist(null, new Body(pos, 1), PersonMode.Fine);
+            this.level.Entities[currentLocation] = new Scientist(null, new Body(pos, 1), PersonMode.Fine);
         }
         if (this.entity instanceof Monster) {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
-            this.level.Entities[this.level.Entities.length] = new Monster(null, new Body(pos, 1));
+            this.level.Entities[currentLocation] = new Monster(null, new Body(pos, 1));
         }
     }
 

@@ -66,8 +66,7 @@ if (levelEditorMode) {
     let editorStep = function () {
         editor.step();
         draw.clear();
-        progres
-        //editor.display();
+        editor.display();
     }
     setInterval(editorStep, 20);
 }

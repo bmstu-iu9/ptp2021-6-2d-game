@@ -1,6 +1,6 @@
 <html>
 <style>
-    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4 {position: absolute}
+    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5 {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
@@ -39,6 +39,12 @@
         border: solid 1px black; /* Параметры рамки */
         right: 320px;
    }
+   .layer5 {
+        width: 54px; /* Ширина блока */
+        padding: 2px; /* Поля вокруг текста */
+        border: solid 1px black; /* Параметры рамки */
+        right: 320px;
+   }
    .canvass {
        left: 0px;
        top: 0px;
@@ -66,7 +72,7 @@
 <canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
 <canvas id="preview" class="prevCanvass"></canvas>
 <button id="generate" class = "buttonGen"> Generate </button>
-<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress>
+<!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
 <div>
     <div id="palette" class="layer"> <!-- Палитра краев стен -->
 
@@ -77,7 +83,10 @@
     <div id="palette3" class="layer3"> <!-- Палитра полов -->
 
     </div>
-    <div id="palette4" class="layer4"> <!-- Палитра существ (ломай тут Эдгр) -->
+    <div id="palette4" class="layer4"> 
+
+    </div>
+    <div id="palette5" class="layer5">
 
     </div>
 </div>

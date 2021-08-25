@@ -1054,11 +1054,21 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 pos.x < this.Grid.length * this.tileSize &&
                 pos.y < this.Grid[0].length * this.tileSize;
         };
+        Level.prototype.generateMatrix = function (level) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    console.log("generating matrix");
+                    PathGenerator_1.PathGenerator.generateMatrix(level);
+                    return [2];
+                });
+            });
+        };
+        ;
         Level.prototype.serialize = function () {
             var newLevel;
             newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
+            this.generateMatrix(newLevel);
             console.log(newLevel.Grid);
-            PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
             console.log(newLevel.PathMatrix);
             var blob = new Blob([JSON.stringify(newLevel, replacer)], {
@@ -1925,7 +1935,7 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
     }
     exports.reviver = reviver;
 });
-define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile"], function (require, exports, Control_3, Draw_10, Entity_3, Body_2, Monster_4, Person_6, Scientist_3, Soldier_3, geom, Tile_5) {
+define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib"], function (require, exports, Control_3, Draw_10, Entity_3, Body_2, Monster_4, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Cursor = exports.Mode = void 0;
@@ -1946,6 +1956,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
             this.entity = new Entity_3.Entity(null, new Body_2.Body(new geom.Vector(0, 0), 1));
             this.mouseLeftButtonClicked = true;
+            this.entityLocations = new Map();
             this.level = level;
             this.draw = draw;
         }
@@ -1953,17 +1964,22 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
         };
         Cursor.prototype.setEntity = function () {
+            var currentLocation = this.level.Entities.length;
+            if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                currentLocation = this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)];
+            }
+            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = currentLocation;
             if (this.entity instanceof Soldier_3.Soldier) {
                 var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
-                this.level.Entities[this.level.Entities.length] = new Soldier_3.Soldier(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
+                this.level.Entities[currentLocation] = new Soldier_3.Soldier(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
             }
             if (this.entity instanceof Scientist_3.Scientist) {
                 var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
-                this.level.Entities[this.level.Entities.length] = new Scientist_3.Scientist(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
+                this.level.Entities[currentLocation] = new Scientist_3.Scientist(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
             }
             if (this.entity instanceof Monster_4.Monster) {
                 var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
-                this.level.Entities[this.level.Entities.length] = new Monster_4.Monster(null, new Body_2.Body(pos, 1));
+                this.level.Entities[currentLocation] = new Monster_4.Monster(null, new Body_2.Body(pos, 1));
             }
         };
         Cursor.prototype.step = function () {
@@ -2007,7 +2023,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "AuxLib"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, AuxLib_1) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -2025,7 +2041,10 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             button.className = "tileButton";
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
-            var applyTile = function () { _this.cursor.tile = new Tile_6.Tile(collision, button); };
+            var applyTile = function () {
+                _this.cursor.mode = Cursor_1.Mode.Wall;
+                _this.cursor.tile = new Tile_6.Tile(collision, button);
+            };
             button.onclick = applyTile;
         };
         Editor.prototype.createEntityButton = function (entityType, type) {
@@ -2063,12 +2082,6 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             console.log(button);
             palette.appendChild(button);
         };
-        Editor.prototype.roar = function (x) {
-            var s = AuxLib_1.getMilliCount();
-            while (AuxLib_1.getMilliCount() < s + x) {
-                console.log("roar");
-            }
-        };
         Editor.prototype.initHTML = function () {
             var _this = this;
             var progress = document.getElementById("progressbar");
@@ -2090,10 +2103,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette")["style"].top = "10px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
+            document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("preview")["style"].top = "0px";
             document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             document.getElementById("generate")["style"].top = "62px";
@@ -2184,6 +2199,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         var editorStep = function () {
             editor_1.step();
             draw.clear();
+            editor_1.display();
         };
         setInterval(editorStep, 20);
     }
