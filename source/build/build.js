@@ -623,11 +623,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
             this.FloydWarshall(vertices, distance, path);
             console.log(path);
             var correctPath = new Map();
-            var progress = document.getElementById("progressbar");
-            progress.max = vertices.length.toString();
             for (var i = 0; i < vertices.length; i++) {
-                progress.value = i.toString();
-                console.log(progress.max, progress.value);
                 for (var j = 0; j < vertices.length; j++) {
                     if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
                         if (correctPath.get(vertices[i]) == undefined) {
@@ -1054,21 +1050,11 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 pos.x < this.Grid.length * this.tileSize &&
                 pos.y < this.Grid[0].length * this.tileSize;
         };
-        Level.prototype.generateMatrix = function (level) {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    console.log("generating matrix");
-                    PathGenerator_1.PathGenerator.generateMatrix(level);
-                    return [2];
-                });
-            });
-        };
-        ;
         Level.prototype.serialize = function () {
             var newLevel;
             newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
-            this.generateMatrix(newLevel);
             console.log(newLevel.Grid);
+            PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
             console.log(newLevel.PathMatrix);
             var blob = new Blob([JSON.stringify(newLevel, replacer)], {
@@ -1938,7 +1924,13 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
 define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib"], function (require, exports, Control_3, Draw_10, Entity_3, Body_2, Monster_4, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Cursor = exports.Mode = void 0;
+    exports.Cursor = exports.Mode = exports.ToolType = void 0;
+    var ToolType;
+    (function (ToolType) {
+        ToolType[ToolType["GoToPoint"] = 0] = "GoToPoint";
+        ToolType[ToolType["Waiting"] = 1] = "Waiting";
+        ToolType[ToolType["Pursuit"] = 2] = "Pursuit";
+    })(ToolType = exports.ToolType || (exports.ToolType = {}));
     var Mode;
     (function (Mode) {
         Mode[Mode["Eraser"] = 0] = "Eraser";
@@ -1955,6 +1947,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.mode = Mode.Wall;
             this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
             this.entity = new Entity_3.Entity(null, new Body_2.Body(new geom.Vector(0, 0), 1));
+            this.selectedEntity = null;
             this.mouseLeftButtonClicked = true;
             this.entityLocations = new Map();
             this.level = level;
@@ -1982,6 +1975,8 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                 this.level.Entities[currentLocation] = new Monster_4.Monster(null, new Body_2.Body(pos, 1));
             }
         };
+        Cursor.prototype.compileBehaviorModel = function (behaviorModel) {
+        };
         Cursor.prototype.step = function () {
             this.pos = this.draw.transformBack(Control_3.Control.mousePos());
             this.gridPos = this.level.gridCoordinates(this.pos);
@@ -1997,6 +1992,14 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                             this.mouseLeftButtonClicked = false;
                         }
                         break;
+                    }
+                    case Mode.Selector: {
+                        if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                            this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
+                        }
+                        if (this.selectedEntity instanceof Person_6.Person) {
+                            this.compileBehaviorModel(this.selectedEntity.behaviorModel);
+                        }
                     }
                 }
             }
@@ -2082,9 +2085,53 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             console.log(button);
             palette.appendChild(button);
         };
+        Editor.prototype.createToolButton = function (toolType, type) {
+            var _this = this;
+            var button = document.createElement("img");
+            button.className = "toolButton";
+            switch (toolType) {
+                case Cursor_1.ToolType.GoToPoint: {
+                    button.src = "textures/Editor/arrow.png";
+                    break;
+                }
+                case Cursor_1.ToolType.Waiting: {
+                    button.src = "textures/Edito/waiting.png";
+                    break;
+                }
+                case Cursor_1.ToolType.Pursuit: {
+                    button.src = "textures/Editor/pursuit.png";
+                    break;
+                }
+            }
+            var palette = document.getElementById("palette" + type);
+            palette.appendChild(button);
+            var applyTool = function () {
+                _this.cursor.mode = Cursor_1.Mode.Selector;
+                if (_this.cursor.selectedEntity != null) {
+                    if (_this.cursor.selectedEntity instanceof Person_7.Person) {
+                        var behaviorModel = _this.cursor.selectedEntity.behaviorModel;
+                        _this.cursor.compileBehaviorModel(behaviorModel);
+                        switch (toolType) {
+                            case Cursor_1.ToolType.GoToPoint: {
+                                behaviorModel.instructions["default"].addGoingToPoint(new geom.Vector(0, 0));
+                                break;
+                            }
+                            case Cursor_1.ToolType.Waiting: {
+                                behaviorModel.instructions["default"].addWaiting(1000);
+                                break;
+                            }
+                            case Cursor_1.ToolType.Pursuit: {
+                                behaviorModel.instructions["default"].addPursuit();
+                                break;
+                            }
+                        }
+                    }
+                }
+            };
+            button.onclick = applyTool;
+        };
         Editor.prototype.initHTML = function () {
             var _this = this;
-            var progress = document.getElementById("progressbar");
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
             for (var i = 0; i < 47; i++)
@@ -2096,6 +2143,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createEntityButton("Scientist", "4");
             this.createEntityButton("Soldier", "4");
             this.createEntityButton("Monster", "4");
+            this.createToolButton(Cursor_1.ToolType.GoToPoint, "5");
+            this.createToolButton(Cursor_1.ToolType.Waiting, "5");
+            this.createToolButton(Cursor_1.ToolType.Pursuit, "5");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
             document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
             document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px";

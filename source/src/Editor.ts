@@ -2,16 +2,17 @@ import { Control } from "./Control";
 import { Draw } from "./Draw";
 import { Level } from "./Level";
 import * as geom from "./Geom";
-import { Cursor, Mode } from "./Editor/Cursor";
+import { Cursor, Mode, ToolType } from "./Editor/Cursor";
 import { CollisionType, Tile } from "./Tile";
 import { Entity } from "./Entities/Entity";
 import { Body } from "./Entities/EntityAttributes/Body";
 import { Soldier } from "./Entities/Soldier";
 import { Scientist } from "./Entities/Scientist";
-import { PersonMode } from "./Entities/Person";
+import { Person, PersonMode } from "./Entities/Person";
 import { Monster } from "./Entities/Monster";
 import { Animation } from "./Entities/EntityAttributes/Animation";
 import { getMilliCount } from "./AuxLib";
+import { BehaviorModel } from "./BehaviorModel";
 
 export class Editor {
     private mousePrev: geom.Vector;
@@ -71,14 +72,53 @@ export class Editor {
         palette.appendChild(button);
     }
 
-    private createToolButton(src : string, type : string) {
-        
+    private createToolButton(toolType : ToolType, type : string) {
+        let button = document.createElement("img");
+        button.className = "toolButton";
+        switch(toolType) {
+            case ToolType.GoToPoint: {
+                button.src = "textures/Editor/arrow.png";
+                break;
+            }
+            case ToolType.Waiting: {
+                button.src = "textures/Edito/waiting.png";
+                break;
+            }
+            case ToolType.Pursuit: {
+                button.src = "textures/Editor/pursuit.png";
+                break;
+            }
+        }
+        let palette = document.getElementById("palette" + type);
+        palette.appendChild(button);
+        let applyTool = () => { this.cursor.mode = Mode.Selector;
+            if (this.cursor.selectedEntity != null) {
+                if (this.cursor.selectedEntity instanceof Person) {
+                    let behaviorModel = this.cursor.selectedEntity.behaviorModel;
+                    this.cursor.compileBehaviorModel(behaviorModel);
+                    switch(toolType) {
+                        case ToolType.GoToPoint: {
+                            behaviorModel.instructions["default"].addGoingToPoint(new geom.Vector(0, 0));
+                            break;
+                        }
+                        case ToolType.Waiting: {
+                            behaviorModel.instructions["default"].addWaiting(1000);
+                            break;
+                        }
+                        case ToolType.Pursuit: {
+                            behaviorModel.instructions["default"].addPursuit();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        button.onclick = applyTool;
     }
 
     // Инициализирует взаимодействие с HTML
     private initHTML() {
         // Обработка кнопок
-        var progress = <HTMLInputElement>document.getElementById("progressbar");
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
 
@@ -93,6 +133,10 @@ export class Editor {
         this.createEntityButton("Scientist", "4");
         this.createEntityButton("Soldier", "4");
         this.createEntityButton("Monster", "4");
+
+        this.createToolButton(ToolType.GoToPoint, "5");
+        this.createToolButton(ToolType.Waiting, "5");
+        this.createToolButton(ToolType.Pursuit, "5");
         // Окно превью
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,

@@ -3,13 +3,20 @@ import { Draw, Color } from "../Draw";
 import { Entity } from "../Entities/Entity";
 import { Body } from "../Entities/EntityAttributes/Body";
 import { Monster } from "../Entities/Monster";
-import { PersonMode } from "../Entities/Person";
+import { Person, PersonMode } from "../Entities/Person";
 import { Scientist } from "../Entities/Scientist";
 import { Soldier } from "../Entities/Soldier";
 import * as geom from "../Geom";
 import { Level } from "../Level";
 import { CollisionType, Tile } from "../Tile";
+import { BehaviorModel } from "../BehaviorModel";
 import * as aux from "../AuxLib";
+
+export enum ToolType {
+    GoToPoint,
+    Waiting,
+    Pursuit
+}
 
 export enum Mode {
     Eraser = 0,
@@ -28,6 +35,7 @@ export class Cursor {
     public mode = Mode.Wall;
     public tile = new Tile(CollisionType.Full);
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
+    public selectedEntity : Entity = null;
     public drawPreview : Draw;
     private mouseLeftButtonClicked = true;
     private entityLocations : Map<any, number> = new Map();
@@ -62,6 +70,10 @@ export class Cursor {
         }
     }
 
+    public compileBehaviorModel(behaviorModel : BehaviorModel) {
+        
+    }
+
     public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
@@ -77,6 +89,14 @@ export class Cursor {
                         this.mouseLeftButtonClicked = false;
                     }
                     break;
+                }
+                case Mode.Selector: {
+                    if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                        this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
+                    }
+                    if (this.selectedEntity instanceof Person) {
+                        this.compileBehaviorModel(this.selectedEntity.behaviorModel);
+                    }
                 }
             }
         }
