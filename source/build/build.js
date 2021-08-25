@@ -1538,12 +1538,15 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 return collisionType;
             return Tile_4.CollisionType.Empty;
         };
-        Game.prototype.display = function () {
+        Game.prototype.configureCamScale = function () {
             this.draw.cam.scale = 80 * (1 + 0.1 * (this.mimic.aim.charge / this.mimic.aim.chargeMax));
             if (this.mimic.aim.charge > 0) {
                 this.draw.cam.pos.x += Math.sin(aux.getMilliCount() * 0.01) * 0.01;
                 this.draw.cam.pos.y += Math.cos(aux.getMilliCount() * 0.01) * 0.01;
             }
+        };
+        Game.prototype.display = function () {
+            this.configureCamScale();
             this.currentLevel.display(this.draw);
             for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
                 var entity = _a[_i];
