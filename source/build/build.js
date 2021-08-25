@@ -1575,7 +1575,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
     exports.SpriteAnimation = SpriteAnimation;
     ;
 });
-define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exports, SpriteAnimation_2) {
+define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (require, exports, geom, SpriteAnimation_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Draw = exports.Layer = exports.Color = exports.Camera = void 0;
@@ -1606,13 +1606,21 @@ define("Draw", ["require", "exports", "SpriteAnimation"], function (require, exp
     })(Layer = exports.Layer || (exports.Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
+            if (size === void 0) { size = null; }
             this.imagequeue = [];
             this.hpqueue = [];
             this.cam = new Camera();
             this.spriteAnimations = [];
             this.canvas = canvas;
-            canvas.width = size.x;
-            canvas.height = size.y;
+            if (size) {
+                canvas.width = size.x;
+                canvas.height = size.y;
+            }
+            else {
+                size = new geom.Vector();
+                size.x = canvas.width;
+                size.y = canvas.height;
+            }
             this.ctx = canvas.getContext("2d");
             this.cam.scale = 1;
             this.cam.pos = size.mul(1 / 2);
@@ -1963,7 +1971,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
-    var draw = new Draw_12.Draw(canvas, new geom.Vector(640, 640));
+    var draw = new Draw_12.Draw(canvas);
     draw.cam.scale = 0.4;
     Game_4.Game.levels = new Map();
     Game_4.Game.loadMap("map.json", "map");
