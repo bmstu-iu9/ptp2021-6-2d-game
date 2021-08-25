@@ -106,7 +106,7 @@ export class Random {
       return Math.random() * (b - a+1) + a;
   }
 
-  public static randomVector(a : geom.Vector,b : geom.Vector)  : geom.Vector {
+  public static randomVector(a : geom.Vector, b : geom.Vector)  : geom.Vector {
       let x = 0;
       let y = 0;
       x = Random.randomInt(a.x, b.x);
@@ -119,11 +119,8 @@ export class Random {
       let y = 0;
       gamma = Random.randomInt(alpha, beta);
       y = Math.abs(Random.randomInt(lenMin, lenMax));
-      let e = new geom.Vector(0, 0);
-      e = e.vectorFromAngle(gamma);
-      e.mul(y);
+      let e = geom.vectorFromAngle(gamma);
+      e = e.mul(y);
       return e;
   }
-
-  
 }
