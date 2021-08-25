@@ -98,6 +98,9 @@ define("Geom", ["require", "exports"], function (require, exports) {
         Vector.prototype.dot = function (v) {
             return this.x * v.x + this.y * v.y;
         };
+        Vector.prototype.vectorFromAngle = function (angle) {
+            return new Vector(Math.sin(angle), Math.cos(angle));
+        };
         return Vector;
     }());
     exports.Vector = Vector;
@@ -1803,7 +1806,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_9, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
+    exports.Random = exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
     function setEnvironment(env) {
         exports.environment = env;
     }
@@ -1853,6 +1856,45 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
         return value;
     }
     exports.reviver = reviver;
+    var Random = (function () {
+        function Random() {
+        }
+        Random.randomInt = function (a, b) {
+            var _a;
+            if (a > b) {
+                _a = [b, a], a = _a[0], b = _a[1];
+            }
+            a = Math.ceil(a);
+            b = Math.floor(b);
+            return Math.floor(Math.random() * (b - a + 1)) + a;
+        };
+        Random.randomFloat = function (a, b) {
+            var _a;
+            if (a > b) {
+                _a = [b, a], a = _a[0], b = _a[1];
+            }
+            return Math.random() * (b - a + 1) + a;
+        };
+        Random.randomVector = function (a, b) {
+            var x = 0;
+            var y = 0;
+            x = Random.randomInt(a.x, b.x);
+            y = Random.randomInt(a.y, b.y);
+            return new geom.Vector(x, y);
+        };
+        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
+            var gamma = 0;
+            var y = 0;
+            gamma = Random.randomInt(alpha, beta);
+            y = Math.abs(Random.randomInt(lenMin, lenMax));
+            var e = new geom.Vector(0, 0);
+            e = e.vectorFromAngle(gamma);
+            e = e.mul(y);
+            return e;
+        };
+        return Random;
+    }());
+    exports.Random = Random;
 });
 define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_10, geom, Tile_5) {
     "use strict";
@@ -2001,5 +2043,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     }
     else
         setInterval(step, Game_4.Game.dt * 1000);
+    console.log(aux.Random.randomVector(new geom.Vector(0, 6), new geom.Vector(1, 7)));
 });
 //# sourceMappingURL=build.js.map
