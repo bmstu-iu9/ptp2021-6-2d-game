@@ -1150,7 +1150,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center.add(new geom.Vector(0.1, -0.33)), new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
+            draw.image(this.image, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.height / 2)), new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
         };
         return StationaryObject;
     }(Entity_2.Entity));

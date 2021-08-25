@@ -11,6 +11,6 @@ export class StationaryObject extends Entity {
         this.image = Draw.loadImage("textures/Corpses/" + type + ".png");
     }
     public display(draw : Draw) {
-        draw.image(this.image, this.body.center.add(new geom.Vector(0.1,-0.33)), new geom.Vector(1, 1),0, Layer.EntityLayer);
+        draw.image(this.image, this.body.center.sub(new geom.Vector(0,0.5 - this.body.height/2)), new geom.Vector(1, 1),0, Layer.EntityLayer);
     }
 }
