@@ -111,8 +111,8 @@ export class Draw {
             var bctx = buffer.getContext('2d');
             bctx.translate(boxNew.x, boxNew.y);
             bctx.rotate(angle);
-            bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
-            this.ctx.drawImage(buffer, posNew.x, posNew.y);
+            bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+            this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
         }
     }
     // Изображение (обработка)
