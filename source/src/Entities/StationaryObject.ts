@@ -10,8 +10,8 @@ export class StationaryObject extends Entity {
         super(game, body);
         this.image = Draw.loadImage("textures/Corpses/" + type + ".png");
     }
-
     public display(draw : Draw) {
-        draw.image(this.image, this.body.center, new geom.Vector(1, 1),0, Layer.EntityLayer);
+        console.log(this.body.radius)
+        draw.image(this.image, this.body.center.sub(new geom.Vector(0,0.5 - this.body.collisionBox.y/2)), new geom.Vector(1, 1),0, Layer.EntityLayer);
     }
 }
