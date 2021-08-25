@@ -1,0 +1,70 @@
+
+body{
+    background: white;
+    margin: 0;
+    color: darkslategray;
+    font-family: 'VT323', monospace;
+    font-size: 35px;
+}
+h1{
+    margin: 0;
+
+    text-align: center;
+
+}
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.intro{
+    background: url("../source/textures/menu/IMG_2479.JPG") center
+no-repeat;
+    width: 100%;
+    height: 100vh;
+    background-size: cover;
+
+}
+.header{
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+.header_menu{
+    font-size: 40px;
+    font-weight: 900;
+    transform: scaleX(2);
+    color: chocolate;
+    margin: 10px;
+    text-align: center;
+}
+.Mumuk{
+    font-size: 40px;
+    font-weight: 700;
+    color: coral;
+    margin:5%;
+    text-align: center;
+    transform: scaleX(2);
+}
+.nav__link{
+
+    vertical-align: top;
+    padding: 10px 15px;
+    border: 3px solid #fff;
+    color: aliceblue;
+    text-transform: uppercase;
+    text-decoration: none;
+    width: 50%;
+    display: block;
+    text-align: center;
+    background: darkcyan;
+    margin: 70px auto;
+    transition: background-color .2s linear;
+}
+.nav__link:hover{
+
+    background: cornflowerblue;
+}
