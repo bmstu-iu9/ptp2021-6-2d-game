@@ -56,4 +56,8 @@ export class Vector {
     public dot(v : Vector) : number {
         return this.x * v.x + this.y * v.y;
     }
+    
+    public vectorFromAngle(angle : number) : Vector {
+        return new Vector(Math.sin(angle), Math.cos(angle));
+    }
 }

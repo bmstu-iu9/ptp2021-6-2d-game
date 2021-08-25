@@ -90,40 +90,39 @@ export function reviver(key, value) { // функция обратной зам�
 
 export class Random {
 
-  public static randomInt(a:number, b:number){
-      if (a < b){
-          let r = a;
-          a = b;
-          b = r;
+  public static randomInt(a : number, b : number) : number {
+      if (a > b) {
+          [a, b] = [b, a]
       }
       a = Math.ceil(a);
       b = Math.floor(b);
-      return Math.floor(Math.random() * (b - a +1)) + a;
+      return Math.floor(Math.random() * (b - a + 1)) + a;
   }
 
-  public static randomFloat(a:number, b:number) {
-      if (a < b){
-          let r = a;
-          a = b;
-          b = r;
+  public static randomFloat(a : number, b : number) : number {
+      if (a > b) {
+        [a, b] = [b, a]
       }
       return Math.random() * (b - a+1) + a;
   }
 
-  public static randomVector(a:geom.Vector,b:geom.Vector) {
+  public static randomVector(a : geom.Vector,b : geom.Vector)  : geom.Vector {
       let x = 0;
       let y = 0;
-      x = Random.randomInt(b.x, a.x);
+      x = Random.randomInt(a.x, b.x);
       y = Random.randomInt(a.y, b.y);
       return new geom.Vector(x, y);
   }
 
-  public randomSector(alpha:number, beta:number, lenMin:number, lenMax:number) {
-      let x = 0;
+  public static randomSector(alpha : number, beta : number, lenMin : number, lenMax : number) : geom.Vector {
+      let gamma = 0;
       let y = 0;
-      x = Random.randomInt(alpha, beta);
+      gamma = Random.randomInt(alpha, beta);
       y = Math.abs(Random.randomInt(lenMin, lenMax));
-      return new geom.Vector(x, y);
+      let e = new geom.Vector(0, 0);
+      e = e.vectorFromAngle(gamma);
+      e.mul(y);
+      return e;
   }
 
   
