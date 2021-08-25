@@ -35,12 +35,10 @@ export class Game {
         return text;
     }
     
-
     public static async loadMap(path : string, name : string) { // загрузка карты по ссылке и названию
         let result = await this.readTextFile(aux.environment + path)
         .then(result => {
-            console.log(result);
-            
+            console.log(result);         
             let prototype = JSON.parse(result, aux.reviver);
             let level = new Level();
             level.createFromPrototype(prototype);
@@ -50,7 +48,6 @@ export class Game {
 
     constructor(draw : Draw) {
         console.log("im here!!");
-        //document.getElementById("showcolision").onclick = collide
         Control.init();
         this.draw = draw;
         this.currentLevel.Grid = [];

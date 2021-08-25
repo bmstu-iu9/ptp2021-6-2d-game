@@ -92,7 +92,6 @@ export class Level {
                     .add(size.mul(1 / 2)), size,0,0);
                 // Отрисовка сетки в расширенном режиме
                 if (advanced)
-                    
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
                     .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.03)
             }
