@@ -28,51 +28,27 @@ export class Game {
     public currentLevelName = "map";  // название текущего уровня
     public currentLevel = new Level(); // текущий уровень (возможно имеет смылс заменить на метод getCurrentLevel)
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
-<<<<<<< HEAD
-    public mimic: Mimic; // объект мимик, за который играет игрок
-    public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
-
-=======
     public mimic : Mimic; // объект мимик, за который играет игрок
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
->>>>>>> master
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
         return text;
     }
-<<<<<<< HEAD
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
                 console.log(result);
-
                 let prototype = JSON.parse(result, aux.reviver);
                 let level = new Level();
                 level.createFromPrototype(prototype);
                 this.levels[name] = level;
             });
-=======
-    
-    public static async loadMap(path : string, name : string) { // загрузка карты по ссылке и названию
-        let result = await this.readTextFile(aux.environment + path)
-        .then(result => {
-            console.log(result);         
-            let prototype = JSON.parse(result, aux.reviver);
-            let level = new Level();
-            level.createFromPrototype(prototype);
-            this.levels[name] = level;
-        });
->>>>>>> master
     }
 
     constructor(draw: Draw) {
         console.log("im here!!");
-<<<<<<< HEAD
-
-=======
->>>>>>> master
         Control.init();
         this.draw = draw;
         this.currentLevel.Grid = [];
