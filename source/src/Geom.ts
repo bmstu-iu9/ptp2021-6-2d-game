@@ -56,4 +56,12 @@ export class Vector {
     public dot(v : Vector) : number {
         return this.x * v.x + this.y * v.y;
     }
+
+    public angle() : number{
+        return Math.atan2(this.y, this.x);
+    }
+}
+
+export function dist(a : Vector, b : Vector) : number {
+    return a.sub(b).abs();
 }
