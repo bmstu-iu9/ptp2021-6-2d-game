@@ -29,7 +29,6 @@ export class Game {
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
     public mimic : Mimic; // объект мимик, за который играет игрок
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
-    private vidimost = false;
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
