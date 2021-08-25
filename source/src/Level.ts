@@ -118,6 +118,7 @@ export class Level {
         newLevel = {Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
 
         console.log(newLevel.Grid);
+        
         PathGenerator.generateMatrix(newLevel);
 
         console.log(newLevel.CollisionMesh);

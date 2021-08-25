@@ -30,7 +30,8 @@ export class Editor {
         button.className = "tileButton";
         let palette = document.getElementById("palette" + type);
         palette.appendChild(button);
-        let applyTile = () => { this.cursor.tile = new Tile(collision, button) }
+        let applyTile = () => { this.cursor.mode = Mode.Wall;
+            this.cursor.tile = new Tile(collision, button) }
         button.onclick = applyTile;
     }
 
@@ -70,12 +71,8 @@ export class Editor {
         palette.appendChild(button);
     }
 
-    private roar(x : number) {
-        let s = getMilliCount();
-        while(getMilliCount() < s + x) {
-            console.log("roar");
-            
-        }
+    private createToolButton(src : string, type : string) {
+        
     }
 
     // Инициализирует взаимодействие с HTML
@@ -108,11 +105,13 @@ export class Editor {
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+        document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
 
         document.getElementById("palette")["style"].top = "10px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
+        document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
 
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
