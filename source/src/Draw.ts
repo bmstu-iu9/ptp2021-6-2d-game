@@ -109,6 +109,7 @@ export class Draw {
             buffer.width = boxNew.x*2;
             buffer.height = boxNew.y*2;
             var bctx = buffer.getContext('2d');
+            bctx.imageSmoothingEnabled = false;
             bctx.translate(boxNew.x, boxNew.y);
             bctx.rotate(angle);
             bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
