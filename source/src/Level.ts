@@ -2,11 +2,70 @@ import { Tile } from "./Tile";
 import * as geom from "./Geom";
 import { Color, Draw } from "./Draw";
 import { PathGenerator } from "./Editor/PathGenerator";
-import { replacer } from "./AuxLib";
+import { Entity } from "./Entities/Entity";
+import { Soldier } from "./Entities/Soldier";
+import { Scientist } from "./Entities/Scientist";
+import { Monster } from "./Entities/Monster";
+import { StationaryObject } from "./Entities/StationaryObject";
+
+function replacer(key, value) { // функция замены классов для преобразования в JSON
+    if (value instanceof Map) { // упаковка Map
+        return {
+            dataType: 'Map',
+            value: Array.from(value.entries()), // or with spread: value: [...value]
+        };
+    }
+    if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
+        // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
+        let name = value.src;
+        let nameSplit = name.split("/");
+        let lastSplit = nameSplit[nameSplit.length - 1];
+
+        return {
+            dataType: 'HTMLImageElement',
+            value: lastSplit
+        };
+    }
+    if (value instanceof geom.Vector) { // упаковка Vector
+        return {
+            dataType: 'Vector',
+            x: value.x,
+            y: value.y
+        };
+    }
+    if (value instanceof Soldier) {
+        return {
+            dataType: 'Soldier',
+            center: value.body.center,
+            behaviorModel: value.behaviorModel
+        }
+    }
+    if (value instanceof Scientist) {
+        return {
+            dataType: 'Scientist',
+            center: value.body.center,
+            behaviorModel: value.behaviorModel
+        }
+    }
+    if (value instanceof Monster) {
+        return {
+            dataType: 'Monster',
+            center: value.body.center,
+        }
+    }
+    if (value instanceof StationaryObject) {
+        return {
+            dataType: 'StationaryObject',
+            place: value.body.center,
+        }
+    }
+    return value;
+}
 
 // Так выглядел старый класс, я на всякий оставил, но не думаю, что он сейчас нужен
 export class LevelJSON {
     Grid? : Tile[][];
+    Entities? : Entity[];
     CollisionMesh? : boolean[][];
     PathMatrix? : Map<any, any>;
 }
@@ -17,6 +76,7 @@ export class Level {
     public Grid : Tile[][];
     public CollisionMesh : boolean[][];
     public PathMatrix : Map<any, any>;
+    public Entities : Entity[] = [];
     public tileSize = 1;
 
     constructor(size = new geom.Vector(0, 0)) {
@@ -55,13 +115,14 @@ export class Level {
     // Заворачивает в json
     public serialize() {
         let newLevel : LevelJSON;
-        newLevel = {Grid: this.Grid, CollisionMesh: [], PathMatrix: new Map()};
+        newLevel = {Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
 
         console.log(newLevel.Grid);
         PathGenerator.generateMatrix(newLevel);
 
         console.log(newLevel.CollisionMesh);
         console.log(newLevel.PathMatrix);
+
 
         const blob = new Blob([JSON.stringify(newLevel, replacer)], {
             type: 'application/json'

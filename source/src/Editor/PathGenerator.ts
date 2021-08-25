@@ -166,7 +166,12 @@ export class PathGenerator {
 
         let correctPath = new Map();
 
+        let progress = <HTMLInputElement>document.getElementById("progressbar");
+        progress.max = vertices.length.toString();
         for (let i = 0; i < vertices.length; i++) {
+            progress.value = i.toString();
+            console.log(progress.max, progress.value);
+            
             for (let j = 0; j < vertices.length; j++) {
                 if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
                     if (correctPath.get(vertices[i]) == undefined) {

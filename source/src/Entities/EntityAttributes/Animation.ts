@@ -50,6 +50,10 @@ export class Animation {
         this.direction = string; //
         this.mode=mode;
     }
+    public getDefaultImage() {
+        return this.getImage("textures/" +
+            this.name + "/" + "stand_fine_0.png");
+    }
     public step() { // шаг смены анимации      
         if (aux.getMilliCount() / 75 > this.cycles) {
             this.cycles = aux.getMilliCount() / 75 + 1;
