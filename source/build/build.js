@@ -195,9 +195,10 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
             for (var i = 0; i < 256; i++) {
                 Control._keys[i] = false;
             }
+            var canvas = document.getElementById("gameCanvas");
             window.addEventListener("keydown", Control.onKeyDown);
             window.addEventListener("keyup", Control.onKeyUp);
-            window.addEventListener("click", Control.onClick);
+            canvas.addEventListener("click", Control.onClick);
             window.addEventListener("wheel", Control.onWheel);
             window.addEventListener("mousemove", Control.onMouseMove);
             window.addEventListener("mousedown", Control.onMouseDown);
@@ -639,7 +640,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
     }());
     exports.PathGenerator = PathGenerator;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib"], function (require, exports, Tile_3, geom, Draw_3, PathGenerator_1, AuxLib_1) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib", "AuxLib"], function (require, exports, Tile_3, geom, Draw_3, PathGenerator_1, AuxLib_1, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
@@ -709,6 +710,14 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                         draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
                             .add(size.mul(1 / 2)), size, new Draw_3.Color(0, 0, 0), 0.03);
                 }
+            }
+        };
+        Level.prototype.displayColisionGrid = function (draw) {
+            for (var i = 0; i < this.Grid.length; i++) {
+                for (var j = 0; j < this.Grid[i].length; j++)
+                    if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
+                        draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_3.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
+                    }
             }
         };
         return Level;
@@ -2037,6 +2046,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         function Editor() {
             this.level = new Level_2.Level(new geom.Vector(10, 10));
             this.cursor = new Cursor_1.Cursor(this.level);
+            this.showCollisionGrid = false;
             this.mousePrev = Control_4.Control.mousePos();
             this.initHTML();
         }
@@ -2054,6 +2064,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var _this = this;
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
+            var showcolision = function () { _this.showCollisionGrid = true; };
+            document.getElementById("showcolision").onclick = showcolision;
             for (var i = 0; i < 3; i++)
                 this.createTileButton("textures/tiles/ceiling" + i + ".png", Tile_6.CollisionType.Full);
             for (var i = 0; i < 2; i++)
@@ -2081,6 +2093,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         };
         Editor.prototype.display = function () {
             this.level.display(this.draw, true);
+            if (this.showCollisionGrid == true) {
+                this.level.displayColisionGrid(this.draw);
+            }
             this.cursor.display();
         };
         return Editor;
