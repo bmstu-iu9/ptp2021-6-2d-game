@@ -1166,7 +1166,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
         }
         StationaryObject.prototype.display = function (draw) {
             console.log(this.body.radius);
-            draw.image(this.image, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.radius / 6)), new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
+            draw.image(this.image, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
         };
         return StationaryObject;
     }(Entity_2.Entity));
