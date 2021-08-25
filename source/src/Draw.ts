@@ -24,16 +24,18 @@ export class Color {
 }
 export enum Layer { // Индентификатор текстуры (тайл или персонаж)
     TileLayer, 
-    EntityLayer
+    EntityLayer,
+    HudLayer
 }
 type hashimages = {
     [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
 };
 interface queue { // Для правильной отрисовки слоев
-	image?: HTMLImageElement,
+	image?: HTMLImageElement,    
 	pos?: geom.Vector,
     box?: geom.Vector,
     angle? : number,
+    layer? : Layer,
 }
 interface bar_queue { // Для отрисовки Hp бара
 
@@ -95,7 +97,7 @@ export class Draw {
         return posNew;
     }
     // Функция для отрисовки изображения
-    public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number){ 
+    private drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number){ 
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale * 1.01);
         posNew = posNew.sub(boxNew.mul(1 / 2));
@@ -115,11 +117,10 @@ export class Draw {
     }
     // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer) {
-        if (layer == 0){ // Отрисовка сразу
+        if (layer == 0) { // Отрисовка сразу
                this.drawimage(image,pos,box,angle);
-        }
-        if (layer == 1){ //Отрисовка после сортировки
-            let curqueue : queue = {image,pos,box,angle};
+        } else { // Отрисовка после сортировки
+            let curqueue : queue = {image,pos,box,angle,layer};
             this.imagequeue.push(curqueue);
             
         }
@@ -128,12 +129,14 @@ export class Draw {
     public getimage(){
         if (this.imagequeue.length > 0){ // Отрисовка изображений
             this.imagequeue.sort(function (a, b) { // Сортировка
-                if (a.pos.y > b.pos.y) {
+                if (a.layer > b.layer)
                     return -1;
-                }
-                if (a.pos.y < b.pos.y) {
+                if (a.layer < b.layer) 
                     return 1;
-                }
+                if (a.pos.y > b.pos.y)
+                    return -1;
+                if (a.pos.y < b.pos.y)
+                    return 1;
                 return 0;
             });
             for (;this.imagequeue.length > 0;){
