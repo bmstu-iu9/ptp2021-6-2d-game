@@ -52,7 +52,7 @@ var __extends = (this && this.__extends) || (function () {
 define("Geom", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.dist = exports.Vector = exports.eps = void 0;
+    exports.dist = exports.vectorFromAngle = exports.Vector = exports.eps = void 0;
     exports.eps = 1e-4;
     var Vector = (function () {
         function Vector(x, y) {
@@ -104,6 +104,10 @@ define("Geom", ["require", "exports"], function (require, exports) {
         return Vector;
     }());
     exports.Vector = Vector;
+    function vectorFromAngle(angle) {
+        return new Vector(Math.sin(angle), Math.cos(angle));
+    }
+    exports.vectorFromAngle = vectorFromAngle;
     function dist(a, b) {
         return a.sub(b).abs();
     }
@@ -2154,5 +2158,38 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     }
     else
         setInterval(step, Game_5.Game.dt * 1000);
+});
+define("Random", ["require", "exports", "Geom"], function (require, exports, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Random = void 0;
+    var Random = (function () {
+        function Random() {
+        }
+        Random.randomInt = function (a, b) {
+            var _a;
+            if (a < b)
+                _a = [b, a], a = _a[0], b = _a[1];
+            a = Math.floor(a);
+            b = Math.floor(b);
+            return Math.floor(Math.random() * (b - a + 1)) + a;
+        };
+        Random.randomFloat = function (a, b) {
+            var _a;
+            if (a < b)
+                _a = [b, a], a = _a[0], b = _a[1];
+            return Math.random() * (b - a) + a;
+        };
+        Random.randomVector = function (a, b) {
+            return new geom.Vector(Random.randomFloat(a.x, b.x), Random.randomFloat(a.y, b.y));
+        };
+        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
+            var gamma = Random.randomFloat(alpha, beta);
+            var len = Math.abs(Random.randomFloat(lenMin, lenMax));
+            return geom.vectorFromAngle(gamma).mul(len);
+        };
+        return Random;
+    }());
+    exports.Random = Random;
 });
 //# sourceMappingURL=build.js.map
