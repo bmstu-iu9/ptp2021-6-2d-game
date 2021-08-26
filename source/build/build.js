@@ -623,11 +623,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
             this.FloydWarshall(vertices, distance, path);
             console.log(path);
             var correctPath = new Map();
-            var progress = document.getElementById("progressbar");
-            progress.max = vertices.length.toString();
             for (var i = 0; i < vertices.length; i++) {
-                progress.value = i.toString();
-                console.log(progress.max, progress.value);
                 for (var j = 0; j < vertices.length; j++) {
                     if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
                         if (correctPath.get(vertices[i]) == undefined) {
@@ -1054,21 +1050,11 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 pos.x < this.Grid.length * this.tileSize &&
                 pos.y < this.Grid[0].length * this.tileSize;
         };
-        Level.prototype.generateMatrix = function (level) {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    console.log("generating matrix");
-                    PathGenerator_1.PathGenerator.generateMatrix(level);
-                    return [2];
-                });
-            });
-        };
-        ;
         Level.prototype.serialize = function () {
             var newLevel;
             newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
-            this.generateMatrix(newLevel);
             console.log(newLevel.Grid);
+            PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
             console.log(newLevel.PathMatrix);
             var blob = new Blob([JSON.stringify(newLevel, replacer)], {
@@ -2031,6 +2017,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         function Editor() {
             this.level = new Level_2.Level(new geom.Vector(10, 10));
             this.cursor = new Cursor_1.Cursor(this.level);
+            this.amountOfPads = 0;
             this.mousePrev = Control_4.Control.mousePos();
             this.initHTML();
         }
@@ -2046,6 +2033,38 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 _this.cursor.tile = new Tile_6.Tile(collision, button);
             };
             button.onclick = applyTile;
+        };
+        Editor.prototype.createBehaviorPad = function () {
+            var _this = this;
+            var pad = document.createElement("li");
+            pad.className = "behaviorPad";
+            var icon = document.createElement("img");
+            var label = document.createElement("p");
+            var exitButton = document.createElement("img");
+            icon.className = "behaviorPad_icon";
+            icon.src = "textures/Editor/arrow.png";
+            label.className = "behaviorPad_label";
+            label.id = "padLabel_" + this.amountOfPads;
+            label.innerHTML = 'test' + this.amountOfPads;
+            exitButton.className = "behaviorPad_exitButton";
+            exitButton.src = "textures/Editor/cross.ico";
+            var deleteDiv = function () { _this.deleteBehaviorPad(exitButton); };
+            exitButton.onclick = deleteDiv;
+            pad.draggable = true;
+            icon.draggable = false;
+            label.draggable = false;
+            exitButton.draggable = false;
+            pad.appendChild(icon);
+            pad.appendChild(label);
+            pad.appendChild(exitButton);
+            pad.addEventListener("dragover", function (evt) {
+                evt.preventDefault();
+            });
+            document.getElementById("mainListPads").append(pad);
+            this.amountOfPads += 1;
+        };
+        Editor.prototype.deleteBehaviorPad = function (exitButton) {
+            exitButton.parentElement.remove();
         };
         Editor.prototype.createEntityButton = function (entityType, type) {
             var _this = this;
@@ -2082,6 +2101,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             console.log(button);
             palette.appendChild(button);
         };
+        Editor.prototype.createToolButton = function (src, type) {
+        };
         Editor.prototype.initHTML = function () {
             var _this = this;
             var progress = document.getElementById("progressbar");
@@ -2102,17 +2123,22 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+            document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+            document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette")["style"].top = "10px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("preview")["style"].top = "0px";
             document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             document.getElementById("generate")["style"].top = "62px";
             document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+            document.getElementById("behaviorPadCreateButton")["style"].top = Math.round(window.innerHeight / 3) - 50 + "px";
+            var bpCreating = function () { _this.createBehaviorPad(); };
+            document.getElementById("behaviorPadCreateButton").onclick = bpCreating;
         };
         Editor.prototype.isInCanvas = function (mouseCoords) {
             if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x && mouseCoords.x <= document.getElementById("gameCanvas")["height"] && document.getElementById("gameCanvas").clientTop <= mouseCoords.y && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {

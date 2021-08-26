@@ -18,6 +18,7 @@ export class Editor {
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
     private draw: Draw;
+    private amountOfPads = 0;
 
     constructor() {
         this.mousePrev = Control.mousePos();
@@ -33,6 +34,49 @@ export class Editor {
         let applyTile = () => { this.cursor.mode = Mode.Wall;
             this.cursor.tile = new Tile(collision, button) }
         button.onclick = applyTile;
+    }
+
+    private createBehaviorPad() {
+        let pad = document.createElement("li");
+        pad.className = "behaviorPad";
+
+        let icon = document.createElement("img") as HTMLImageElement;
+        let label = document.createElement("p");
+        let exitButton = document.createElement("img") as HTMLImageElement;
+
+        icon.className = "behaviorPad_icon";
+        icon.src = "textures/Editor/arrow.png"
+        label.className = "behaviorPad_label";
+
+        label.id = "padLabel_" + this.amountOfPads;
+        label.innerHTML = 'test' + this.amountOfPads;
+
+        exitButton.className = "behaviorPad_exitButton";
+        exitButton.src = "textures/Editor/cross.ico"
+        let deleteDiv = () => {this.deleteBehaviorPad(exitButton)}
+        exitButton.onclick = deleteDiv;
+
+        pad.draggable = true;
+        icon.draggable = false;
+        label.draggable = false;
+        exitButton.draggable = false;
+        pad.appendChild(icon);
+        pad.appendChild(label);
+        pad.appendChild(exitButton);
+        
+        pad.addEventListener(`dragover`, (evt) => {
+            evt.preventDefault();
+          });
+
+        //let palette = document.getElementById("palette6");
+        
+        document.getElementById("mainListPads").append(pad)
+        //palette.appendChild(pad);
+        this.amountOfPads += 1;
+    }
+
+    private deleteBehaviorPad(exitButton: HTMLImageElement) {
+        exitButton.parentElement.remove()
     }
 
     private createEntityButton(entityType: string, type: string) {
@@ -95,8 +139,8 @@ export class Editor {
         this.createEntityButton("Monster", "4");
         // Окно превью
         this.cursor.drawPreview = new Draw(
-            document.getElementById("preview") as HTMLCanvasElement,
-            new geom.Vector(50, 50));
+        document.getElementById("preview") as HTMLCanvasElement,
+        new geom.Vector(50, 50));
 
         document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
         document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px"
@@ -104,21 +148,27 @@ export class Editor {
         document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-        document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-        document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+        
+        document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+        document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+        document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 40 + "px";
 
         document.getElementById("palette")["style"].top = "10px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+        document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
 
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
 
         document.getElementById("generate")["style"].top = "62px";
         document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
-
+        
+        document.getElementById("behaviorPadCreateButton")["style"].top = Math.round(window.innerHeight / 3) - 50 + "px";
+        let bpCreating = () => {this.createBehaviorPad();}
+        document.getElementById("behaviorPadCreateButton").onclick = bpCreating;
         /*console.log(window.innerHeight)
         console.log(window.outerHeight)*/
     }
