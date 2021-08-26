@@ -372,17 +372,21 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
         function Body(center, radius) {
             this.velocity = 0.05;
             this.collisionBox = new geom.Vector(0.5, 0.3);
+            this.collisions = 0;
             this.center = center;
             this.radius = radius;
         }
         Body.prototype.move = function (delta) {
+            var touched = false;
             var delta1 = delta.add(this.collisionBox.mul(1 / 2));
             var collisionUR = this.game.check_wall(this.center.add(delta1));
             var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
             var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
             var collisionDR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
-            if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full)
+            if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full) {
                 delta = new geom.Vector();
+                touched = true;
+            }
             else if (collisionUL != Tile_1.CollisionType.Empty) {
                 var norm = void 0;
                 if (collisionUL == Tile_1.CollisionType.CornerDL)
@@ -397,6 +401,12 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
             }
             var posNew = this.center.add(delta);
             this.center = posNew;
+            if (touched)
+                this.collisions++;
+            return touched;
+        };
+        Body.prototype.getCollisionsNumber = function () {
+            return this.collisions;
         };
         return Body;
     }());
@@ -1198,6 +1208,7 @@ define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", 
             var _this = _super.call(this, game, body) || this;
             _this.vel = new geom.Vector();
             _this.viscousFriction = 0;
+            _this.shouldBeKilledByWall = false;
             _this.vel = vel;
             return _this;
         }
@@ -1480,6 +1491,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             var projectile = new Projectile_2.Projectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
             projectile.entityID = this.owner.game.entities.length;
             projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
+            projectile.shouldBeKilledByWall = true;
             this.owner.game.entities.push(projectile);
             console.log(projectile);
         };
@@ -1529,7 +1541,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_9, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass", "Entities/Projectile"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_9, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2, Projectile_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1631,7 +1643,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.processEntities = function () {
             for (var i = 0; i < this.entities.length; i++) {
                 if (this.entities[i] instanceof Person_5.Person && this.entities[i].hp <= 0 ||
-                    this.entities[i] instanceof Biomass_2.Biomass && !this.entities[i].alive) {
+                    this.entities[i] instanceof Biomass_2.Biomass && !this.entities[i].alive ||
+                    this.entities[i] instanceof Projectile_3.Projectile &&
+                        this.entities[i].shouldBeKilledByWall &&
+                        this.entities[i].body.getCollisionsNumber()) {
                     this.entities.splice(i, 1);
                     i--;
                 }

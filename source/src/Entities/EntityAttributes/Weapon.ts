@@ -38,6 +38,7 @@ export class Weapon {
         let projectile = new Projectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
         projectile.entityID = this.owner.game.entities.length;
         projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
+        projectile.shouldBeKilledByWall = true;
         this.owner.game.entities.push(projectile);
         console.log(projectile);
     }

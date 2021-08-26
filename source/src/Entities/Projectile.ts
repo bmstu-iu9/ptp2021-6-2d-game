@@ -9,6 +9,7 @@ export class Projectile extends Entity {
     public vel = new geom.Vector();
     public viscousFriction = 0;
     public spriteAnimation : SpriteAnimation;
+    public shouldBeKilledByWall = false; // Должен ли убиваться при ударе об стену
 
     constructor(game : Game, body : Body, vel : geom.Vector) {
         super(game, body);
