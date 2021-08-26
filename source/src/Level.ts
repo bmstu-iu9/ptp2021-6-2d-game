@@ -143,13 +143,20 @@ export class Level {
     }
 
     // Отрисовка
-    public display(draw : Draw, advanced = false) {        
+    public display(draw : Draw, advanced = false) {
         for (let i = 0; i < this.Grid.length; i++) {
             for (let j = 0; j < this.Grid[i].length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
+                /**console.log(this.Grid)*/
                 draw.image(this.Grid[i][j].image, 
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
                     .add(size.mul(1 / 2)), size,0,0);
+                if (this.Grid[i][j].sub_image) {
+                    //console.log("nigga" + i + "_" + j)
+                    draw.image(this.Grid[i][j].sub_image, 
+                        (new geom.Vector(this.tileSize * i, this.tileSize * j))
+                        .add(size.mul(1 / 2)), size,0,0);
+                }
                 // Отрисовка сетки в расширенном режиме
                 if (advanced)
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))

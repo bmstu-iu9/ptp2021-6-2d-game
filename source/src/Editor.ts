@@ -26,6 +26,61 @@ export class Editor {
         this.initHTML();
     }
 
+    private palette1_bitmap : number[]= [0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        1, 0, 1, 0, 0, 
+        0, 0, 0, 1, 0, 
+        1, 1, 1, 0, 1, 
+        0, 1, 1, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0];
+private palette2_bitmap : number[]= [0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 1, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1];
+private palette3_bitmap : number[]= [0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 1, 
+        1, 0, 1, 1, 1, 
+        1, 1, 1, 0, 0, 
+        0];
+
+    private isTileSubImage(idPalette : number) : boolean {
+        switch (idPalette) {
+            case 1 : {
+                return true;
+            }
+            case 2 : {
+                return true;
+            }
+            case 3 : {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private createTileButton(src: string, collision: CollisionType, type: string) {
         let button = document.createElement("img");
         button.src = src;
@@ -34,7 +89,29 @@ export class Editor {
         palette.appendChild(button);
         let applyTile = () => {
             this.cursor.mode = Mode.Wall;
-            this.cursor.tile = new Tile(collision, button)
+            
+            if (type.length > 0) {
+                let prep = new Number(type);
+                if (this.isTileSubImage(prep.valueOf())) {
+                    if (this.cursor.tile.image) {
+                        this.cursor.tile.setSubImage(button);
+                        this.cursor.tile.colision = 5;
+                    }
+                } else {
+                    this.cursor.tile = new Tile(collision);
+                    this.cursor.tile.setImage(button);
+                }
+            } else {
+                if (this.isTileSubImage(1)) {
+                    if (this.cursor.tile.image) {
+                        this.cursor.tile.setSubImage(button);
+                        this.cursor.tile.colision = 5;
+                    }
+                } else {
+                    this.cursor.tile = new Tile(collision);
+                    this.cursor.tile.setImage(button);
+                }
+            }
         }
         button.onclick = applyTile;
     }
