@@ -105,7 +105,7 @@ define("Geom", ["require", "exports"], function (require, exports) {
     }());
     exports.Vector = Vector;
     function vectorFromAngle(angle) {
-        return new Vector(Math.sin(angle), Math.cos(angle));
+        return new Vector(Math.cos(angle), Math.sin(angle));
     }
     exports.vectorFromAngle = vectorFromAngle;
     function dist(a, b) {
@@ -840,7 +840,6 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
                 var answer_1;
                 answer_1 = [];
                 answer_1[0] = this.getPointCoordinate(finish);
-                console.log("Path from ", start, " to ", finish, " is ", answer_1);
                 return answer_1;
             }
             var middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
@@ -1189,7 +1188,7 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], f
     }(StationaryObject_1.StationaryObject));
     exports.Corpse = Corpse;
 });
-define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", "Game"], function (require, exports, Entity_3, geom, Game_2) {
+define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", "Game", "SpriteAnimation", "Draw"], function (require, exports, Entity_3, geom, Game_2, SpriteAnimation_1, Draw_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Projectile = void 0;
@@ -1202,15 +1201,24 @@ define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", 
             _this.vel = vel;
             return _this;
         }
+        Projectile.prototype.loadSpriteAnimation = function (name, frames) {
+            this.spriteAnimation = new SpriteAnimation_1.SpriteAnimation();
+            this.spriteAnimation.loadFrames(name, frames);
+            this.spriteAnimation.duration = 1000;
+            this.spriteAnimation.frameDuration = 0.1;
+        };
         Projectile.prototype.step = function () {
             this.body.move(this.vel.mul(Game_2.Game.dt));
             this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_2.Game.dt));
+        };
+        Projectile.prototype.display = function (draw) {
+            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_7.Layer.EntityLayer);
         };
         return Projectile;
     }(Entity_3.Entity));
     exports.Projectile = Projectile;
 });
-define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom", "SpriteAnimation", "Draw", "Entities/Corpse"], function (require, exports, Projectile_1, geom, SpriteAnimation_1, Draw_7, Corpse_1) {
+define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom", "Entities/Corpse"], function (require, exports, Projectile_1, geom, Corpse_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Biomass = void 0;
@@ -1222,18 +1230,12 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
             _this.alive = true;
             _this.viscousFriction = 10;
             _this.vel = _this.vel.mul(_this.viscousFriction);
-            _this.spriteAnimation = new SpriteAnimation_1.SpriteAnimation();
-            _this.spriteAnimation.loadFrames("Biomass", 3);
-            _this.spriteAnimation.duration = 1000;
-            _this.spriteAnimation.frameDuration = 0.1;
+            _this.loadSpriteAnimation("Biomass", 3);
             return _this;
         }
         Biomass.prototype.step = function () {
             _super.prototype.step.call(this);
             this.spriteAnimation.step();
-        };
-        Biomass.prototype.display = function (draw) {
-            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_7.Layer.EntityLayer);
         };
         Biomass.prototype.hasStopped = function () {
             return this.vel.abs() < this.velLimit;
@@ -1320,6 +1322,8 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.takeControl(biomass);
         };
         Mimic.prototype.step = function () {
+            Control_1.Control.commands.commands["shoot"] = Control_1.Control.isMouseRightPressed();
+            Control_1.Control.commands.pointer = this.game.draw.transformBack(Control_1.Control.mousePos()).sub(this.controlledEntity.body.center);
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_2.Person) && !(this.controlledEntity instanceof Monster_1.Monster)) {
                 var person = this.controlledEntity;
@@ -1412,7 +1416,95 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities
     }(Person_3.Person));
     exports.Scientist = Scientist;
 });
-define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation"], function (require, exports, Person_4, Animation_4) {
+define("Random", ["require", "exports", "Geom"], function (require, exports, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Random = void 0;
+    var Random = (function () {
+        function Random() {
+        }
+        Random.randomInt = function (a, b) {
+            var _a;
+            if (a < b)
+                _a = [b, a], a = _a[0], b = _a[1];
+            a = Math.floor(a);
+            b = Math.floor(b);
+            return Math.floor(Math.random() * (b - a + 1)) + a;
+        };
+        Random.randomFloat = function (a, b) {
+            var _a;
+            if (a < b)
+                _a = [b, a], a = _a[0], b = _a[1];
+            return Math.random() * (b - a) + a;
+        };
+        Random.randomVector = function (a, b) {
+            return new geom.Vector(Random.randomFloat(a.x, b.x), Random.randomFloat(a.y, b.y));
+        };
+        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
+            var gamma = Random.randomFloat(alpha, beta);
+            var len = Math.abs(Random.randomFloat(lenMin, lenMax));
+            return geom.vectorFromAngle(gamma).mul(len);
+        };
+        return Random;
+    }());
+    exports.Random = Random;
+});
+define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Entities/Projectile", "Random"], function (require, exports, Game_4, Body_1, geom, Projectile_2, Random_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Weapon = void 0;
+    var Weapon = (function () {
+        function Weapon(owner) {
+            this.clipCapacity = 50;
+            this.clipCooldown = 5;
+            this.cooldown = 0.1;
+            this.projectilesInClip = this.clipCapacity;
+            this.timeToCooldown = 0;
+            this.scatter = 0;
+            this.projectileVel = 10;
+            this.projectileAnimationName = "Flame";
+            this.projectileAnimationFrames = 3;
+            this.isClipRecharging = false;
+            this.owner = owner;
+        }
+        Weapon.prototype.rechargeClip = function () {
+            this.timeToCooldown = this.clipCooldown;
+            this.isClipRecharging = true;
+        };
+        Weapon.prototype.createProjectile = function (dir) {
+            console.log("shoot");
+            dir = dir.norm();
+            dir = geom.vectorFromAngle(dir.angle() + Random_1.Random.randomFloat(-this.scatter, this.scatter));
+            var body = new Body_1.Body(this.owner.body.center, 1);
+            body.game = this.owner.game;
+            var projectile = new Projectile_2.Projectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
+            projectile.entityID = this.owner.game.entities.length;
+            projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
+            this.owner.game.entities.push(projectile);
+            console.log(projectile);
+        };
+        Weapon.prototype.shoot = function (dir) {
+            if (this.projectilesInClip <= 0) {
+                this.rechargeClip();
+                return;
+            }
+            if (this.timeToCooldown > 0)
+                return;
+            this.createProjectile(dir);
+            this.timeToCooldown = this.cooldown;
+        };
+        Weapon.prototype.step = function () {
+            this.timeToCooldown -= Game_4.Game.dt;
+            if (this.timeToCooldown <= 0 && this.isClipRecharging) {
+                this.isClipRecharging = false;
+                this.projectilesInClip = this.clipCapacity;
+            }
+        };
+        return Weapon;
+    }());
+    exports.Weapon = Weapon;
+});
+define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon"], function (require, exports, Person_4, Animation_4, Weapon_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Soldier = void 0;
@@ -1420,20 +1512,24 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
         __extends(Soldier, _super);
         function Soldier(game, body, mode) {
             var _this = _super.call(this, game, body, mode) || this;
+            _this.weapon = new Weapon_1.Weapon(_this);
             _this.animation = new Animation_4.Animation("Soldier", 8);
             _this.type = "Soldier";
             return _this;
         }
         Soldier.prototype.step = function () {
-            _super.prototype.step.call(this);
             if (this.commands.commands["shoot"]) {
+                console.log("aa");
+                this.weapon.shoot(this.commands.pointer);
             }
+            this.weapon.step();
+            _super.prototype.step.call(this);
         };
         return Soldier;
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_9, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_9, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1490,7 +1586,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             });
         };
         Game.prototype.makeBody = function (coordinates, radius) {
-            var body = new Body_1.Body(coordinates, radius);
+            var body = new Body_2.Body(coordinates, radius);
             body.game = this;
             return this.bodies[this.bodies.length] = body;
         };
@@ -1654,7 +1750,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return scientist;
                 }
                 if (value.dataType == 'StationaryObject') {
-                    var stationaryObject = new StationaryObject_2.StationaryObject(this, new Body_1.Body(value.place, 1), "fine");
+                    var stationaryObject = new StationaryObject_2.StationaryObject(this, new Body_2.Body(value.place, 1), "fine");
                 }
             }
             return value;
@@ -1664,7 +1760,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     }());
     exports.Game = Game;
 });
-define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_10, Game_4) {
+define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_10, Game_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpriteAnimation = exports.AnimationState = void 0;
@@ -1697,7 +1793,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
             return this.frames[frameNumber];
         };
         SpriteAnimation.prototype.step = function () {
-            this.time += Game_4.Game.dt;
+            this.time += Game_5.Game.dt;
         };
         SpriteAnimation.prototype.isOver = function () {
             return this.time > this.duration;
@@ -2107,17 +2203,17 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_14, Game_5, Editor_1, BehaviorModel_2) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_14, Game_6, Editor_1, BehaviorModel_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_14.Draw(canvas);
     draw.cam.scale = 0.4;
-    Game_5.Game.levels = new Map();
-    Game_5.Game.loadMap("map.json", "map");
-    var game = new Game_5.Game(draw);
-    game.makeScientist(new geom.Vector(1, 1));
+    Game_6.Game.levels = new Map();
+    Game_6.Game.loadMap("map.json", "map");
+    var game = new Game_6.Game(draw);
+    game.makeSoldier(new geom.Vector(1, 1));
     var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
     soldier.behaviorModel.instructions["test"] = new BehaviorModel_2.Instruction();
     soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
@@ -2128,18 +2224,13 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var t = 0;
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     function step() {
-        if (Game_5.Game.levels["map"] != undefined) {
+        if (Game_6.Game.levels["map"] != undefined) {
             t++;
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
                 game.makeTrigger(100000000, game.entities[1]);
-                console.log(Game_5.Game.levels["map"].PathMatrix);
+                console.log(Game_6.Game.levels["map"].PathMatrix);
                 x = true;
-            }
-            if (t % 100 == 0) {
-                for (var i = 0; i < game.entities[1].myAI.Path.length; i++) {
-                    console.log(game.entities[1].myAI.Path[i]);
-                }
             }
             draw.clear();
             game.step();
@@ -2157,39 +2248,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         setInterval(editorStep, 20);
     }
     else
-        setInterval(step, Game_5.Game.dt * 1000);
-});
-define("Random", ["require", "exports", "Geom"], function (require, exports, geom) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Random = void 0;
-    var Random = (function () {
-        function Random() {
-        }
-        Random.randomInt = function (a, b) {
-            var _a;
-            if (a < b)
-                _a = [b, a], a = _a[0], b = _a[1];
-            a = Math.floor(a);
-            b = Math.floor(b);
-            return Math.floor(Math.random() * (b - a + 1)) + a;
-        };
-        Random.randomFloat = function (a, b) {
-            var _a;
-            if (a < b)
-                _a = [b, a], a = _a[0], b = _a[1];
-            return Math.random() * (b - a) + a;
-        };
-        Random.randomVector = function (a, b) {
-            return new geom.Vector(Random.randomFloat(a.x, b.x), Random.randomFloat(a.y, b.y));
-        };
-        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
-            var gamma = Random.randomFloat(alpha, beta);
-            var len = Math.abs(Random.randomFloat(lenMin, lenMax));
-            return geom.vectorFromAngle(gamma).mul(len);
-        };
-        return Random;
-    }());
-    exports.Random = Random;
+        setInterval(step, Game_6.Game.dt * 1000);
 });
 //# sourceMappingURL=build.js.map

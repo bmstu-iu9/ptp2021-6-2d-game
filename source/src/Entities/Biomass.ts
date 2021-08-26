@@ -10,24 +10,18 @@ import { Corpse } from "./Corpse";
 
 export class Biomass extends Projectile {
     private velLimit = 1; // Скорость при которой мы считаем, что остановились
-    private spriteAnimation : SpriteAnimation;
+    
     public baseEntity : Entity;
     public alive = true;
     constructor(game : Game, body : Body, vel : geom.Vector) {
         super(game, body, vel);
         this.viscousFriction = 10;
         this.vel = this.vel.mul(this.viscousFriction);
-        this.spriteAnimation = new SpriteAnimation();
-        this.spriteAnimation.loadFrames("Biomass", 3);
-        this.spriteAnimation.duration = 1000;
-        this.spriteAnimation.frameDuration = 0.1;
+        this.loadSpriteAnimation("Biomass", 3);
     }
     public step() {
         super.step();
         this.spriteAnimation.step();
-    }
-    public display(draw : Draw) {
-        draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Layer.EntityLayer);
     }
     public hasStopped() : boolean {
         return this.vel.abs() < this.velLimit;
