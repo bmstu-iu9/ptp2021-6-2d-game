@@ -1679,8 +1679,8 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 size.y = canvas.height;
             }
             this.ctx = canvas.getContext("2d");
-            this.cam.scale = 1;
-            this.cam.pos = size.mul(1 / 2);
+            this.cam.scale = 50;
+            this.cam.pos = new geom.Vector();
             this.cam.center = size.mul(1 / 2);
         }
         Draw.loadImage = function (src) {
@@ -1724,6 +1724,11 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
                 this.ctx.drawImage(buffer, posNew.x, posNew.y);
             }
+        };
+        Draw.prototype.resize = function (size) {
+            this.cam.center = size.mul(1 / 2);
+            this.canvas.width = size.x;
+            this.canvas.height = size.y;
         };
         Draw.prototype.image = function (image, pos, box, angle, layer) {
             if (layer == 0) {
@@ -2197,8 +2202,6 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createToolButton(Cursor_1.ToolType.Waiting, "5");
             this.createToolButton(Cursor_1.ToolType.Pursuit, "5");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
-            document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
-            document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px";
             document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
@@ -2324,6 +2327,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     if (levelEditorMode) {
         var editor_1 = new Editor_1.Editor();
         editor_1.setDraw(draw);
+        editor_1.draw.resize(new geom.Vector(window.innerHeight - 30, window.innerHeight - 30));
         var editorStep = function () {
             editor_1.step();
             draw.clear();

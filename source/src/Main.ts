@@ -63,6 +63,7 @@ if (levelEditorMode) {
     // В случае если режим редактора
     let editor = new Editor();
     editor.setDraw(draw);
+    editor.draw.resize(new geom.Vector(window.innerHeight - 30, window.innerHeight - 30));
     let editorStep = function () {
         editor.step();
         draw.clear();

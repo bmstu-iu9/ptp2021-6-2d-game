@@ -18,7 +18,7 @@ export class Editor {
     private mousePrev: geom.Vector;
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
-    private draw: Draw;
+    public draw: Draw;
     private amountOfPads = 0;
 
     constructor() {
@@ -208,9 +208,7 @@ export class Editor {
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
-
-        document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
-        document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px"
+       
 
         document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
