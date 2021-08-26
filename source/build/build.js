@@ -675,13 +675,13 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
 define("BehaviorModel", ["require", "exports", "Geom"], function (require, exports, Geom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BehaviorModel = exports.Instruction = void 0;
+    exports.BehaviorModel = exports.Instruction = exports.Operations = void 0;
     var Operations;
     (function (Operations) {
         Operations[Operations["goToPoint"] = 0] = "goToPoint";
         Operations[Operations["wait"] = 1] = "wait";
         Operations[Operations["pursuit"] = 2] = "pursuit";
-    })(Operations || (Operations = {}));
+    })(Operations = exports.Operations || (exports.Operations = {}));
     var Instruction = (function () {
         function Instruction() {
             this.operations = [];
@@ -1870,11 +1870,26 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_9, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
+    exports.reviver = exports.replacer = exports.getMilliCount = exports.arrayMove = exports.swap = exports.setEnvironment = exports.environment = void 0;
     function setEnvironment(env) {
         exports.environment = env;
     }
     exports.setEnvironment = setEnvironment;
+    function swap(a, b) {
+        a = [b, b = a][0];
+    }
+    exports.swap = swap;
+    function arrayMove(arr, old_index, new_index) {
+        if (new_index >= arr.length) {
+            var k = new_index - arr.length + 1;
+            while (k--) {
+                arr.push(undefined);
+            }
+        }
+        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+    }
+    exports.arrayMove = arrayMove;
+    ;
     function getMilliCount() {
         return new Date().getTime();
     }
@@ -1975,8 +1990,6 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                 this.level.Entities[currentLocation] = new Monster_4.Monster(null, new Body_2.Body(pos, 1));
             }
         };
-        Cursor.prototype.compileBehaviorModel = function (behaviorModel) {
-        };
         Cursor.prototype.step = function () {
             this.pos = this.draw.transformBack(Control_3.Control.mousePos());
             this.gridPos = this.level.gridCoordinates(this.pos);
@@ -1996,9 +2009,6 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                     case Mode.Selector: {
                         if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
                             this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
-                        }
-                        if (this.selectedEntity instanceof Person_6.Person) {
-                            this.compileBehaviorModel(this.selectedEntity.behaviorModel);
                         }
                     }
                 }
@@ -2026,34 +2036,66 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_2) {
+define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorModel", "AuxLib"], function (require, exports, BehaviorModel_2, BehaviorModel_3, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Editor = void 0;
-    var Editor = (function () {
-        function Editor() {
-            this.level = new Level_2.Level(new geom.Vector(10, 10));
-            this.cursor = new Cursor_1.Cursor(this.level);
-            this.amountOfPads = 0;
-            this.mousePrev = Control_4.Control.mousePos();
-            this.initHTML();
+    exports.ListOfPads = void 0;
+    var ListOfPads = (function () {
+        function ListOfPads() {
         }
-        Editor.prototype.createTileButton = function (src, collision, type) {
-            var _this = this;
-            var button = document.createElement("img");
-            button.src = src;
-            button.className = "tileButton";
-            var palette = document.getElementById("palette" + type);
-            palette.appendChild(button);
-            var applyTile = function () {
-                _this.cursor.mode = Cursor_1.Mode.Wall;
-                _this.cursor.tile = new Tile_6.Tile(collision, button);
-            };
-            button.onclick = applyTile;
+        ListOfPads.getPadPlace = function (pad) {
+            var listOfPads = document.querySelector(".listOfPads");
+            var pads = listOfPads.children;
+            for (var i = 0; i < pads.length; i++) {
+                if (pads[i].id == pad.id) {
+                    return i;
+                }
+            }
         };
-        Editor.prototype.createBehaviorPad = function (src, text) {
+        ListOfPads.init = function () {
             var _this = this;
-            console.log("im here!!!!!!!");
+            var listOfPads = document.querySelector(".listOfPads");
+            listOfPads.addEventListener('dragstart', function (evt) {
+                var x = evt.target;
+                x.classList.add('selected');
+            });
+            listOfPads.addEventListener('dragend', function (evt) {
+                var x = evt.target;
+                x.classList.remove('selected');
+            });
+            listOfPads.addEventListener("dragover", function (evt) {
+                evt.preventDefault();
+                var activeElement = listOfPads.querySelector(".selected");
+                var currentElement = evt.target;
+                var isMoveable = activeElement !== currentElement &&
+                    currentElement.classList.contains("behaviorPad");
+                if (!isMoveable) {
+                    return;
+                }
+                var nextElement = (currentElement === activeElement.nextElementSibling) ?
+                    currentElement.nextElementSibling :
+                    currentElement;
+                var instruction = _this.behaviorModel.instructions[_this.instructionType];
+                aux.arrayMove(instruction.operations, _this.getPadPlace(activeElement), _this.getPadPlace(nextElement));
+                aux.arrayMove(instruction.operationsData, _this.getPadPlace(activeElement), _this.getPadPlace(nextElement));
+                listOfPads.insertBefore(activeElement, nextElement);
+            });
+        };
+        ListOfPads.deleteBehaviorPad = function (exitButton) {
+            var instruction = this.behaviorModel.instructions[this.instructionType];
+            var pad = exitButton.parentElement;
+            instruction.operations.splice(this.getPadPlace(pad), 1);
+            exitButton.parentElement.remove();
+        };
+        ListOfPads.clear = function () {
+            var listOfPads = document.querySelector(".listOfPads");
+            var children = listOfPads.children;
+            for (var i = 0; i < children.length; i++) {
+                children[i].remove();
+            }
+        };
+        ListOfPads.createBehaviorPad = function (src, text) {
+            var _this = this;
             var pad = document.createElement("li");
             pad.className = "behaviorPad";
             var icon = document.createElement("img");
@@ -2062,6 +2104,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             icon.className = "behaviorPad_icon";
             icon.src = src;
             label.className = "behaviorPad_label";
+            pad.id = "pad_" + this.amountOfPads;
             label.id = "padLabel_" + this.amountOfPads;
             label.innerHTML = text;
             exitButton.className = "behaviorPad_exitButton";
@@ -2082,8 +2125,67 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.amountOfPads += 1;
             return pad;
         };
-        Editor.prototype.deleteBehaviorPad = function (exitButton) {
-            exitButton.parentElement.remove();
+        ListOfPads.compileBehaviorModel = function (behaviorModel) {
+            if (behaviorModel == undefined) {
+                behaviorModel = new BehaviorModel_2.BehaviorModel(null);
+            }
+            if (behaviorModel.instructions[this.instructionType] == undefined) {
+                behaviorModel.instructions[this.instructionType] = new BehaviorModel_2.Instruction();
+            }
+            this.behaviorModel = behaviorModel;
+            this.clear();
+            var instruction = behaviorModel.instructions[this.instructionType];
+            for (var i = 0; i < instruction.operations.length; i++) {
+                var src = "";
+                switch (instruction.operations[i]) {
+                    case BehaviorModel_3.Operations.goToPoint: {
+                        src = "textures/Editor/arrow.png";
+                        this.createBehaviorPad(src, "Going to " + new String(instruction.operationsData[i]));
+                        break;
+                    }
+                    case BehaviorModel_3.Operations.wait: {
+                        src = "textures/Editor/waiting.png";
+                        this.createBehaviorPad(src, "Waiting " + new String(instruction.operationsData[i]));
+                        break;
+                    }
+                    case BehaviorModel_3.Operations.pursuit: {
+                        src = "textures/Editor/pursuit.png";
+                        this.createBehaviorPad(src, "Pursuit");
+                        break;
+                    }
+                }
+            }
+        };
+        ListOfPads.amountOfPads = 0;
+        ListOfPads.instructionType = "default";
+        ListOfPads.behaviorModel = null;
+        return ListOfPads;
+    }());
+    exports.ListOfPads = ListOfPads;
+});
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_4, ListOfPads_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Editor = void 0;
+    var Editor = (function () {
+        function Editor() {
+            this.level = new Level_2.Level(new geom.Vector(10, 10));
+            this.cursor = new Cursor_1.Cursor(this.level);
+            this.mousePrev = Control_4.Control.mousePos();
+            this.initHTML();
+        }
+        Editor.prototype.createTileButton = function (src, collision, type) {
+            var _this = this;
+            var button = document.createElement("img");
+            button.src = src;
+            button.className = "tileButton";
+            var palette = document.getElementById("palette" + type);
+            palette.appendChild(button);
+            var applyTile = function () {
+                _this.cursor.mode = Cursor_1.Mode.Wall;
+                _this.cursor.tile = new Tile_6.Tile(collision, button);
+            };
+            button.onclick = applyTile;
         };
         Editor.prototype.createEntityButton = function (entityType, type) {
             var _this = this;
@@ -2148,30 +2250,28 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 if (_this.cursor.selectedEntity != null) {
                     if (_this.cursor.selectedEntity instanceof Person_7.Person) {
                         if (_this.cursor.selectedEntity.behaviorModel == undefined) {
-                            _this.cursor.selectedEntity.behaviorModel = new BehaviorModel_2.BehaviorModel(null);
+                            _this.cursor.selectedEntity.behaviorModel = new BehaviorModel_4.BehaviorModel(null);
                         }
                         var behaviorModel = _this.cursor.selectedEntity.behaviorModel;
                         console.log(behaviorModel);
-                        _this.cursor.compileBehaviorModel(behaviorModel);
-                        var instructionType = "default";
-                        if (behaviorModel.instructions[instructionType] == undefined) {
-                            behaviorModel.instructions[instructionType] = new BehaviorModel_2.Instruction();
+                        if (behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType] == undefined) {
+                            behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType] = new BehaviorModel_4.Instruction();
                         }
                         switch (toolType) {
                             case Cursor_1.ToolType.GoToPoint: {
                                 console.log("well");
-                                behaviorModel.instructions[instructionType].addGoingToPoint(new geom.Vector(0, 0));
-                                var pad = _this.createBehaviorPad(src, "Going to (0, 0)");
+                                behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addGoingToPoint(new geom.Vector(0, 0));
+                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, "Going to (0, 0)");
                                 break;
                             }
                             case Cursor_1.ToolType.Waiting: {
-                                behaviorModel.instructions[instructionType].addWaiting(1000);
-                                var pad = _this.createBehaviorPad(src, "Waiting (1000)");
+                                behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addWaiting(1000);
+                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, "Waiting (1000)");
                                 break;
                             }
                             case Cursor_1.ToolType.Pursuit: {
-                                behaviorModel.instructions[instructionType].addPursuit();
-                                var pad = _this.createBehaviorPad(src, "Pursuit");
+                                behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addPursuit();
+                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, "Pursuit");
                                 break;
                             }
                         }
@@ -2182,6 +2282,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         };
         Editor.prototype.initHTML = function () {
             var _this = this;
+            ListOfPads_1.ListOfPads.init();
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
             for (var i = 0; i < 47; i++)
@@ -2211,33 +2312,43 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
             document.getElementById("preview")["style"].top = "0px";
             document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             document.getElementById("generate")["style"].top = "62px";
             document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
-            var listOfPads = document.querySelector(".listOfPads");
-            listOfPads.addEventListener('dragstart', function (evt) {
-                var x = evt.target;
-                x.classList.add('selected');
-            });
-            listOfPads.addEventListener('dragend', function (evt) {
-                var x = evt.target;
-                x.classList.remove('selected');
-            });
-            listOfPads.addEventListener("dragover", function (evt) {
-                evt.preventDefault();
-                var activeElement = listOfPads.querySelector(".selected");
-                var currentElement = evt.target;
-                var isMoveable = activeElement !== currentElement &&
-                    currentElement.classList.contains("behaviorPad");
-                if (!isMoveable) {
+            var normal = function () {
+                if (ListOfPads_1.ListOfPads.instructionType == "normal") {
                     return;
                 }
-                var nextElement = (currentElement === activeElement.nextElementSibling) ?
-                    currentElement.nextElementSibling :
-                    currentElement;
-                listOfPads.insertBefore(activeElement, nextElement);
-            });
+                ListOfPads_1.ListOfPads.instructionType = "normal";
+                if (_this.cursor.selectedEntity != null && _this.cursor.selectedEntity instanceof Person_7.Person) {
+                    console.log(_this.cursor.selectedEntity.behaviorModel);
+                    ListOfPads_1.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
+                }
+                var normalButton = document.getElementById("normalMode");
+                normalButton.classList.add('selected');
+                var panicButton = document.getElementById("panicMode");
+                panicButton.classList.remove("selected");
+            };
+            document.getElementById("normalMode").onclick = normal;
+            var panic = function () {
+                if (ListOfPads_1.ListOfPads.instructionType == "panic") {
+                    return;
+                }
+                ListOfPads_1.ListOfPads.instructionType = "panic";
+                if (_this.cursor.selectedEntity != null && _this.cursor.selectedEntity instanceof Person_7.Person) {
+                    console.log(_this.cursor.selectedEntity.behaviorModel);
+                    ListOfPads_1.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
+                }
+                var panicButton = document.getElementById("panicMode");
+                panicButton.classList.add('selected');
+                var normalButton = document.getElementById("normalMode");
+                normalButton.classList.remove("selected");
+            };
+            document.getElementById("panicMode").onclick = panic;
+            normal();
         };
         Editor.prototype.isInCanvas = function (mouseCoords) {
             if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x
@@ -2282,7 +2393,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_12, Game_4, Editor_1, BehaviorModel_3) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_12, Game_4, Editor_1, BehaviorModel_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
@@ -2294,7 +2405,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var game = new Game_4.Game(draw);
     game.makeScientist(new geom.Vector(1, 1));
     var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-    soldier.behaviorModel.instructions["test"] = new BehaviorModel_3.Instruction();
+    soldier.behaviorModel.instructions["test"] = new BehaviorModel_5.Instruction();
     soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
     soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
     soldier.behaviorModel.changeCurrentInstruction("test");

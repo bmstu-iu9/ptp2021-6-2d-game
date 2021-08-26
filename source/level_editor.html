@@ -1,6 +1,6 @@
 <html>
 <style>
-    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .bpCreateButton {position: absolute}
+    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .normalButton, .panicButton {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
@@ -8,7 +8,7 @@
     }
     .behaviorPad {
         height: 50px;
-        width: 180px;
+        width: auto;
         border: solid 1px black;
         text-align: center;
         cursor: move;
@@ -40,11 +40,18 @@
         height: auto;
         margin: 1px;
     }
-    .bpCreateButton {
-        width: 50px;
+    .normalButton {
+        width: 60px;
         height: auto;
         margin: 1px;
-        right: 410px;
+        right: 640px;
+    }
+    .panicButton {
+        width: 60px;
+        height: auto;
+        margin: 1px;
+        right: 640px;
+
     }
     .layer {
         overflow-y: scroll; /* Добавляем полосы прокрутки */
@@ -83,7 +90,7 @@
    .layer6 {
         display: flex;
         overflow-y: scroll;
-        width: 200px; /* Ширина блока */
+        width: auto; /* Ширина блока */
         padding: 2px; /* Поля вокруг текста */
         border: solid 1px black; /* Параметры рамки */
         right: 410px;
@@ -141,6 +148,8 @@
     <div id="palette6" class="layer6"> <!-- Палитра команд -->
         <ul id = "mainListPads" class = "listOfPads"></ul>
     </div>
+    <button id="normalMode" class="normalButton">Normal</button>
+    <button id="panicMode" class="panicButton">Panic</button>
 </div>
 <script src="./require.js"></script>
 <script src="build/build.js"></script>

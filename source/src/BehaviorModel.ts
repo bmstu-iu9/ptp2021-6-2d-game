@@ -3,7 +3,7 @@ import { eps } from "./Geom";
 import { AI } from "./Entities/EntityAttributes/AI";
 import * as aux from "./AuxLib";
 
-enum Operations {
+export enum Operations {
     goToPoint,
     wait,
     pursuit

@@ -70,10 +70,6 @@ export class Cursor {
         }
     }
 
-    public compileBehaviorModel(behaviorModel : BehaviorModel) {
-        
-    }
-
     public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
@@ -94,9 +90,9 @@ export class Cursor {
                     if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
                         this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
                     }
-                    if (this.selectedEntity instanceof Person) {
-                        this.compileBehaviorModel(this.selectedEntity.behaviorModel);
-                    }
+                    // if (this.selectedEntity instanceof Person) {
+                    //     this.compileBehaviorModel(this.selectedEntity.behaviorModel);
+                    // }
                 }
             }
         }

@@ -13,13 +13,13 @@ import { Monster } from "./Entities/Monster";
 import { Animation } from "./Entities/EntityAttributes/Animation";
 import { getMilliCount } from "./AuxLib";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
+import { ListOfPads } from "./Editor/ListOfPads";
 
 export class Editor {
     private mousePrev: geom.Vector;
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
     private draw: Draw;
-    private amountOfPads = 0;
 
     constructor() {
         this.mousePrev = Control.mousePos();
@@ -39,53 +39,7 @@ export class Editor {
         button.onclick = applyTile;
     }
 
-    private createBehaviorPad(src : string, text : string) {
-        console.log("im here!!!!!!!");
-        let pad = document.createElement("li");
-        pad.className = "behaviorPad";
-
-        let icon = document.createElement("img") as HTMLImageElement;
-        let label = document.createElement("p");
-        let exitButton = document.createElement("img") as HTMLImageElement;
-
-        icon.className = "behaviorPad_icon";
-        icon.src = src;
-        label.className = "behaviorPad_label";
-
-        label.id = "padLabel_" + this.amountOfPads;
-        label.innerHTML = text;
-
-        exitButton.className = "behaviorPad_exitButton";
-        exitButton.src = "textures/Editor/cross.ico"
-        let deleteDiv = () => { this.deleteBehaviorPad(exitButton) }
-        exitButton.onclick = deleteDiv;
-
-        pad.draggable = true;
-        icon.draggable = false;
-        label.draggable = false;
-        exitButton.draggable = false;
-        pad.appendChild(icon);
-        pad.appendChild(label);
-        pad.appendChild(exitButton);
-
-        pad.addEventListener(`dragover`, (evt) => {
-            evt.preventDefault();
-        });
-
-        //let palette = document.getElementById("palette6");
-
-        document.getElementById("mainListPads").append(pad)
-        //palette.appendChild(pad);
-        this.amountOfPads += 1;
-
-        return pad;
-    }
-
-    private deleteBehaviorPad(exitButton: HTMLImageElement) {
-        exitButton.parentElement.remove()
-    }
-
-    private createEntityButton(entityType: string, type: string) {        
+    private createEntityButton(entityType: string, type: string) {
         let button = document.createElement("img");
         if (entityType == "Soldier") {
             let applyEntity = () => {
@@ -121,7 +75,7 @@ export class Editor {
         palette.appendChild(button);
     }
 
-    private createToolButton(toolType: ToolType, type: string) {        
+    private createToolButton(toolType: ToolType, type: string) {
         let button = document.createElement("img");
         button.className = "toolButton";
         let src = "";
@@ -145,7 +99,7 @@ export class Editor {
         let applyTool = () => {
             this.cursor.mode = Mode.Selector;
             console.log(this.cursor.selectedEntity);
-            
+
             if (this.cursor.selectedEntity != null) {
                 if (this.cursor.selectedEntity instanceof Person) {
                     if (this.cursor.selectedEntity.behaviorModel == undefined) {
@@ -153,27 +107,26 @@ export class Editor {
                     }
                     let behaviorModel = this.cursor.selectedEntity.behaviorModel;
                     console.log(behaviorModel);
-                    
-                    this.cursor.compileBehaviorModel(behaviorModel);
-                    let instructionType = "default";
-                    if (behaviorModel.instructions[instructionType] == undefined) {
-                        behaviorModel.instructions[instructionType] = new Instruction();
+
+                    //ListOfPads.compileBehaviorModel(behaviorModel);
+                    if (behaviorModel.instructions[ListOfPads.instructionType] == undefined) {
+                        behaviorModel.instructions[ListOfPads.instructionType] = new Instruction();
                     }
                     switch (toolType) {
                         case ToolType.GoToPoint: {
                             console.log("well");
-                            behaviorModel.instructions[instructionType].addGoingToPoint(new geom.Vector(0, 0));
-                            let pad = this.createBehaviorPad(src, "Going to (0, 0)");
+                            behaviorModel.instructions[ListOfPads.instructionType].addGoingToPoint(new geom.Vector(0, 0));
+                            let pad = ListOfPads.createBehaviorPad(src, "Going to (0, 0)");
                             break;
                         }
                         case ToolType.Waiting: {
-                            behaviorModel.instructions[instructionType].addWaiting(1000);
-                            let pad = this.createBehaviorPad(src, "Waiting (1000)");
+                            behaviorModel.instructions[ListOfPads.instructionType].addWaiting(1000);
+                            let pad = ListOfPads.createBehaviorPad(src, "Waiting (1000)");
                             break;
                         }
                         case ToolType.Pursuit: {
-                            behaviorModel.instructions[instructionType].addPursuit();
-                            let pad = this.createBehaviorPad(src, "Pursuit");
+                            behaviorModel.instructions[ListOfPads.instructionType].addPursuit();
+                            let pad = ListOfPads.createBehaviorPad(src, "Pursuit");
                             break;
                         }
                     }
@@ -185,6 +138,7 @@ export class Editor {
 
     // Инициализирует взаимодействие с HTML
     private initHTML() {
+        ListOfPads.init();
         // Обработка кнопок
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
@@ -226,6 +180,8 @@ export class Editor {
         document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+        document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+        document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
 
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
@@ -233,38 +189,44 @@ export class Editor {
         document.getElementById("generate")["style"].top = "62px";
         document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
 
-        /*console.log(window.innerHeight)
-        console.log(window.outerHeight)*/
 
-        const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
-        listOfPads.addEventListener('dragstart', (evt) => {
-            let x = evt.target as HTMLObjectElement;
-            x.classList.add('selected')
-        });
-
-        listOfPads.addEventListener('dragend', (evt) => {
-            let x = evt.target as HTMLObjectElement;
-            x.classList.remove('selected')
-        });
-
-        listOfPads.addEventListener(`dragover`, (evt) => {
-            evt.preventDefault();
-            const activeElement = listOfPads.querySelector(`.selected`);
-            const currentElement = evt.target as HTMLObjectElement;
-            const isMoveable = activeElement !== currentElement &&
-                currentElement.classList.contains(`behaviorPad`);
-
-            if (!isMoveable) {
+        let normal = () => {
+            if (ListOfPads.instructionType == "normal") {
                 return;
             }
+            ListOfPads.instructionType = "normal";
+            if (this.cursor.selectedEntity != null && this.cursor.selectedEntity instanceof Person) {
+                console.log(this.cursor.selectedEntity.behaviorModel);
+                ListOfPads.compileBehaviorModel(this.cursor.selectedEntity.behaviorModel);
+            }
+            let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
+            normalButton.classList.add('selected');
+            let panicButton = document.getElementById("panicMode") as HTMLObjectElement;
+            panicButton.classList.remove("selected")
+        };
 
-            const nextElement = (currentElement === activeElement.nextElementSibling) ?
-                currentElement.nextElementSibling :
-                currentElement;
+        document.getElementById("normalMode").onclick = normal;
 
-            listOfPads.insertBefore(activeElement, nextElement);
-        });
+        let panic = () => {
+            if (ListOfPads.instructionType == "panic") {
+                return;
+            }
+            ListOfPads.instructionType = "panic";
+            if (this.cursor.selectedEntity != null && this.cursor.selectedEntity instanceof Person) {
+                console.log(this.cursor.selectedEntity.behaviorModel);
+                ListOfPads.compileBehaviorModel(this.cursor.selectedEntity.behaviorModel);
+            }
+            let panicButton = document.getElementById("panicMode") as HTMLObjectElement;
+            panicButton.classList.add('selected');
+            let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
+            normalButton.classList.remove("selected")            
+        };
 
+        document.getElementById("panicMode").onclick = panic;
+
+        normal();
+        /*console.log(window.innerHeight)
+        console.log(window.outerHeight)*/
     }
 
     private isInCanvas(mouseCoords: geom.Vector): boolean {
@@ -304,6 +266,7 @@ export class Editor {
     }
 
     public step() {
+        //ListOfPads.clear();
         this.moveCamera();
         this.cursor.step();
     }
