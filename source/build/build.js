@@ -314,15 +314,12 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
         CollisionType[CollisionType["Full"] = 5] = "Full";
     })(CollisionType = exports.CollisionType || (exports.CollisionType = {}));
     var Tile = (function () {
-        function Tile(colision, image) {
+        function Tile(colision, image, sub_image) {
             if (colision === void 0) { colision = 0; }
             if (image === void 0) { image = null; }
+            if (sub_image === void 0) { sub_image = null; }
             this.colision = CollisionType.Empty;
             this.colision = colision;
-            if (image) {
-                this.image = image;
-                return;
-            }
             if (colision == 0) {
                 this.image = Draw_1.Draw.loadImage("textures/tiles/Empty.png");
             }
@@ -341,6 +338,12 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
             if (colision == 5) {
                 this.image = Draw_1.Draw.loadImage("textures/tiles/Full.png");
             }
+            if (image) {
+                this.image = image;
+            }
+            if (sub_image) {
+                this.sub_image = sub_image;
+            }
         }
         Tile.prototype.setColision = function (colision) {
             this.colision = colision;
@@ -348,8 +351,11 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
         Tile.prototype.setImage = function (image) {
             this.image = image;
         };
+        Tile.prototype.setSubImage = function (sub_image) {
+            this.sub_image = sub_image;
+        };
         Tile.prototype.clone = function () {
-            return new Tile(this.colision, this.image);
+            return new Tile(this.colision, this.image, this.sub_image);
         };
         return Tile;
     }());
@@ -1076,6 +1082,10 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
+                    if (this.Grid[i][j].sub_image) {
+                        draw.image(this.Grid[i][j].sub_image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
+                            .add(size.mul(1 / 2)), size, 0, 0);
+                    }
                     if (advanced)
                         draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
                             .add(size.mul(1 / 2)), size, new Draw_5.Color(0, 0, 0), 0.03);
@@ -1680,7 +1690,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             }
             this.ctx = canvas.getContext("2d");
             this.cam.scale = 1;
-            this.cam.pos = size.mul(1 / 2);
+            this.cam.pos = new geom.Vector();
             this.cam.center = size.mul(1 / 2);
         }
         Draw.loadImage = function (src) {
@@ -1724,6 +1734,15 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
                 this.ctx.drawImage(buffer, posNew.x, posNew.y);
             }
+        };
+        Draw.prototype.resize = function (size) {
+            this.cam.center = size.mul(1 / 2);
+            this.canvas.width = size.x;
+            this.canvas.height = size.y;
+        };
+        Draw.prototype.attachToCanvas = function () {
+            this.cam.pos = this.cam.center;
+            this.cam.scale = 1;
         };
         Draw.prototype.image = function (image, pos, box, angle, layer) {
             if (layer == 0) {
@@ -1969,7 +1988,9 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.draw = draw;
         }
         Cursor.prototype.setBlock = function () {
+            console.log(this.tile);
             this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+            console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
         };
         Cursor.prototype.setEntity = function () {
             var currentLocation = this.level.Entities.length;
@@ -2018,10 +2039,14 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             }
         };
         Cursor.prototype.display = function () {
+            this.drawPreview.attachToCanvas();
             this.drawPreview.clear();
             switch (this.mode) {
                 case Mode.Wall: {
                     this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    if (this.tile.sub_image) {
+                        this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    }
                     break;
                 }
                 case Mode.Entity: {
@@ -2171,9 +2196,62 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         function Editor() {
             this.level = new Level_2.Level(new geom.Vector(10, 10));
             this.cursor = new Cursor_1.Cursor(this.level);
+            this.palette1_bitmap = [0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                1, 0, 1, 0, 0,
+                0, 0, 0, 1, 0,
+                1, 1, 1, 0, 1,
+                0, 1, 1, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0];
+            this.palette2_bitmap = [0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1,
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1,
+                1, 1, 1, 1, 0,
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1];
+            this.palette3_bitmap = [0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1,
+                1, 0, 1, 1, 1,
+                1, 1, 1, 0, 0,
+                0];
             this.mousePrev = Control_4.Control.mousePos();
             this.initHTML();
         }
+        Editor.prototype.isTileSubImage = function (idPalette) {
+            switch (idPalette) {
+                case 1: {
+                    return true;
+                }
+                case 2: {
+                    return true;
+                }
+                case 3: {
+                    return false;
+                }
+            }
+            return false;
+        };
         Editor.prototype.createTileButton = function (src, collision, type) {
             var _this = this;
             var button = document.createElement("img");
@@ -2183,7 +2261,31 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             palette.appendChild(button);
             var applyTile = function () {
                 _this.cursor.mode = Cursor_1.Mode.Wall;
-                _this.cursor.tile = new Tile_6.Tile(collision, button);
+                if (type.length > 0) {
+                    var prep = new Number(type);
+                    if (_this.isTileSubImage(prep.valueOf())) {
+                        if (_this.cursor.tile.image) {
+                            _this.cursor.tile.setSubImage(button);
+                            _this.cursor.tile.colision = 5;
+                        }
+                    }
+                    else {
+                        _this.cursor.tile = new Tile_6.Tile(collision);
+                        _this.cursor.tile.setImage(button);
+                    }
+                }
+                else {
+                    if (_this.isTileSubImage(1)) {
+                        if (_this.cursor.tile.image) {
+                            _this.cursor.tile.setSubImage(button);
+                            _this.cursor.tile.colision = 5;
+                        }
+                    }
+                    else {
+                        _this.cursor.tile = new Tile_6.Tile(collision);
+                        _this.cursor.tile.setImage(button);
+                    }
+                }
             };
             button.onclick = applyTile;
         };
@@ -2298,8 +2400,6 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createToolButton(Cursor_1.ToolType.Waiting, "5");
             this.createToolButton(Cursor_1.ToolType.Pursuit, "5");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
-            document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
-            document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px";
             document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
@@ -2399,7 +2499,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_12.Draw(canvas);
-    draw.cam.scale = 0.4;
+    draw.cam.scale = 50;
     Game_4.Game.levels = new Map();
     Game_4.Game.loadMap("map.json", "map");
     var game = new Game_4.Game(draw);
@@ -2435,6 +2535,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     if (levelEditorMode) {
         var editor_1 = new Editor_1.Editor();
         editor_1.setDraw(draw);
+        editor_1.draw.resize(new geom.Vector(window.innerHeight - 30, window.innerHeight - 30));
         var editorStep = function () {
             editor_1.step();
             draw.clear();

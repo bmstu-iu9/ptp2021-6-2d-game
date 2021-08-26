@@ -40,14 +40,15 @@ export class Cursor {
     private mouseLeftButtonClicked = true;
     private entityLocations : Map<any, number> = new Map();
 
-
     constructor(level : Level = null, draw : Draw = null) {
         this.level = level;
         this.draw = draw;
     }
 
     private setBlock() {
+        console.log(this.tile);
         this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+        console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
     }
 
     private setEntity() {
@@ -102,11 +103,16 @@ export class Cursor {
     }
 
     public display() {
+        this.drawPreview.attachToCanvas();
         // Preview
         this.drawPreview.clear();
         switch (this.mode) {
             case Mode.Wall: {
+                //console.log(this.tile)
                 this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50),0,0);
+                if (this.tile.sub_image) {
+                    this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50),0,0);
+                }
                 break;
             }
             case Mode.Entity: {

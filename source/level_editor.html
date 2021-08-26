@@ -1,6 +1,6 @@
 <html>
 <style>
-    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .normalButton, .panicButton {position: absolute}
+    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .normalButton, .panicButton, .listOfPads {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
@@ -8,10 +8,13 @@
     }
     .behaviorPad {
         height: 50px;
-        width: auto;
-        border: solid 1px black;
+        width: 210px;
+        /*border-radius: 5px;*/
+        /*border: solid 1px black;*/
         text-align: center;
         cursor: move;
+        margin: 4px;
+        background-color: rgb(172, 197, 243);
     }
     .behaviorPad_icon {
         display: inline-block;
@@ -88,9 +91,9 @@
         right: 320px;
    }
    .layer6 {
-        display: flex;
+        /*display: flex;*/
         overflow-y: scroll;
-        width: auto; /* Ширина блока */
+        width: 220; /* Ширина блока */
         padding: 2px; /* Поля вокруг текста */
         border: solid 1px black; /* Параметры рамки */
         right: 410px;
@@ -110,9 +113,12 @@
        color: chocolate;
    }
    .progress.is-large {
-        height: 40px; 
+        height: 40px;
     }
     .listOfPads {
+        /*border: 1px solid blue;*/
+        top: -17;
+        left: -35;
         list-style: none;
     }
     .selected {

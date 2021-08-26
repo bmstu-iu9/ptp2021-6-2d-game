@@ -19,11 +19,66 @@ export class Editor {
     private mousePrev: geom.Vector;
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
-    private draw: Draw;
+    public draw: Draw;
 
     constructor() {
         this.mousePrev = Control.mousePos();
         this.initHTML();
+    }
+
+    private palette1_bitmap : number[]= [0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        1, 0, 1, 0, 0, 
+        0, 0, 0, 1, 0, 
+        1, 1, 1, 0, 1, 
+        0, 1, 1, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0];
+private palette2_bitmap : number[]= [0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 1, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1];
+private palette3_bitmap : number[]= [0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 
+        1, 1, 1, 1, 1, 
+        1, 0, 1, 1, 1, 
+        1, 1, 1, 0, 0, 
+        0];
+
+    private isTileSubImage(idPalette : number) : boolean {
+        switch (idPalette) {
+            case 1 : {
+                return true;
+            }
+            case 2 : {
+                return true;
+            }
+            case 3 : {
+                return false;
+            }
+        }
+        return false;
     }
 
     private createTileButton(src: string, collision: CollisionType, type: string) {
@@ -34,7 +89,29 @@ export class Editor {
         palette.appendChild(button);
         let applyTile = () => {
             this.cursor.mode = Mode.Wall;
-            this.cursor.tile = new Tile(collision, button)
+            
+            if (type.length > 0) {
+                let prep = new Number(type);
+                if (this.isTileSubImage(prep.valueOf())) {
+                    if (this.cursor.tile.image) {
+                        this.cursor.tile.setSubImage(button);
+                        this.cursor.tile.colision = 5;
+                    }
+                } else {
+                    this.cursor.tile = new Tile(collision);
+                    this.cursor.tile.setImage(button);
+                }
+            } else {
+                if (this.isTileSubImage(1)) {
+                    if (this.cursor.tile.image) {
+                        this.cursor.tile.setSubImage(button);
+                        this.cursor.tile.colision = 5;
+                    }
+                } else {
+                    this.cursor.tile = new Tile(collision);
+                    this.cursor.tile.setImage(button);
+                }
+            }
         }
         button.onclick = applyTile;
     }
@@ -162,9 +239,7 @@ export class Editor {
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
-
-        document.getElementById("gameCanvas")["style"].height = window.innerHeight - 30 + "px";
-        document.getElementById("gameCanvas")["style"].width = document.getElementById("gameCanvas").clientHeight + "px"
+       
 
         document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
@@ -182,6 +257,8 @@ export class Editor {
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
+
+        //document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
 
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
