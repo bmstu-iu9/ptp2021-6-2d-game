@@ -12,13 +12,14 @@ import { Person, PersonMode } from "./Entities/Person";
 import { Monster } from "./Entities/Monster";
 import { Animation } from "./Entities/EntityAttributes/Animation";
 import { getMilliCount } from "./AuxLib";
-import { BehaviorModel } from "./BehaviorModel";
+import { BehaviorModel, Instruction } from "./BehaviorModel";
 
 export class Editor {
     private mousePrev: geom.Vector;
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
     private draw: Draw;
+    private amountOfPads = 0;
 
     constructor() {
         this.mousePrev = Control.mousePos();
@@ -31,12 +32,60 @@ export class Editor {
         button.className = "tileButton";
         let palette = document.getElementById("palette" + type);
         palette.appendChild(button);
-        let applyTile = () => { this.cursor.mode = Mode.Wall;
-            this.cursor.tile = new Tile(collision, button) }
+        let applyTile = () => {
+            this.cursor.mode = Mode.Wall;
+            this.cursor.tile = new Tile(collision, button)
+        }
         button.onclick = applyTile;
     }
 
-    private createEntityButton(entityType: string, type: string) {
+    private createBehaviorPad(src : string, text : string) {
+        console.log("im here!!!!!!!");
+        let pad = document.createElement("li");
+        pad.className = "behaviorPad";
+
+        let icon = document.createElement("img") as HTMLImageElement;
+        let label = document.createElement("p");
+        let exitButton = document.createElement("img") as HTMLImageElement;
+
+        icon.className = "behaviorPad_icon";
+        icon.src = src;
+        label.className = "behaviorPad_label";
+
+        label.id = "padLabel_" + this.amountOfPads;
+        label.innerHTML = text;
+
+        exitButton.className = "behaviorPad_exitButton";
+        exitButton.src = "textures/Editor/cross.ico"
+        let deleteDiv = () => { this.deleteBehaviorPad(exitButton) }
+        exitButton.onclick = deleteDiv;
+
+        pad.draggable = true;
+        icon.draggable = false;
+        label.draggable = false;
+        exitButton.draggable = false;
+        pad.appendChild(icon);
+        pad.appendChild(label);
+        pad.appendChild(exitButton);
+
+        pad.addEventListener(`dragover`, (evt) => {
+            evt.preventDefault();
+        });
+
+        //let palette = document.getElementById("palette6");
+
+        document.getElementById("mainListPads").append(pad)
+        //palette.appendChild(pad);
+        this.amountOfPads += 1;
+
+        return pad;
+    }
+
+    private deleteBehaviorPad(exitButton: HTMLImageElement) {
+        exitButton.parentElement.remove()
+    }
+
+    private createEntityButton(entityType: string, type: string) {        
         let button = document.createElement("img");
         if (entityType == "Soldier") {
             let applyEntity = () => {
@@ -72,41 +121,59 @@ export class Editor {
         palette.appendChild(button);
     }
 
-    private createToolButton(toolType : ToolType, type : string) {
+    private createToolButton(toolType: ToolType, type: string) {        
         let button = document.createElement("img");
         button.className = "toolButton";
-        switch(toolType) {
+        let src = "";
+        switch (toolType) {
             case ToolType.GoToPoint: {
-                button.src = "textures/Editor/arrow.png";
+                src = "textures/Editor/arrow.png";
                 break;
             }
             case ToolType.Waiting: {
-                button.src = "textures/Edito/waiting.png";
+                src = "textures/Editor/waiting.png";
                 break;
             }
             case ToolType.Pursuit: {
-                button.src = "textures/Editor/pursuit.png";
+                src = "textures/Editor/pursuit.png";
                 break;
             }
         }
+        button.src = src;
         let palette = document.getElementById("palette" + type);
         palette.appendChild(button);
-        let applyTool = () => { this.cursor.mode = Mode.Selector;
+        let applyTool = () => {
+            this.cursor.mode = Mode.Selector;
+            console.log(this.cursor.selectedEntity);
+            
             if (this.cursor.selectedEntity != null) {
                 if (this.cursor.selectedEntity instanceof Person) {
+                    if (this.cursor.selectedEntity.behaviorModel == undefined) {
+                        this.cursor.selectedEntity.behaviorModel = new BehaviorModel(null);
+                    }
                     let behaviorModel = this.cursor.selectedEntity.behaviorModel;
+                    console.log(behaviorModel);
+                    
                     this.cursor.compileBehaviorModel(behaviorModel);
-                    switch(toolType) {
+                    let instructionType = "default";
+                    if (behaviorModel.instructions[instructionType] == undefined) {
+                        behaviorModel.instructions[instructionType] = new Instruction();
+                    }
+                    switch (toolType) {
                         case ToolType.GoToPoint: {
-                            behaviorModel.instructions["default"].addGoingToPoint(new geom.Vector(0, 0));
+                            console.log("well");
+                            behaviorModel.instructions[instructionType].addGoingToPoint(new geom.Vector(0, 0));
+                            let pad = this.createBehaviorPad(src, "Going to (0, 0)");
                             break;
                         }
                         case ToolType.Waiting: {
-                            behaviorModel.instructions["default"].addWaiting(1000);
+                            behaviorModel.instructions[instructionType].addWaiting(1000);
+                            let pad = this.createBehaviorPad(src, "Waiting (1000)");
                             break;
                         }
                         case ToolType.Pursuit: {
-                            behaviorModel.instructions["default"].addPursuit();
+                            behaviorModel.instructions[instructionType].addPursuit();
+                            let pad = this.createBehaviorPad(src, "Pursuit");
                             break;
                         }
                     }
@@ -148,14 +215,17 @@ export class Editor {
         document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-        document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-        document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+
+        document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+        document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+        document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 40 + "px";
 
         document.getElementById("palette")["style"].top = "10px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+        document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
 
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
@@ -165,10 +235,43 @@ export class Editor {
 
         /*console.log(window.innerHeight)
         console.log(window.outerHeight)*/
+
+        const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
+        listOfPads.addEventListener('dragstart', (evt) => {
+            let x = evt.target as HTMLObjectElement;
+            x.classList.add('selected')
+        });
+
+        listOfPads.addEventListener('dragend', (evt) => {
+            let x = evt.target as HTMLObjectElement;
+            x.classList.remove('selected')
+        });
+
+        listOfPads.addEventListener(`dragover`, (evt) => {
+            evt.preventDefault();
+            const activeElement = listOfPads.querySelector(`.selected`);
+            const currentElement = evt.target as HTMLObjectElement;
+            const isMoveable = activeElement !== currentElement &&
+                currentElement.classList.contains(`behaviorPad`);
+
+            if (!isMoveable) {
+                return;
+            }
+
+            const nextElement = (currentElement === activeElement.nextElementSibling) ?
+                currentElement.nextElementSibling :
+                currentElement;
+
+            listOfPads.insertBefore(activeElement, nextElement);
+        });
+
     }
 
     private isInCanvas(mouseCoords: geom.Vector): boolean {
-        if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x && mouseCoords.x <= document.getElementById("gameCanvas")["height"] && document.getElementById("gameCanvas").clientTop <= mouseCoords.y && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
+        if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x
+            && mouseCoords.x <= document.getElementById("gameCanvas")["height"]
+            && document.getElementById("gameCanvas").clientTop <= mouseCoords.y
+            && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
             return true;
         }
         return false;
@@ -208,10 +311,10 @@ export class Editor {
     public display() {
         this.level.display(this.draw, true);
         console.log(this.level.Entities.length);
-        
+
         for (let i = 0; i < this.level.Entities.length; i++) {
             this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),
-             this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0);
+                this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0);
         }
         this.cursor.display();
     }

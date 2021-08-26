@@ -2026,7 +2026,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -2034,6 +2034,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         function Editor() {
             this.level = new Level_2.Level(new geom.Vector(10, 10));
             this.cursor = new Cursor_1.Cursor(this.level);
+            this.amountOfPads = 0;
             this.mousePrev = Control_4.Control.mousePos();
             this.initHTML();
         }
@@ -2049,6 +2050,40 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 _this.cursor.tile = new Tile_6.Tile(collision, button);
             };
             button.onclick = applyTile;
+        };
+        Editor.prototype.createBehaviorPad = function (src, text) {
+            var _this = this;
+            console.log("im here!!!!!!!");
+            var pad = document.createElement("li");
+            pad.className = "behaviorPad";
+            var icon = document.createElement("img");
+            var label = document.createElement("p");
+            var exitButton = document.createElement("img");
+            icon.className = "behaviorPad_icon";
+            icon.src = src;
+            label.className = "behaviorPad_label";
+            label.id = "padLabel_" + this.amountOfPads;
+            label.innerHTML = text;
+            exitButton.className = "behaviorPad_exitButton";
+            exitButton.src = "textures/Editor/cross.ico";
+            var deleteDiv = function () { _this.deleteBehaviorPad(exitButton); };
+            exitButton.onclick = deleteDiv;
+            pad.draggable = true;
+            icon.draggable = false;
+            label.draggable = false;
+            exitButton.draggable = false;
+            pad.appendChild(icon);
+            pad.appendChild(label);
+            pad.appendChild(exitButton);
+            pad.addEventListener("dragover", function (evt) {
+                evt.preventDefault();
+            });
+            document.getElementById("mainListPads").append(pad);
+            this.amountOfPads += 1;
+            return pad;
+        };
+        Editor.prototype.deleteBehaviorPad = function (exitButton) {
+            exitButton.parentElement.remove();
         };
         Editor.prototype.createEntityButton = function (entityType, type) {
             var _this = this;
@@ -2089,39 +2124,54 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var _this = this;
             var button = document.createElement("img");
             button.className = "toolButton";
+            var src = "";
             switch (toolType) {
                 case Cursor_1.ToolType.GoToPoint: {
-                    button.src = "textures/Editor/arrow.png";
+                    src = "textures/Editor/arrow.png";
                     break;
                 }
                 case Cursor_1.ToolType.Waiting: {
-                    button.src = "textures/Edito/waiting.png";
+                    src = "textures/Editor/waiting.png";
                     break;
                 }
                 case Cursor_1.ToolType.Pursuit: {
-                    button.src = "textures/Editor/pursuit.png";
+                    src = "textures/Editor/pursuit.png";
                     break;
                 }
             }
+            button.src = src;
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTool = function () {
                 _this.cursor.mode = Cursor_1.Mode.Selector;
+                console.log(_this.cursor.selectedEntity);
                 if (_this.cursor.selectedEntity != null) {
                     if (_this.cursor.selectedEntity instanceof Person_7.Person) {
+                        if (_this.cursor.selectedEntity.behaviorModel == undefined) {
+                            _this.cursor.selectedEntity.behaviorModel = new BehaviorModel_2.BehaviorModel(null);
+                        }
                         var behaviorModel = _this.cursor.selectedEntity.behaviorModel;
+                        console.log(behaviorModel);
                         _this.cursor.compileBehaviorModel(behaviorModel);
+                        var instructionType = "default";
+                        if (behaviorModel.instructions[instructionType] == undefined) {
+                            behaviorModel.instructions[instructionType] = new BehaviorModel_2.Instruction();
+                        }
                         switch (toolType) {
                             case Cursor_1.ToolType.GoToPoint: {
-                                behaviorModel.instructions["default"].addGoingToPoint(new geom.Vector(0, 0));
+                                console.log("well");
+                                behaviorModel.instructions[instructionType].addGoingToPoint(new geom.Vector(0, 0));
+                                var pad = _this.createBehaviorPad(src, "Going to (0, 0)");
                                 break;
                             }
                             case Cursor_1.ToolType.Waiting: {
-                                behaviorModel.instructions["default"].addWaiting(1000);
+                                behaviorModel.instructions[instructionType].addWaiting(1000);
+                                var pad = _this.createBehaviorPad(src, "Waiting (1000)");
                                 break;
                             }
                             case Cursor_1.ToolType.Pursuit: {
-                                behaviorModel.instructions["default"].addPursuit();
+                                behaviorModel.instructions[instructionType].addPursuit();
+                                var pad = _this.createBehaviorPad(src, "Pursuit");
                                 break;
                             }
                         }
@@ -2152,20 +2202,48 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+            document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 14 + "px";
+            document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette")["style"].top = "10px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("preview")["style"].top = "0px";
             document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             document.getElementById("generate")["style"].top = "62px";
             document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+            var listOfPads = document.querySelector(".listOfPads");
+            listOfPads.addEventListener('dragstart', function (evt) {
+                var x = evt.target;
+                x.classList.add('selected');
+            });
+            listOfPads.addEventListener('dragend', function (evt) {
+                var x = evt.target;
+                x.classList.remove('selected');
+            });
+            listOfPads.addEventListener("dragover", function (evt) {
+                evt.preventDefault();
+                var activeElement = listOfPads.querySelector(".selected");
+                var currentElement = evt.target;
+                var isMoveable = activeElement !== currentElement &&
+                    currentElement.classList.contains("behaviorPad");
+                if (!isMoveable) {
+                    return;
+                }
+                var nextElement = (currentElement === activeElement.nextElementSibling) ?
+                    currentElement.nextElementSibling :
+                    currentElement;
+                listOfPads.insertBefore(activeElement, nextElement);
+            });
         };
         Editor.prototype.isInCanvas = function (mouseCoords) {
-            if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x && mouseCoords.x <= document.getElementById("gameCanvas")["height"] && document.getElementById("gameCanvas").clientTop <= mouseCoords.y && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
+            if (document.getElementById("gameCanvas").clientLeft <= mouseCoords.x
+                && mouseCoords.x <= document.getElementById("gameCanvas")["height"]
+                && document.getElementById("gameCanvas").clientTop <= mouseCoords.y
+                && mouseCoords.y <= document.getElementById("gameCanvas")["width"]) {
                 return true;
             }
             return false;
@@ -2204,7 +2282,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_12, Game_4, Editor_1, BehaviorModel_2) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_12, Game_4, Editor_1, BehaviorModel_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
@@ -2216,7 +2294,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var game = new Game_4.Game(draw);
     game.makeScientist(new geom.Vector(1, 1));
     var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-    soldier.behaviorModel.instructions["test"] = new BehaviorModel_2.Instruction();
+    soldier.behaviorModel.instructions["test"] = new BehaviorModel_3.Instruction();
     soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
     soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
     soldier.behaviorModel.changeCurrentInstruction("test");
