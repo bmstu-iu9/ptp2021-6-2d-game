@@ -2296,7 +2296,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_12.Draw(canvas);
-    draw.cam.scale = 0.4;
+    draw.cam.scale = 50;
     Game_4.Game.levels = new Map();
     Game_4.Game.loadMap("map.json", "map");
     var game = new Game_4.Game(draw);

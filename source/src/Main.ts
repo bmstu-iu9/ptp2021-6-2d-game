@@ -11,7 +11,7 @@ aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-gam
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas);
-draw.cam.scale = 0.4;
+draw.cam.scale = 50;
 Game.levels = new Map();
 Game.loadMap("map.json", "map");
 
