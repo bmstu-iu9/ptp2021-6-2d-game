@@ -5,6 +5,7 @@ import { PathGenerator } from "./Editor/PathGenerator";
 import { replacer } from "./AuxLib";
 import * as aux from "./AuxLib";
 import { Queue } from "./Queue";
+import { Random } from "./Random";
 
 // Так выглядел старый класс, я на всякий оставил, но не думаю, что он сейчас нужен
 export class LevelJSON {
@@ -136,12 +137,17 @@ export class Level {
                 draw.fillRect(
                     new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), 
                     new geom.Vector(1*this.tileSize, 1*this.tileSize), 
-                    new Color(0, 0, 0, 1 - this.Grid[i][j].light / 10));
+                    // Эти рандомные числа создают красивое мерцание
+                    new Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 -j * 3098 + aux.getMilliCount()))));
         }
     }
 
     // Построение освещения 
     public generateLighting() {
+        // Очищаем освещение
+        for(let i = 0; i < this.Grid.length; i++)
+            for (let j = 0; j < this.Grid[i].length; j++)
+                this.Grid[i][j].light = 0;
         // Очередь для bfs
         let queue = new Queue();
         // Стороны, в которые распространяется свет
@@ -167,7 +173,7 @@ export class Level {
                 // Позиция, в которую идём
                 let posNext = pos.add(dir);
                 if (!this.isCellInBounds(posNext) || // За пределами карты
-                    this.getTile(posNext).colision || // Стена
+                    this.getTile(pos).colision && !this.getTile(posNext).colision || // Из стены в проход
                     this.getTile(posNext).light > this.getTile(pos).light - decay) // Мы не осветим больше, чем оно есть
                     continue;
                 // Освещаем

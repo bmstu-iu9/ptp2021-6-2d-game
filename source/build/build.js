@@ -668,6 +668,49 @@ define("Queue", ["require", "exports"], function (require, exports) {
     }());
     exports.Queue = Queue;
 });
+define("Random", ["require", "exports", "Geom"], function (require, exports, geom) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Random = void 0;
+    var Random = (function () {
+        function Random() {
+        }
+        Random.randomInt = function (a, b) {
+            var _a;
+            if (a > b) {
+                _a = [b, a], a = _a[0], b = _a[1];
+            }
+            a = Math.ceil(a);
+            b = Math.floor(b);
+            return Math.floor(Math.random() * (b - a + 1)) + a;
+        };
+        Random.randomFloat = function (a, b) {
+            var _a;
+            if (a < b) {
+                _a = [b, a], a = _a[0], b = _a[1];
+            }
+            return Math.random() * (b - a) + a;
+        };
+        Random.randomVector = function (a, b) {
+            var x = 0;
+            var y = 0;
+            x = Random.randomFloat(a.x, b.x);
+            y = Random.randomFloat(a.y, b.y);
+            return new geom.Vector(x, y);
+        };
+        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
+            var gamma = 0;
+            var y = 0;
+            gamma = Random.randomFloat(alpha, beta);
+            y = Math.abs(Random.randomFloat(lenMin, lenMax));
+            var e = geom.vectorFromAngle(gamma);
+            e = e.mul(y);
+            return e;
+        };
+        return Random;
+    }());
+    exports.Random = Random;
+});
 define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "AuxLib", "AuxLib", "Queue"], function (require, exports, Tile_3, geom, Draw_3, PathGenerator_1, AuxLib_1, aux, Queue_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -770,10 +813,13 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         Level.prototype.displayLighting = function (draw) {
             for (var i = 0; i < this.Grid.length; i++) {
                 for (var j = 0; j < this.Grid[i].length; j++)
-                    draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_3.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10));
+                    draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_3.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 - j * 3098 + aux.getMilliCount()))));
             }
         };
         Level.prototype.generateLighting = function () {
+            for (var i = 0; i < this.Grid.length; i++)
+                for (var j = 0; j < this.Grid[i].length; j++)
+                    this.Grid[i][j].light = 0;
             var queue = new Queue_1.Queue();
             var dirs = [
                 new geom.Vector(0, 1),
@@ -793,7 +839,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     var dir = dirs_1[_b];
                     var posNext = pos.add(dir);
                     if (!this.isCellInBounds(posNext) ||
-                        this.getTile(posNext).colision ||
+                        this.getTile(pos).colision && !this.getTile(posNext).colision ||
                         this.getTile(posNext).light > this.getTile(pos).light - decay)
                         continue;
                     this.getTile(posNext).light = this.getTile(pos).light - decay;
@@ -2035,7 +2081,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_11, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Random = exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
+    exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
     function setEnvironment(env) {
         exports.environment = env;
     }
@@ -2085,44 +2131,6 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
         return value;
     }
     exports.reviver = reviver;
-    var Random = (function () {
-        function Random() {
-        }
-        Random.randomInt = function (a, b) {
-            var _a;
-            if (a > b) {
-                _a = [b, a], a = _a[0], b = _a[1];
-            }
-            a = Math.ceil(a);
-            b = Math.floor(b);
-            return Math.floor(Math.random() * (b - a + 1)) + a;
-        };
-        Random.randomFloat = function (a, b) {
-            var _a;
-            if (a > b) {
-                _a = [b, a], a = _a[0], b = _a[1];
-            }
-            return Math.random() * (b - a + 1) + a;
-        };
-        Random.randomVector = function (a, b) {
-            var x = 0;
-            var y = 0;
-            x = Random.randomFloat(a.x, b.x);
-            y = Random.randomFloat(a.y, b.y);
-            return new geom.Vector(x, y);
-        };
-        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
-            var gamma = 0;
-            var y = 0;
-            gamma = Random.randomFloat(alpha, beta);
-            y = Math.abs(Random.randomFloat(lenMin, lenMax));
-            var e = geom.vectorFromAngle(gamma);
-            e = e.mul(y);
-            return e;
-        };
-        return Random;
-    }());
-    exports.Random = Random;
 });
 define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_12, geom, Tile_5) {
     "use strict";
