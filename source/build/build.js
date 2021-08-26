@@ -1787,12 +1787,13 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             posNew = posNew.add(this.cam.pos);
             return posNew;
         };
-        Draw.prototype.drawimage = function (image, pos, box, angle) {
+        Draw.prototype.drawimage = function (image, pos, box, angle, transparency) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale * 1.01);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.imageSmoothingEnabled = false;
             if (angle % (2 * Math.PI) == 0) {
+                this.ctx.globalAlpha = transparency;
                 this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
             }
             else {
@@ -1804,15 +1805,17 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 bctx.translate(boxNew.x, boxNew.y);
                 bctx.rotate(angle);
                 bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+                this.ctx.globalAlpha = transparency;
                 this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
             }
         };
-        Draw.prototype.image = function (image, pos, box, angle, layer) {
+        Draw.prototype.image = function (image, pos, box, angle, layer, transparency) {
+            if (transparency === void 0) { transparency = 1; }
             if (layer == 0) {
-                this.drawimage(image, pos, box, angle);
+                this.drawimage(image, pos, box, angle, transparency);
             }
             else {
-                var curqueue = { image: image, pos: pos, box: box, angle: angle, layer: layer };
+                var curqueue = { image: image, pos: pos, box: box, angle: angle, layer: layer, transparency: transparency };
                 this.imagequeue.push(curqueue);
             }
         };
@@ -1831,7 +1834,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 });
                 for (; this.imagequeue.length > 0;) {
                     var temp = this.imagequeue.pop();
-                    this.drawimage(temp.image, temp.pos, temp.box, temp.angle);
+                    this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency);
                 }
             }
             for (; this.hpqueue.length > 0;) {
