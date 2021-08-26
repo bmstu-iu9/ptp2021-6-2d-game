@@ -15,8 +15,8 @@ import { Soldier } from "./Entities/Soldier";
 import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
-import { Biomass } from "./Entities/Biomass";
-import { Projectile } from "./Entities/Projectile";
+import { Biomass } from "./Entities/Projectiles/Biomass";
+import { Projectile } from "./Entities/Projectiles/Projectile";
 
 export class Game {
     public static levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -112,12 +112,8 @@ export class Game {
         for (let i = 0; i < this.entities.length; i++) {
             if (// У человека нулевое здоровье
                 this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0 ||
-                // Биомасса отработала
-                this.entities[i] instanceof Biomass && !(this.entities[i] as Biomass).alive ||
-                // Прожектайл ударился об стену
-                this.entities[i] instanceof Projectile && 
-                (this.entities[i] as Projectile).shouldBeKilledByWall && 
-                this.entities[i].body.getCollisionsNumber()
+                // Прожектайл отработал
+                this.entities[i] instanceof Projectile && !(this.entities[i] as Projectile).alive
                 ) {
                 this.entities.splice(i, 1);
                 i--;

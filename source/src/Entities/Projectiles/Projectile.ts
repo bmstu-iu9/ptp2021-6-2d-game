@@ -1,11 +1,14 @@
-import { Entity } from "./Entity";
-import * as geom from "./../Geom";
-import { Game } from "../Game";
-import { Body } from "./EntityAttributes/Body";
-import { SpriteAnimation } from "../SpriteAnimation";
-import { Draw, Layer } from "../Draw";
+import { Entity } from "../Entity";
+import * as geom from "../../Geom";
+import { Game } from "../../Game";
+import { Body } from "../EntityAttributes/Body";
+import { SpriteAnimation } from "../../SpriteAnimation";
+import { Draw, Layer } from "../../Draw";
 
 export class Projectile extends Entity {
+    public alive = true;
+    public velLimit = 1; // Скорость при которой мы считаем, что остановились
+    public baseEntity : Entity; // Тот, кто выпустил снаряд
     public vel = new geom.Vector();
     public viscousFriction = 0;
     public spriteAnimation : SpriteAnimation;
@@ -23,6 +26,10 @@ export class Projectile extends Entity {
         this.spriteAnimation.frameDuration = 0.1;
     }
     
+    public hasStopped() : boolean {
+        return this.vel.abs() < this.velLimit;
+    }
+
     public step() {
         this.body.move(this.vel.mul(Game.dt));
         this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game.dt));

@@ -2,8 +2,9 @@ import { Person } from "../Person";
 import { Game } from "../../Game";
 import { Body } from "./Body";
 import * as geom from "../../Geom";
-import { Projectile } from "../Projectile";
+import { Projectile } from "../Projectiles/Projectile";
 import { Random } from "../../Random";
+import { CombatProjectile } from "../Projectiles/CombatProjectile";
 
 
 export class Weapon {
@@ -18,6 +19,7 @@ export class Weapon {
     public projectileVel = 5; // Скорость снаряда
     public projectileAnimationName = "Flame";
     public projectileAnimationFrames = 3;
+    public range = 3; // Расстояние, на которое стреляет
     private isMagazineRecharging = false; // Если true, перезаряжается обойма
 
     constructor(owner: Person) {
@@ -36,10 +38,11 @@ export class Weapon {
         dir = geom.vectorFromAngle(dir.angle() + Random.randomFloat(-this.scatter, this.scatter));
         let body = new Body(this.owner.body.center, 0.4);
         body.game = this.owner.game;
-        let projectile = new Projectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
+        let projectile = new CombatProjectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
         projectile.entityID = this.owner.game.entities.length;
         projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
         projectile.shouldBeKilledByWall = true;
+        projectile.remainingTime = this.range / this.projectileVel;
         this.owner.game.entities.push(projectile);
         console.log(projectile);
     }
