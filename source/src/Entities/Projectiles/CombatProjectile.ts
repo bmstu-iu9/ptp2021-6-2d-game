@@ -11,10 +11,14 @@ import { Corpse } from "../Corpse";
 // Боевой прожектайл с уроном и временем жизни
 export class CombatProjectile extends Projectile {
     public damage = 1; // Урон
-    public remainingTime = 0; // Сколько ещё жить
+    private remainingTime = 0; // Сколько ещё жить
+    private lifetime = 0; // Сколько всего приказано жить
     constructor(game : Game, body : Body, vel : geom.Vector) {
         super(game, body, vel);
         this.loadSpriteAnimation("Flame", 3);
+    }
+    public setLifetime(lifetime : number) {
+        this.lifetime = this.remainingTime = lifetime;
     }
     public step() {
         // Время уходит
@@ -27,5 +31,13 @@ export class CombatProjectile extends Projectile {
             this.alive = false;
         // TODO: нанесение урона
         super.step();
+    }
+    public display(draw : Draw) {
+        draw.image(
+            this.spriteAnimation.getCurrentFrame(), 
+            this.body.center, 
+            new geom.Vector(this.body.radius, this.body.radius), 
+            0, Layer.EntityLayer,
+            0.5 * this.remainingTime / this.lifetime);
     }
 }

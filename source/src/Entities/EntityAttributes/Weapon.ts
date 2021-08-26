@@ -42,7 +42,7 @@ export class Weapon {
         projectile.entityID = this.owner.game.entities.length;
         projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
         projectile.shouldBeKilledByWall = true;
-        projectile.remainingTime = this.range / this.projectileVel;
+        projectile.setLifetime(this.range / this.projectileVel);
         this.owner.game.entities.push(projectile);
         console.log(projectile);
     }
