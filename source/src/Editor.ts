@@ -225,6 +225,8 @@ export class Editor {
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
 
+        //document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+
         document.getElementById("preview")["style"].top = "0px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
 
