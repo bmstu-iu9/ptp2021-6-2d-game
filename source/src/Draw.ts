@@ -120,6 +120,8 @@ export class Draw {
             this.ctx.globalAlpha = transparency;
             this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
         }
+        // Восстанавливаем прозрачность
+        this.ctx.globalAlpha = 1;
     }
     // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer, transparency = 1) {
