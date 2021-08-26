@@ -2114,9 +2114,8 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
         };
         ListOfPads.clear = function () {
             var listOfPads = document.querySelector(".listOfPads");
-            var children = listOfPads.children;
-            for (var i = 0; i < children.length; i++) {
-                children[i].remove();
+            while (listOfPads.children.length != 0) {
+                listOfPads.children[0].remove();
             }
         };
         ListOfPads.createBehaviorPad = function (src, text) {
@@ -2165,12 +2164,14 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
                 switch (instruction.operations[i]) {
                     case BehaviorModel_3.Operations.goToPoint: {
                         src = "textures/Editor/arrow.png";
-                        this.createBehaviorPad(src, "Going to " + new String(instruction.operationsData[i]));
+                        this.createBehaviorPad(src, "Going to ("
+                            + new String(instruction.operationsData[i].x) + ","
+                            + new String(instruction.operationsData[i].y) + ")");
                         break;
                     }
                     case BehaviorModel_3.Operations.wait: {
                         src = "textures/Editor/waiting.png";
-                        this.createBehaviorPad(src, "Waiting " + new String(instruction.operationsData[i]));
+                        this.createBehaviorPad(src, "Waiting (" + new String(instruction.operationsData[i]) + ")");
                         break;
                     }
                     case BehaviorModel_3.Operations.pursuit: {

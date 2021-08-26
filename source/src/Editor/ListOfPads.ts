@@ -62,9 +62,8 @@ export class ListOfPads {
 
     public static clear() {
         const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
-        let children = listOfPads.children;
-        for (let i = 0; i < children.length; i++) {
-            children[i].remove();
+        while (listOfPads.children.length != 0) {
+            listOfPads.children[0].remove();
         }
     }
 
@@ -125,12 +124,14 @@ export class ListOfPads {
             switch (instruction.operations[i]) {
                 case Operations.goToPoint: {
                     src = "textures/Editor/arrow.png";
-                    this.createBehaviorPad(src, "Going to " + new String(instruction.operationsData[i]));
+                    this.createBehaviorPad(src, "Going to ("
+                    + new String(instruction.operationsData[i].x) + ","
+                    + new String(instruction.operationsData[i].y) + ")");
                     break;
                 }
                 case Operations.wait: {
                     src = "textures/Editor/waiting.png";
-                    this.createBehaviorPad(src, "Waiting " + new String(instruction.operationsData[i]));
+                    this.createBehaviorPad(src, "Waiting (" + new String(instruction.operationsData[i]) + ")");
                     break;
                 }
                 case Operations.pursuit: {
