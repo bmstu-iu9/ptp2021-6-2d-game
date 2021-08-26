@@ -7,7 +7,7 @@ import { Control, Keys } from "./Control";
 import { Draw, Color } from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
-import { Level } from "./Level";
+import { Level, LightSource } from "./Level";
 import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
 import { Scientist } from "./Entities/Scientist";
@@ -44,6 +44,11 @@ export class Game {
                 let level = new Level();
                 level.createFromPrototype(prototype);
                 this.levels[name] = level;
+
+                // Создаём освещение
+                level.lightSources.push(new LightSource(new geom.Vector(2, 2), 10));
+                level.lightSources.push(new LightSource(new geom.Vector(6, 1), 10));
+                level.generateLighting();
             });
     }
 
@@ -186,6 +191,9 @@ export class Game {
 
         // Мимик
         this.mimic.display(this.draw);
+
+        // Освещение
+        this.currentLevel.displayLighting(this.draw);
 
         // Анимации
         this.draw.step();

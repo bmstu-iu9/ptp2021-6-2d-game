@@ -13,6 +13,7 @@ export enum CollisionType {
 export class Tile {
     public colision = CollisionType.Empty;
     public image : HTMLImageElement;
+    public light = 0;
     
     constructor(colision : CollisionType = 0, image : HTMLImageElement = null) {
         this.colision = colision;
