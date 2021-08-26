@@ -26,9 +26,10 @@ export class Projectile extends Entity {
     public step() {
         this.body.move(this.vel.mul(Game.dt));
         this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game.dt));
+        this.spriteAnimation.step();
     }
 
     public display(draw : Draw) {
-        draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Layer.EntityLayer);
+        draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(this.body.radius, this.body.radius), 0, Layer.EntityLayer);
     }
 }

@@ -19,10 +19,6 @@ export class Biomass extends Projectile {
         this.vel = this.vel.mul(this.viscousFriction);
         this.loadSpriteAnimation("Biomass", 3);
     }
-    public step() {
-        super.step();
-        this.spriteAnimation.step();
-    }
     public hasStopped() : boolean {
         return this.vel.abs() < this.velLimit;
     }

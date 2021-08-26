@@ -1221,9 +1221,10 @@ define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", 
         Projectile.prototype.step = function () {
             this.body.move(this.vel.mul(Game_2.Game.dt));
             this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_2.Game.dt));
+            this.spriteAnimation.step();
         };
         Projectile.prototype.display = function (draw) {
-            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_7.Layer.EntityLayer);
+            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(this.body.radius, this.body.radius), 0, Draw_7.Layer.EntityLayer);
         };
         return Projectile;
     }(Entity_3.Entity));
@@ -1244,10 +1245,6 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
             _this.loadSpriteAnimation("Biomass", 3);
             return _this;
         }
-        Biomass.prototype.step = function () {
-            _super.prototype.step.call(this);
-            this.spriteAnimation.step();
-        };
         Biomass.prototype.hasStopped = function () {
             return this.vel.abs() < this.velLimit;
         };
@@ -1466,27 +1463,28 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
     exports.Weapon = void 0;
     var Weapon = (function () {
         function Weapon(owner) {
-            this.clipCapacity = 50;
-            this.clipCooldown = 5;
-            this.cooldown = 0.1;
-            this.projectilesInClip = this.clipCapacity;
+            this.magazineCapacity = 50;
+            this.magazineCooldown = 2;
+            this.projectilesInMagazine = this.magazineCapacity;
+            this.cooldown = 0.02;
             this.timeToCooldown = 0;
-            this.scatter = 0;
-            this.projectileVel = 10;
+            this.scatter = 0.2;
+            this.projectilesInOneShot = 5;
+            this.projectileVel = 5;
             this.projectileAnimationName = "Flame";
             this.projectileAnimationFrames = 3;
-            this.isClipRecharging = false;
+            this.isMagazineRecharging = false;
             this.owner = owner;
         }
         Weapon.prototype.rechargeClip = function () {
-            this.timeToCooldown = this.clipCooldown;
-            this.isClipRecharging = true;
+            this.timeToCooldown = this.magazineCooldown;
+            this.isMagazineRecharging = true;
         };
         Weapon.prototype.createProjectile = function (dir) {
             console.log("shoot");
             dir = dir.norm();
             dir = geom.vectorFromAngle(dir.angle() + Random_1.Random.randomFloat(-this.scatter, this.scatter));
-            var body = new Body_1.Body(this.owner.body.center, 1);
+            var body = new Body_1.Body(this.owner.body.center, 0.4);
             body.game = this.owner.game;
             var projectile = new Projectile_2.Projectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
             projectile.entityID = this.owner.game.entities.length;
@@ -1496,20 +1494,27 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             console.log(projectile);
         };
         Weapon.prototype.shoot = function (dir) {
-            if (this.projectilesInClip <= 0) {
+            if (this.isMagazineRecharging)
+                return;
+            if (this.projectilesInMagazine <= 0) {
                 this.rechargeClip();
                 return;
             }
             if (this.timeToCooldown > 0)
                 return;
-            this.createProjectile(dir);
+            for (var i = 0; i < this.projectilesInOneShot; i++)
+                this.createProjectile(dir);
+            this.projectilesInMagazine--;
             this.timeToCooldown = this.cooldown;
+            if (this.projectilesInMagazine <= 0)
+                this.rechargeClip();
         };
         Weapon.prototype.step = function () {
             this.timeToCooldown -= Game_4.Game.dt;
-            if (this.timeToCooldown <= 0 && this.isClipRecharging) {
-                this.isClipRecharging = false;
-                this.projectilesInClip = this.clipCapacity;
+            if (this.timeToCooldown <= 0 && this.isMagazineRecharging) {
+                console.log("a");
+                this.isMagazineRecharging = false;
+                this.projectilesInMagazine = this.magazineCapacity;
             }
         };
         return Weapon;
