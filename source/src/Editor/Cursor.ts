@@ -106,6 +106,7 @@ export class Cursor {
     }
 
     public display() {
+        this.drawPreview.attachToCanvas();
         // Preview
         this.drawPreview.clear();
         switch (this.mode) {

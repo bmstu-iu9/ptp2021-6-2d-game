@@ -1679,7 +1679,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 size.y = canvas.height;
             }
             this.ctx = canvas.getContext("2d");
-            this.cam.scale = 50;
+            this.cam.scale = 1;
             this.cam.pos = new geom.Vector();
             this.cam.center = size.mul(1 / 2);
         }
@@ -1729,6 +1729,10 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             this.cam.center = size.mul(1 / 2);
             this.canvas.width = size.x;
             this.canvas.height = size.y;
+        };
+        Draw.prototype.attachToCanvas = function () {
+            this.cam.pos = this.cam.center;
+            this.cam.scale = 1;
         };
         Draw.prototype.image = function (image, pos, box, angle, layer) {
             if (layer == 0) {
@@ -2013,6 +2017,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             }
         };
         Cursor.prototype.display = function () {
+            this.drawPreview.attachToCanvas();
             this.drawPreview.clear();
             switch (this.mode) {
                 case Mode.Wall: {

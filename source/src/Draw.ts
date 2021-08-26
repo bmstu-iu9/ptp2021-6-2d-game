@@ -65,7 +65,7 @@ export class Draw {
             size.y = canvas.height;
         }
         this.ctx = canvas.getContext("2d");
-        this.cam.scale = 50;
+        this.cam.scale = 1;
         this.cam.pos = new geom.Vector();
         this.cam.center = size.mul(1 / 2);
     }
@@ -118,6 +118,11 @@ export class Draw {
         this.cam.center = size.mul(1/ 2);
         this.canvas.width = size.x;
         this.canvas.height = size.y;
+    }
+    // Натягивание на канвас
+    public attachToCanvas() {
+        this.cam.pos = this.cam.center;
+        this.cam.scale = 1;
     }
     // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer) {
