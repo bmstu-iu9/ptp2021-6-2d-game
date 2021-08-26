@@ -52,7 +52,7 @@ var __extends = (this && this.__extends) || (function () {
 define("Geom", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.dist = exports.Vector = exports.eps = void 0;
+    exports.vectorFromAngle = exports.dist = exports.Vector = exports.eps = void 0;
     exports.eps = 1e-4;
     var Vector = (function () {
         function Vector(x, y) {
@@ -108,6 +108,10 @@ define("Geom", ["require", "exports"], function (require, exports) {
         return a.sub(b).abs();
     }
     exports.dist = dist;
+    function vectorFromAngle(angle) {
+        return new Vector(Math.sin(angle), Math.cos(angle));
+    }
+    exports.vectorFromAngle = vectorFromAngle;
 });
 define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], function (require, exports, Geom_1) {
     "use strict";
@@ -2031,7 +2035,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_11, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
+    exports.Random = exports.reviver = exports.replacer = exports.getMilliCount = exports.setEnvironment = exports.environment = void 0;
     function setEnvironment(env) {
         exports.environment = env;
     }
@@ -2081,6 +2085,44 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
         return value;
     }
     exports.reviver = reviver;
+    var Random = (function () {
+        function Random() {
+        }
+        Random.randomInt = function (a, b) {
+            var _a;
+            if (a > b) {
+                _a = [b, a], a = _a[0], b = _a[1];
+            }
+            a = Math.ceil(a);
+            b = Math.floor(b);
+            return Math.floor(Math.random() * (b - a + 1)) + a;
+        };
+        Random.randomFloat = function (a, b) {
+            var _a;
+            if (a > b) {
+                _a = [b, a], a = _a[0], b = _a[1];
+            }
+            return Math.random() * (b - a + 1) + a;
+        };
+        Random.randomVector = function (a, b) {
+            var x = 0;
+            var y = 0;
+            x = Random.randomFloat(a.x, b.x);
+            y = Random.randomFloat(a.y, b.y);
+            return new geom.Vector(x, y);
+        };
+        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
+            var gamma = 0;
+            var y = 0;
+            gamma = Random.randomFloat(alpha, beta);
+            y = Math.abs(Random.randomFloat(lenMin, lenMax));
+            var e = geom.vectorFromAngle(gamma);
+            e = e.mul(y);
+            return e;
+        };
+        return Random;
+    }());
+    exports.Random = Random;
 });
 define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Geom", "Tile"], function (require, exports, Control_3, Draw_12, geom, Tile_5) {
     "use strict";
