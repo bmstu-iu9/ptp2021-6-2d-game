@@ -1,4 +1,4 @@
-import { Draw } from "./Draw";
+import { Draw, Layer } from "./Draw";
 import { Game } from "./Game";
 import * as geom from "./Geom";
 
@@ -56,6 +56,6 @@ export class SpriteAnimation {
     public display(draw : Draw) {
         let state = this.getCurrentState();
         let frame = this.getCurrentFrame();
-        draw.image(frame, state.pos, state.box, state.angle,0);
+        draw.image(frame, state.pos, state.box, state.angle, Layer.EntityLayer);
     }
 };

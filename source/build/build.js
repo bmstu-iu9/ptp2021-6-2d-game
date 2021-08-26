@@ -1832,7 +1832,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
         SpriteAnimation.prototype.display = function (draw) {
             var state = this.getCurrentState();
             var frame = this.getCurrentFrame();
-            draw.image(frame, state.pos, state.box, state.angle, 0);
+            draw.image(frame, state.pos, state.box, state.angle, Draw_10.Layer.EntityLayer);
         };
         return SpriteAnimation;
     }());
