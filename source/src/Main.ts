@@ -9,6 +9,11 @@ import { Instruction } from "./BehaviorModel";
 aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
 //aux.setEnvironment("http://127.0.0.1:4500/server.py"); // Если локальный сервер
 
+// Флаг режима редактора уровней
+let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
+
+aux.setEditorMode(levelEditorMode);
+
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas);
 draw.cam.scale = 50;
@@ -27,9 +32,6 @@ game.mimic.takeControl(game.entities[0]);
 
 let x = false;
 let t = 0;
-
-// Флаг режима редактора уровней
-let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
 
 // В случае если режим игры
 function step() {

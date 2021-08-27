@@ -94,13 +94,16 @@ export class Cursor {
                         this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
                         if (this.selectedEntity instanceof Person) {
                             ListOfPads.compileBehaviorModel(this.selectedEntity.behaviorModel);
+                            ListOfPads.entityPos = this.selectedEntity.body.center;
                         }
                     }
                     break;
                 }
-                // case Mode.PosPicking: {
-                //     ListOfPads.
-                // }
+                case Mode.PosPicking: {
+                    let fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(),
+                    new Number(new Number(this.pos.y).toFixed(2)).valueOf());
+                    ListOfPads.choosePoint(fixedPos);
+                }
             }
         }
         if (!Control.isMouseLeftPressed()) {

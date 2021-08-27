@@ -14,6 +14,7 @@ import { Animation } from "./Entities/EntityAttributes/Animation";
 import { getMilliCount } from "./AuxLib";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { ListOfPads } from "./Editor/ListOfPads";
+import { EditorGUI } from "./Editor/EditorGUI";
 
 export class Editor {
     private mousePrev: geom.Vector;
@@ -205,6 +206,8 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                         }
                     }
                     let pad = ListOfPads.createBehaviorPad(src, toolType);
+                    console.log(behaviorModel);
+                    
                 }
             }
         }
@@ -348,12 +351,15 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
 
     public display() {
         this.level.display(this.draw, true);
-        console.log(this.level.Entities.length);
+        //console.log(this.level.Entities.length);
 
         this.cursor.display();
         for (let i = 0; i < this.level.Entities.length; i++) {
             this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),
                 this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
         }
+
+        //ListOfPads.GUIstep();
+        //EditorGUI.display(this.draw);
     }
 }
