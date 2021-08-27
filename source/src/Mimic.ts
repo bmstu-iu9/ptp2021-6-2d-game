@@ -7,8 +7,8 @@ import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { Draw, Layer } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
-import { Biomass } from "./Entities/Biomass";
-import { Projectile } from "./Entities/Projectile";
+import { Biomass } from "./Entities/Projectiles/Biomass";
+import { Projectile } from "./Entities/Projectiles/Projectile";
 
 export class Aim {
     public vel = 0;
@@ -93,6 +93,8 @@ export class Mimic {
 
     public step() {
         // Подменяем комманды дя Entity, если мы не делаем это каждый ход, команды восстанавливаются сами (см Entity.step)
+        Control.commands.commands["shoot"] = Control.isMouseRightPressed();
+        Control.commands.pointer = this.game.draw.transformBack(Control.mousePos()).sub(this.controlledEntity.body.center);
         this.controlledEntity.commands = Control.commands;
         // Наносим урон жертве        
         if ((this.controlledEntity instanceof Person) && !(this.controlledEntity instanceof Monster)) {

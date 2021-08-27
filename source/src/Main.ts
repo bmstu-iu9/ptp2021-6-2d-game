@@ -16,7 +16,7 @@ Game.levels = new Map();
 Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
-game.makeScientist(new geom.Vector(1, 1));
+game.makeSoldier(new geom.Vector(1, 1));
 let soldier = game.makeSoldier(new geom.Vector(2.5, 1));
 soldier.behaviorModel.instructions["test"] = new Instruction();
 soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
@@ -42,13 +42,6 @@ function step() {
             game.makeTrigger(100000000, game.entities[1]);
             console.log(Game.levels["map"].PathMatrix); 
             x = true;
-        }
-        if (t % 100 == 0) {
-            //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
-            for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
-                console.log(game.entities[1].myAI.Path[i]);
-                
-            }
         }
         draw.clear();
         game.step();
