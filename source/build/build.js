@@ -2045,11 +2045,13 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             label.className = "behaviorPad_label";
             pad.id = "pad_" + this.amountOfPads;
             label.id = "padLabel_" + this.amountOfPads;
+            additionalElement.className = "behaviorPad_additionalElement";
             switch (tool) {
                 case Cursor_1.ToolType.GoToPoint: {
                     label.innerHTML = "Go to ";
                     additionalElement.innerHTML = "(0, 0)";
                     var posPick = function () {
+                        console.log("clicked");
                         _this.cursor.mode = Cursor_1.Mode.PosPicking;
                         _this.currentPad = additionalElement.parentElement;
                     };
@@ -2424,13 +2426,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                                 behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType].addWaiting(1000);
                                 break;
                             }
-                            case Cursor_2.ToolType.Pursuit:
-                                {
-                                    behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType].addPursuit();
-                                    break;
-                                }
-                                var pad = ListOfPads_2.ListOfPads.createBehaviorPad(src, toolType);
+                            case Cursor_2.ToolType.Pursuit: {
+                                behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType].addPursuit();
+                                break;
+                            }
                         }
+                        var pad = ListOfPads_2.ListOfPads.createBehaviorPad(src, toolType);
                     }
                 }
             };

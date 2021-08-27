@@ -85,11 +85,16 @@ export class ListOfPads {
 
         pad.id = "pad_" + this.amountOfPads;
         label.id = "padLabel_" + this.amountOfPads;
+
+        additionalElement.className = "behaviorPad_additionalElement";
+        
         switch (tool) {
             case ToolType.GoToPoint: {
                 label.innerHTML = "Go to ";
                 additionalElement.innerHTML = "(0, 0)";
                 let posPick = () => {
+                    console.log("clicked");
+                    
                     this.cursor.mode = Mode.PosPicking;
                     this.currentPad = additionalElement.parentElement;
                 };

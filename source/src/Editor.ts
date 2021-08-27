@@ -203,8 +203,8 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                             behaviorModel.instructions[ListOfPads.instructionType].addPursuit();
                             break;
                         }
-                        let pad = ListOfPads.createBehaviorPad(src, toolType);
                     }
+                    let pad = ListOfPads.createBehaviorPad(src, toolType);
                 }
             }
         }

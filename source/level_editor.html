@@ -1,6 +1,7 @@
 <html>
 <style>
-    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .normalButton, .panicButton, .listOfPads {position: absolute}
+    .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6,
+     .normalButton, .panicButton, .listOfPads, .behaviorPad_additionalElement {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
@@ -8,7 +9,7 @@
     }
     .behaviorPad {
         height: 50px;
-        width: 210px;
+        width: 240px;
         /*border-radius: 5px;*/
         /*border: solid 1px black;*/
         text-align: center;
@@ -26,6 +27,10 @@
         display: inline-block;
         vertical-align: middle;
         
+    }
+    .behaviorPad_additionalElement {
+        display: inline-block;
+        vertical-align: middle;
     }
     .behaviorPad_exitButton {
         width: 32px;
@@ -99,7 +104,7 @@
    .layer6 {
         /*display: flex;*/
         overflow-y: scroll;
-        width: 220; /* Ширина блока */
+        width: 260; /* Ширина блока */
         padding: 2px; /* Поля вокруг текста */
         border: solid 1px black; /* Параметры рамки */
         right: 410px;
