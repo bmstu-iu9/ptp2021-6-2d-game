@@ -32,7 +32,7 @@ export class CombatProjectile extends Projectile {
             this.alive = false;
         // Нанесение урона
         for (let entity of this.game.entities) {
-            if (!(entity instanceof Person) || 
+            if (entity instanceof Projectile || 
                 entity == this.baseEntity ||
                 geom.dist(this.body.center, entity.body.center) > this.body.radius)
                 continue;
