@@ -350,10 +350,10 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         this.level.display(this.draw, true);
         console.log(this.level.Entities.length);
 
+        this.cursor.display();
         for (let i = 0; i < this.level.Entities.length; i++) {
             this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),
-                this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 0);
+                this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
         }
-        this.cursor.display();
     }
 }

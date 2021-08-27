@@ -1693,7 +1693,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             }
             this.ctx = canvas.getContext("2d");
             this.cam.scale = 1;
-            this.cam.pos = size.mul(1 / 2);
+            this.cam.pos = new geom.Vector();
             this.cam.center = size.mul(1 / 2);
         }
         Draw.loadImage = function (src) {
@@ -1718,6 +1718,15 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             posNew = posNew.mul(1 / this.cam.scale);
             posNew = posNew.add(this.cam.pos);
             return posNew;
+        };
+        Draw.prototype.resize = function (size) {
+            this.cam.center = size.mul(1 / 2);
+            this.canvas.width = size.x;
+            this.canvas.height = size.y;
+        };
+        Draw.prototype.attachToCanvas = function () {
+            this.cam.pos = this.cam.center;
+            this.cam.scale = 1;
         };
         Draw.prototype.drawimage = function (image, pos, box, angle, transparency) {
             var posNew = this.transform(pos);
@@ -1965,115 +1974,6 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
     }
     exports.reviver = reviver;
 });
-define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib"], function (require, exports, Control_3, Draw_10, Entity_3, Body_2, Monster_4, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Cursor = exports.Mode = exports.ToolType = void 0;
-    var ToolType;
-    (function (ToolType) {
-        ToolType[ToolType["GoToPoint"] = 0] = "GoToPoint";
-        ToolType[ToolType["Waiting"] = 1] = "Waiting";
-        ToolType[ToolType["Pursuit"] = 2] = "Pursuit";
-    })(ToolType = exports.ToolType || (exports.ToolType = {}));
-    var Mode;
-    (function (Mode) {
-        Mode[Mode["Eraser"] = 0] = "Eraser";
-        Mode[Mode["Wall"] = 1] = "Wall";
-        Mode[Mode["Entity"] = 2] = "Entity";
-        Mode[Mode["Selector"] = 3] = "Selector";
-        Mode[Mode["PosPicking"] = 4] = "PosPicking";
-    })(Mode = exports.Mode || (exports.Mode = {}));
-    var Cursor = (function () {
-        function Cursor(level, draw) {
-            if (level === void 0) { level = null; }
-            if (draw === void 0) { draw = null; }
-            this.pos = new geom.Vector();
-            this.gridPos = new geom.Vector();
-            this.mode = Mode.Wall;
-            this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
-            this.entity = new Entity_3.Entity(null, new Body_2.Body(new geom.Vector(0, 0), 1));
-            this.selectedEntity = null;
-            this.mouseLeftButtonClicked = true;
-            this.entityLocations = new Map();
-            this.level = level;
-            this.draw = draw;
-        }
-        Cursor.prototype.setBlock = function () {
-            console.log(this.tile);
-            this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
-            console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
-        };
-        Cursor.prototype.setEntity = function () {
-            var currentLocation = this.level.Entities.length;
-            if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
-                currentLocation = this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)];
-            }
-            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = currentLocation;
-            if (this.entity instanceof Soldier_3.Soldier) {
-                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
-                this.level.Entities[currentLocation] = new Soldier_3.Soldier(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
-            }
-            if (this.entity instanceof Scientist_3.Scientist) {
-                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
-                this.level.Entities[currentLocation] = new Scientist_3.Scientist(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
-            }
-            if (this.entity instanceof Monster_4.Monster) {
-                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
-                this.level.Entities[currentLocation] = new Monster_4.Monster(null, new Body_2.Body(pos, 1));
-            }
-        };
-        Cursor.prototype.step = function () {
-            this.pos = this.draw.transformBack(Control_3.Control.mousePos());
-            this.gridPos = this.level.gridCoordinates(this.pos);
-            if (Control_3.Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
-                switch (this.mode) {
-                    case Mode.Wall: {
-                        this.setBlock();
-                        break;
-                    }
-                    case Mode.Entity: {
-                        if (this.mouseLeftButtonClicked) {
-                            this.setEntity();
-                            this.mouseLeftButtonClicked = false;
-                        }
-                        break;
-                    }
-                    case Mode.Selector: {
-                        if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
-                            this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
-                        }
-                    }
-                    case Mode.PosPicking: {
-                    }
-                }
-            }
-            if (!Control_3.Control.isMouseLeftPressed()) {
-                this.mouseLeftButtonClicked = true;
-            }
-        };
-        Cursor.prototype.display = function () {
-            this.drawPreview.attachToCanvas();
-            this.drawPreview.clear();
-            switch (this.mode) {
-                case Mode.Wall: {
-                    this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
-                    if (this.tile.sub_image) {
-                        this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
-                    }
-                    break;
-                }
-                case Mode.Entity: {
-                    this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
-                    break;
-                }
-            }
-            if (this.level.isInBounds(this.pos))
-                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_10.Color(0, 255, 0), 0.1);
-        };
-        return Cursor;
-    }());
-    exports.Cursor = Cursor;
-});
 define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Cursor", "BehaviorModel", "AuxLib"], function (require, exports, BehaviorModel_2, Cursor_1, BehaviorModel_3, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -2232,7 +2132,118 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
     }());
     exports.ListOfPads = ListOfPads;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_2, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_4, ListOfPads_1) {
+define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib", "Editor/ListOfPads"], function (require, exports, Control_3, Draw_10, Entity_3, Body_2, Monster_4, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux, ListOfPads_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Cursor = exports.Mode = exports.ToolType = void 0;
+    var ToolType;
+    (function (ToolType) {
+        ToolType[ToolType["GoToPoint"] = 0] = "GoToPoint";
+        ToolType[ToolType["Waiting"] = 1] = "Waiting";
+        ToolType[ToolType["Pursuit"] = 2] = "Pursuit";
+    })(ToolType = exports.ToolType || (exports.ToolType = {}));
+    var Mode;
+    (function (Mode) {
+        Mode[Mode["Eraser"] = 0] = "Eraser";
+        Mode[Mode["Wall"] = 1] = "Wall";
+        Mode[Mode["Entity"] = 2] = "Entity";
+        Mode[Mode["Selector"] = 3] = "Selector";
+        Mode[Mode["PosPicking"] = 4] = "PosPicking";
+    })(Mode = exports.Mode || (exports.Mode = {}));
+    var Cursor = (function () {
+        function Cursor(level, draw) {
+            if (level === void 0) { level = null; }
+            if (draw === void 0) { draw = null; }
+            this.pos = new geom.Vector();
+            this.gridPos = new geom.Vector();
+            this.mode = Mode.Wall;
+            this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
+            this.entity = new Entity_3.Entity(null, new Body_2.Body(new geom.Vector(0, 0), 1));
+            this.selectedEntity = null;
+            this.mouseLeftButtonClicked = true;
+            this.entityLocations = new Map();
+            this.level = level;
+            this.draw = draw;
+        }
+        Cursor.prototype.setBlock = function () {
+            console.log(this.tile);
+            this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+            console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
+        };
+        Cursor.prototype.setEntity = function () {
+            var currentLocation = this.level.Entities.length;
+            if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                currentLocation = this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)];
+            }
+            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = currentLocation;
+            if (this.entity instanceof Soldier_3.Soldier) {
+                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
+                this.level.Entities[currentLocation] = new Soldier_3.Soldier(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
+            }
+            if (this.entity instanceof Scientist_3.Scientist) {
+                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
+                this.level.Entities[currentLocation] = new Scientist_3.Scientist(null, new Body_2.Body(pos, 1), Person_6.PersonMode.Fine);
+            }
+            if (this.entity instanceof Monster_4.Monster) {
+                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
+                this.level.Entities[currentLocation] = new Monster_4.Monster(null, new Body_2.Body(pos, 1));
+            }
+        };
+        Cursor.prototype.step = function () {
+            this.pos = this.draw.transformBack(Control_3.Control.mousePos());
+            this.gridPos = this.level.gridCoordinates(this.pos);
+            if (Control_3.Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
+                switch (this.mode) {
+                    case Mode.Wall: {
+                        this.setBlock();
+                        break;
+                    }
+                    case Mode.Entity: {
+                        if (this.mouseLeftButtonClicked) {
+                            this.setEntity();
+                            this.mouseLeftButtonClicked = false;
+                        }
+                        break;
+                    }
+                    case Mode.Selector: {
+                        if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                            this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
+                            if (this.selectedEntity instanceof Person_6.Person) {
+                                ListOfPads_1.ListOfPads.compileBehaviorModel(this.selectedEntity.behaviorModel);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!Control_3.Control.isMouseLeftPressed()) {
+                this.mouseLeftButtonClicked = true;
+            }
+        };
+        Cursor.prototype.display = function () {
+            this.drawPreview.attachToCanvas();
+            this.drawPreview.clear();
+            switch (this.mode) {
+                case Mode.Wall: {
+                    this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    if (this.tile.sub_image) {
+                        this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    }
+                    break;
+                }
+                case Mode.Entity: {
+                    this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    break;
+                }
+            }
+            if (this.level.isInBounds(this.pos))
+                this.draw.strokeRect(this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)), new geom.Vector(this.level.tileSize, this.level.tileSize), new Draw_10.Color(0, 255, 0), 0.1);
+        };
+        return Cursor;
+    }());
+    exports.Cursor = Cursor;
+});
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_2, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_4, ListOfPads_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -2400,25 +2411,25 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                         }
                         var behaviorModel = _this.cursor.selectedEntity.behaviorModel;
                         console.log(behaviorModel);
-                        if (behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType] == undefined) {
-                            behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType] = new BehaviorModel_4.Instruction();
+                        if (behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType] == undefined) {
+                            behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType] = new BehaviorModel_4.Instruction();
                         }
                         switch (toolType) {
                             case Cursor_2.ToolType.GoToPoint: {
                                 console.log("well");
-                                behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addGoingToPoint(new geom.Vector(0, 0));
+                                behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType].addGoingToPoint(new geom.Vector(0, 0));
                                 break;
                             }
                             case Cursor_2.ToolType.Waiting: {
-                                behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addWaiting(1000);
+                                behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType].addWaiting(1000);
                                 break;
                             }
                             case Cursor_2.ToolType.Pursuit:
                                 {
-                                    behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addPursuit();
+                                    behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType].addPursuit();
                                     break;
                                 }
-                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, toolType);
+                                var pad = ListOfPads_2.ListOfPads.createBehaviorPad(src, toolType);
                         }
                     }
                 }
@@ -2427,7 +2438,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         };
         Editor.prototype.initHTML = function () {
             var _this = this;
-            ListOfPads_1.ListOfPads.init(this.cursor);
+            ListOfPads_2.ListOfPads.init(this.cursor);
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
             for (var i = 0; i < 47; i++)
@@ -2462,13 +2473,13 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("generate")["style"].top = "62px";
             document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             var normal = function () {
-                if (ListOfPads_1.ListOfPads.instructionType == "normal") {
+                if (ListOfPads_2.ListOfPads.instructionType == "normal") {
                     return;
                 }
-                ListOfPads_1.ListOfPads.instructionType = "normal";
+                ListOfPads_2.ListOfPads.instructionType = "normal";
                 if (_this.cursor.selectedEntity != null && _this.cursor.selectedEntity instanceof Person_7.Person) {
                     console.log(_this.cursor.selectedEntity.behaviorModel);
-                    ListOfPads_1.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
+                    ListOfPads_2.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
                 }
                 var normalButton = document.getElementById("normalMode");
                 normalButton.classList.add('selected');
@@ -2477,13 +2488,13 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             };
             document.getElementById("normalMode").onclick = normal;
             var panic = function () {
-                if (ListOfPads_1.ListOfPads.instructionType == "panic") {
+                if (ListOfPads_2.ListOfPads.instructionType == "panic") {
                     return;
                 }
-                ListOfPads_1.ListOfPads.instructionType = "panic";
+                ListOfPads_2.ListOfPads.instructionType = "panic";
                 if (_this.cursor.selectedEntity != null && _this.cursor.selectedEntity instanceof Person_7.Person) {
                     console.log(_this.cursor.selectedEntity.behaviorModel);
-                    ListOfPads_1.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
+                    ListOfPads_2.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
                 }
                 var panicButton = document.getElementById("panicMode");
                 panicButton.classList.add('selected');
@@ -2527,10 +2538,10 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         Editor.prototype.display = function () {
             this.level.display(this.draw, true);
             console.log(this.level.Entities.length);
-            for (var i = 0; i < this.level.Entities.length; i++) {
-                this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0);
-            }
             this.cursor.display();
+            for (var i = 0; i < this.level.Entities.length; i++) {
+                this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
+            }
         };
         return Editor;
     }());

@@ -98,9 +98,9 @@ export class Cursor {
                     }
                     break;
                 }
-                case Mode.PosPicking: {
-                    ListOfPads.
-                }
+                // case Mode.PosPicking: {
+                //     ListOfPads.
+                // }
             }
         }
         if (!Control.isMouseLeftPressed()) {

@@ -71,7 +71,7 @@ export class Draw {
         }
         this.ctx = canvas.getContext("2d");
         this.cam.scale = 1;
-        this.cam.pos = size.mul(1 / 2);
+        this.cam.pos = new geom.Vector();
         this.cam.center = size.mul(1 / 2);
     }
     public static loadImage(src: string): HTMLImageElement {
@@ -98,6 +98,17 @@ export class Draw {
         posNew = posNew.mul(1 / this.cam.scale);
         posNew = posNew.add(this.cam.pos);
         return posNew;
+    }
+    // Изменение 
+    public resize(size : geom.Vector) {
+        this.cam.center = size.mul(1/ 2);
+        this.canvas.width = size.x;
+        this.canvas.height = size.y;
+    }
+    // Натягивание на канвас
+    public attachToCanvas() {
+        this.cam.pos = this.cam.center;
+        this.cam.scale = 1;
     }
     // Функция для отрисовки изображения
     public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
