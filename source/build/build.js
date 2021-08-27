@@ -372,6 +372,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
         function Body(center, radius) {
             this.velocity = 0.05;
             this.collisionBox = new geom.Vector(0.5, 0.3);
+            this.isWallNear = 0;
             this.center = center;
             this.radius = radius;
         }
@@ -381,8 +382,48 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
             var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
             var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
             var collisionDR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
-            if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full)
+            if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full) {
                 delta = new geom.Vector();
+                if (collisionUR == Tile_1.CollisionType.Full) {
+                    var collisionRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0.1, 0))));
+                    if (collisionRW == Tile_1.CollisionType.Full) {
+                        this.isWallNear = 1;
+                    }
+                    else {
+                        this.isWallNear = 2;
+                    }
+                }
+                else if (collisionUL == Tile_1.CollisionType.Full) {
+                    var collisionLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x - 0.1, 0))));
+                    if (collisionLW == Tile_1.CollisionType.Full) {
+                        this.isWallNear = 3;
+                    }
+                    else {
+                        this.isWallNear = 2;
+                    }
+                }
+                else if (collisionDL == Tile_1.CollisionType.Full) {
+                    var collisonLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x - 0.1, 0))));
+                    if (collisonLW == Tile_1.CollisionType.Full) {
+                        this.isWallNear = 3;
+                    }
+                    else {
+                        console.log("aboba");
+                        this.isWallNear = 4;
+                    }
+                }
+                else {
+                    var collisonRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0.1, 0))));
+                    if (collisonRW == Tile_1.CollisionType.Full) {
+                        this.isWallNear = 1;
+                    }
+                    else {
+                        console.log("aboba");
+                        this.isWallNear = 4;
+                    }
+                }
+                console.log('boba : %d', this.isWallNear);
+            }
             else if (collisionUL != Tile_1.CollisionType.Empty) {
                 var norm = void 0;
                 if (collisionUL == Tile_1.CollisionType.CornerDL)
@@ -1199,11 +1240,20 @@ define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", 
             var _this = _super.call(this, game, body) || this;
             _this.vel = new geom.Vector();
             _this.viscousFriction = 0;
+            _this.enableBouncing = false;
             _this.vel = vel;
             return _this;
         }
         Projectile.prototype.step = function () {
             this.body.move(this.vel.mul(Game_2.Game.dt));
+            if (this.body.isWallNear != 0 && this.enableBouncing) {
+                if (this.body.isWallNear == 1 || this.body.isWallNear == 3) {
+                    this.vel.x = -this.vel.x;
+                }
+                else if (this.body.isWallNear == 2 || this.body.isWallNear == 4) {
+                    this.vel.y = -this.vel.y;
+                }
+            }
             this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_2.Game.dt));
         };
         return Projectile;
@@ -1226,6 +1276,7 @@ define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom",
             _this.spriteAnimation.loadFrames("Biomass", 3);
             _this.spriteAnimation.duration = 1000;
             _this.spriteAnimation.frameDuration = 0.1;
+            _this.enableBouncing = true;
             return _this;
         }
         Biomass.prototype.step = function () {
@@ -1808,6 +1859,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 this.ctx.globalAlpha = transparency;
                 this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
             }
+            this.ctx.globalAlpha = 1;
         };
         Draw.prototype.image = function (image, pos, box, angle, layer, transparency) {
             if (transparency === void 0) { transparency = 1; }

@@ -21,6 +21,7 @@ export class Biomass extends Projectile {
         this.spriteAnimation.loadFrames("Biomass", 3);
         this.spriteAnimation.duration = 1000;
         this.spriteAnimation.frameDuration = 0.1;
+        this.enableBouncing = true
     }
     public step() {
         super.step();
