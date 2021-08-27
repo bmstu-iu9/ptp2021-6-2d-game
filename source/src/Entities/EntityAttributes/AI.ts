@@ -106,9 +106,7 @@ export class AI {
         if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
             let answer : geom.Vector[];
             answer = [];
-            answer[0] = this.getPointCoordinate(finish);
-            console.log("Path from ", start, " to ", finish, " is ", answer);
-            
+            answer[0] = this.getPointCoordinate(finish);            
             return answer;
         }
 

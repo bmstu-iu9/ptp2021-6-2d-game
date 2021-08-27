@@ -23,6 +23,10 @@ export class Color {
     public toString() : string {
         return "rgba(" + this.r + "," + this.g + "," + this.b  + "," + this.a + ")";
     }
+
+    public setAlpha(a : number) : Color {
+        return new Color(this.r, this.g, this.b, a);
+    }
 }
 export enum Layer { // Индентификатор текстуры (тайл или персонаж)
     TileLayer, 
@@ -38,6 +42,7 @@ interface queue { // Для правильной отрисовки слоев
     box?: geom.Vector,
     angle? : number,
     layer? : Layer,
+    transparency? : number,
 }
 interface bar_queue { // Для отрисовки Hp бара
 
@@ -99,12 +104,13 @@ export class Draw {
         return posNew;
     }
     // Функция для отрисовки изображения
-    private drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number){ 
+    private drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale * 1.01);
         posNew = posNew.sub(boxNew.mul(1 / 2));
         this.ctx.imageSmoothingEnabled = false;
         if (angle%(2*Math.PI) == 0){
+            this.ctx.globalAlpha = transparency;
             this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y); // Без поворота (Много ресурсов на поворот уходит(даже на 0))
         } else {
             var buffer = document.createElement('canvas'); // Поворот
@@ -115,15 +121,18 @@ export class Draw {
             bctx.translate(boxNew.x, boxNew.y);
             bctx.rotate(angle);
             bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+            this.ctx.globalAlpha = transparency;
             this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
         }
+        // Восстанавливаем прозрачность
+        this.ctx.globalAlpha = 1;
     }
     // Изображение (обработка)
-    public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer) {
+    public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number,layer : Layer, transparency = 1) {
         if (layer == 0) { // Отрисовка сразу
-               this.drawimage(image,pos,box,angle);
+               this.drawimage(image,pos,box,angle, transparency);
         } else { // Отрисовка после сортировки
-            let curqueue : queue = {image,pos,box,angle,layer};
+            let curqueue : queue = {image,pos,box,angle,layer, transparency};
             this.imagequeue.push(curqueue);
             
         }
@@ -144,7 +153,7 @@ export class Draw {
             });
             for (;this.imagequeue.length > 0;){
                 let temp = this.imagequeue.pop(); //Извлечение
-                this.drawimage(temp.image,temp.pos,temp.box,temp.angle)
+                this.drawimage(temp.image,temp.pos,temp.box,temp.angle, temp.transparency)
             }
         }
         for (;this.hpqueue.length > 0;){ // Отрисовка hp бара
