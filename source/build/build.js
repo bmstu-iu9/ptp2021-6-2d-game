@@ -2015,16 +2015,16 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 var marks = temp.marks;
                 var bar = box.clone();
                 bar.x *= percentage;
-                this.fillRect(pos, box, frontColor);
+                this.fillRect(pos, box, backColor);
                 var posNew = pos.clone();
                 posNew.x -= (box.x - bar.x) / 2;
-                this.fillRect(posNew, bar, backColor);
+                this.fillRect(posNew, bar, frontColor);
                 bar.x = 2 / this.cam.scale;
                 pos.x -= box.x / 2;
                 for (var i = 0; i < marks.length; i++) {
                     posNew = pos.clone();
                     posNew.x += box.x * marks[i];
-                    this.fillRect(posNew, bar, frontColor);
+                    this.fillRect(posNew, bar, backColor);
                 }
             }
         };
@@ -2113,7 +2113,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
-        Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
+        Draw.prototype.bar = function (pos, box, percentage, backColor, frontColor, marks) {
             var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
             this.hpqueue.push(queue);
         };
