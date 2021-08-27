@@ -16,11 +16,11 @@ import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { Biomass } from "./Entities/Projectiles/Biomass";
+import { Sounds } from "./Sounds";
 
 export class Game {
     public static levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
     public static dt = 0.02;
-
     public draw: Draw;
     private bodies: Body[] = []; // массив всех тел
     public entities: Entity[] = []; // массив всех entity
@@ -30,6 +30,7 @@ export class Game {
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
     public mimic : Mimic; // объект мимик, за который играет игрок
     public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+    public sounds : Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
@@ -53,6 +54,13 @@ export class Game {
         this.draw = draw;
         this.currentLevel.Grid = [];
         this.mimic = new Mimic(this);
+        let backgroundsound = () => { // Чекбокс для воспроизведения фоновой мелодии (спасибо хрому блин https://developer.chrome.com/blog/autoplay/)
+            this.sounds.changestatus("game",0.02);
+        }
+        document.getElementById("backgroundsound").onclick = backgroundsound;
+
+        
+       
     }
 
 
@@ -63,6 +71,7 @@ export class Game {
     }
 
     public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
+        
         let body = this.makeBody(pos, 1);
         let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -100,6 +109,7 @@ export class Game {
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
         return entity;
+        
     }
 
     public makeTrigger(lifeTime: number, boundEntity: Entity) { // создаёт триггер и возвращает ссылку
@@ -117,6 +127,7 @@ export class Game {
     }
 
     public step() {
+        
         // Ксотыль
         if (Game.levels[this.currentLevelName])
             this.currentLevel = Game.levels[this.currentLevelName];
@@ -127,6 +138,8 @@ export class Game {
         this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
         this.processEntities();
+        
+        
     }
 
     public attachCamToMimic() {

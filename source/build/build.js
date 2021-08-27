@@ -909,7 +909,51 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
     }());
     exports.AI = AI;
 });
-define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_1, AI_1) {
+define("Sounds", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Sounds = void 0;
+    var Sounds = (function () {
+        function Sounds(volume) {
+            this.currentstate = false;
+            this.current_sound = new Audio('./sounds/alarm.mp3');
+            this.current_sound.volume = volume;
+        }
+        Sounds.prototype.changestatus = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            console.log(this.currentstate);
+            if (this.currentstate == false) {
+                this.currentstate = true;
+                this.playcontinuously(track, volume);
+            }
+            else {
+                this.currentstate = false;
+                this.stop();
+            }
+        };
+        Sounds.prototype.stop = function () {
+            this.current_sound.pause();
+        };
+        Sounds.prototype.playcontinuously = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+            this.current_sound.addEventListener("ended", function () {
+                this.play();
+            });
+        };
+        Sounds.prototype.play = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+        };
+        return Sounds;
+    }());
+    exports.Sounds = Sounds;
+});
+define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI", "Sounds"], function (require, exports, geom, Animation_1, AI_1, Sounds_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
@@ -924,10 +968,12 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.myAI = new AI_1.AI(game, body);
             this.animation = new Animation_1.Animation("Scientist", 8);
             this.commands = this.myAI.commands;
+            this.sounds = new Sounds_1.Sounds(1);
         }
         Entity.prototype.die = function () {
             this.hp = 0;
             this.alive = false;
+            this.sounds.play("alarm");
         };
         Entity.prototype.step = function () {
             if (this.hp <= 0)
@@ -1598,12 +1644,13 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2, Sounds_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
     var Game = (function () {
         function Game(draw) {
+            var _this = this;
             this.bodies = [];
             this.entities = [];
             this.triggers = [];
@@ -1611,11 +1658,16 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             this.ghost = new geom.Vector(0, 0);
+            this.sounds = new Sounds_2.Sounds(0.01);
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
             this.currentLevel.Grid = [];
             this.mimic = new Mimic_1.Mimic(this);
+            var backgroundsound = function () {
+                _this.sounds.changestatus("game", 0.02);
+            };
+            document.getElementById("backgroundsound").onclick = backgroundsound;
         }
         Game.readTextFile = function (path) {
             return __awaiter(this, void 0, void 0, function () {

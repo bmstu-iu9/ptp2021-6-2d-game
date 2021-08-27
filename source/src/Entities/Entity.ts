@@ -5,11 +5,13 @@ import { AI } from "./EntityAttributes/AI";
 import { Game } from "../Game";
 import { Commands } from "./EntityAttributes/Commands";
 import { Draw } from "../Draw";
+import { Sounds } from "../Sounds";
 
 export class Entity {
     public game : Game;
     public body : Body;
     public animation : Animation;
+    public sounds : Sounds;
     public entityID : number;
     public myAI : AI;
     public commands : Commands = null;
@@ -23,10 +25,12 @@ export class Entity {
         this.myAI = new AI(game, body);
         this.animation = new Animation("Scientist",8); // создание анимации персонажа
         this.commands = this.myAI.commands;
+        this.sounds = new Sounds(1);
     }
     public die() {
         this.hp = 0;
         this.alive = false;
+        this.sounds.play("alarm");
     }
     public step() {
         if (this.hp <= 0)
