@@ -6,7 +6,6 @@ import { SpriteAnimation } from "../../SpriteAnimation";
 import { Draw, Layer } from "../../Draw";
 
 export class Projectile extends Entity {
-    public alive = true;
     public velLimit = 1; // Скорость при которой мы считаем, что остановились
     public baseEntity : Entity; // Тот, кто выпустил снаряд
     public vel = new geom.Vector();

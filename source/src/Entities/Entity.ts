@@ -13,6 +13,7 @@ export class Entity {
     public entityID : number;
     public myAI : AI;
     public commands : Commands = null;
+    public alive = true;
     
     constructor(game : Game, body : Body) {
         this.game = game;

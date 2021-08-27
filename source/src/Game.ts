@@ -110,11 +110,7 @@ export class Game {
     private processEntities() {
         // Удаление сущностей
         for (let i = 0; i < this.entities.length; i++) {
-            if (// У человека нулевое здоровье
-                this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0 ||
-                // Прожектайл отработал
-                this.entities[i] instanceof Projectile && !(this.entities[i] as Projectile).alive
-                ) {
+            if (!this.entities[i].alive) {
                 this.entities.splice(i, 1);
                 i--;
             }

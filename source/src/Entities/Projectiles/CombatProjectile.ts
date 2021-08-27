@@ -7,10 +7,11 @@ import { SpriteAnimation } from "../../SpriteAnimation";
 import { Draw, Layer } from "../../Draw";
 import { Entity } from "../Entity";
 import { Corpse } from "../Corpse";
+import { Person } from "../Person";
 
 // Боевой прожектайл с уроном и временем жизни
 export class CombatProjectile extends Projectile {
-    public damage = 1; // Урон
+    public damage = 0.1; // Урон
     private remainingTime = 0; // Сколько ещё жить
     private lifetime = 0; // Сколько всего приказано жить
     constructor(game : Game, body : Body, vel : geom.Vector) {
@@ -29,7 +30,15 @@ export class CombatProjectile extends Projectile {
             // Проверка на удары об стену
             this.shouldBeKilledByWall && this.body.getCollisionsNumber())
             this.alive = false;
-        // TODO: нанесение урона
+        // Нанесение урона
+        for (let entity of this.game.entities) {
+            if (!(entity instanceof Person) || 
+                entity == this.baseEntity ||
+                geom.dist(this.body.center, entity.body.center) > this.body.radius)
+                continue;
+            entity.hp -= this.damage;
+            this.alive = false;
+        }
         super.step();
     }
     public display(draw : Draw) {

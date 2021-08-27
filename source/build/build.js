@@ -916,6 +916,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
     var Entity = (function () {
         function Entity(game, body) {
             this.commands = null;
+            this.alive = true;
             this.game = game;
             this.body = body;
             this.myAI = new AI_1.AI(game, body);
@@ -1048,6 +1049,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         };
         Person.prototype.die = function () {
             this.hp = 0;
+            this.alive = false;
             if (this.type)
                 this.game.makeCorpse(this.body.center, this.type);
         };
@@ -1135,6 +1137,8 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             this.direction = new geom.Vector(x, y);
             this.updateMode();
             this.behaviorModel.step();
+            if (this.hp <= 0)
+                this.die();
             _super.prototype.step.call(this);
         };
         Person.prototype.display = function (draw) {
@@ -1206,7 +1210,6 @@ define("Entities/Projectiles/Projectile", ["require", "exports", "Entities/Entit
         __extends(Projectile, _super);
         function Projectile(game, body, vel) {
             var _this = _super.call(this, game, body) || this;
-            _this.alive = true;
             _this.velLimit = 1;
             _this.vel = new geom.Vector();
             _this.viscousFriction = 0;
@@ -1457,7 +1460,7 @@ define("Random", ["require", "exports", "Geom"], function (require, exports, geo
     }());
     exports.Random = Random;
 });
-define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "Entities/Projectiles/Projectile", "Geom", "Draw"], function (require, exports, Game_4, Projectile_2, geom, Draw_9) {
+define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "Entities/Projectiles/Projectile", "Geom", "Draw", "Entities/Person"], function (require, exports, Game_4, Projectile_2, geom, Draw_9, Person_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CombatProjectile = void 0;
@@ -1465,7 +1468,7 @@ define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "
         __extends(CombatProjectile, _super);
         function CombatProjectile(game, body, vel) {
             var _this = _super.call(this, game, body, vel) || this;
-            _this.damage = 1;
+            _this.damage = 0.1;
             _this.remainingTime = 0;
             _this.lifetime = 0;
             _this.loadSpriteAnimation("Flame", 3);
@@ -1479,6 +1482,15 @@ define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "
             if (this.remainingTime <= 0 ||
                 this.shouldBeKilledByWall && this.body.getCollisionsNumber())
                 this.alive = false;
+            for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
+                var entity = _a[_i];
+                if (!(entity instanceof Person_4.Person) ||
+                    entity == this.baseEntity ||
+                    geom.dist(this.body.center, entity.body.center) > this.body.radius)
+                    continue;
+                entity.hp -= this.damage;
+                this.alive = false;
+            }
             _super.prototype.step.call(this);
         };
         CombatProjectile.prototype.display = function (draw) {
@@ -1523,6 +1535,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
             projectile.shouldBeKilledByWall = true;
             projectile.setLifetime(this.range / this.projectileVel);
+            projectile.baseEntity = this.owner;
             this.owner.game.entities.push(projectile);
             console.log(projectile);
         };
@@ -1554,7 +1567,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
     }());
     exports.Weapon = Weapon;
 });
-define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon"], function (require, exports, Person_4, Animation_4, Weapon_1) {
+define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon"], function (require, exports, Person_5, Animation_4, Weapon_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Soldier = void 0;
@@ -1576,10 +1589,10 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
             _super.prototype.step.call(this);
         };
         return Soldier;
-    }(Person_4.Person));
+    }(Person_5.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass", "Entities/Projectiles/Projectile"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_10, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2, Projectile_3) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_6, Control_2, Draw_10, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1642,14 +1655,14 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.makeScientist = function (pos) {
             var body = this.makeBody(pos, 1);
-            var entity = new Scientist_1.Scientist(this, body, Person_5.PersonMode.Fine);
+            var entity = new Scientist_1.Scientist(this, body, Person_6.PersonMode.Fine);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
             return entity;
         };
         Game.prototype.makeSoldier = function (pos) {
             var body = this.makeBody(pos, 1);
-            var entity = new Soldier_1.Soldier(this, body, Person_5.PersonMode.Fine);
+            var entity = new Soldier_1.Soldier(this, body, Person_6.PersonMode.Fine);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
             return entity;
@@ -1680,8 +1693,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.processEntities = function () {
             for (var i = 0; i < this.entities.length; i++) {
-                if (this.entities[i] instanceof Person_5.Person && this.entities[i].hp <= 0 ||
-                    this.entities[i] instanceof Projectile_3.Projectile && !this.entities[i].alive) {
+                if (!this.entities[i].alive) {
                     this.entities.splice(i, 1);
                     i--;
                 }
@@ -1954,6 +1966,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 this.ctx.globalAlpha = transparency;
                 this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
             }
+            this.ctx.globalAlpha = 1;
         };
         Draw.prototype.image = function (image, pos, box, angle, layer, transparency) {
             if (transparency === void 0) { transparency = 1; }

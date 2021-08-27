@@ -50,6 +50,7 @@ export class Person extends Entity {
 
     public die() {
         this.hp = 0;
+        this.alive = false;
         if (this.type)
             this.game.makeCorpse(this.body.center, this.type);
     }
@@ -147,6 +148,9 @@ export class Person extends Entity {
 
         this.updateMode();
         this.behaviorModel.step();
+
+        if (this.hp <= 0)
+            this.die();
 
         super.step();
     }
