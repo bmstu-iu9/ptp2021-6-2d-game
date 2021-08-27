@@ -1179,7 +1179,6 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
-            console.log(this.body.radius);
             draw.image(this.image, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, Draw_6.Layer.EntityLayer);
         };
         return StationaryObject;
@@ -1522,7 +1521,6 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.isMagazineRecharging = true;
         };
         Weapon.prototype.createProjectile = function (dir) {
-            console.log("shoot");
             dir = dir.norm();
             dir = geom.vectorFromAngle(dir.angle() + Random_1.Random.randomFloat(-this.scatter, this.scatter));
             var body = new Body_1.Body(this.owner.body.center, 0.4);
@@ -1534,7 +1532,6 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             projectile.setLifetime(this.range / this.projectileVel);
             projectile.baseEntity = this.owner;
             this.owner.game.entities.push(projectile);
-            console.log(projectile);
         };
         Weapon.prototype.shoot = function (dir) {
             if (this.isMagazineRecharging)
@@ -1588,7 +1585,6 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
         }
         Soldier.prototype.step = function () {
             if (this.commands.commands["shoot"]) {
-                console.log("aa");
                 this.weapon.shoot(this.commands.pointer);
             }
             this.weapon.step();

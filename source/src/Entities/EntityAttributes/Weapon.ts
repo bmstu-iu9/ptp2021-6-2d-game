@@ -34,7 +34,6 @@ export class Weapon {
     }
 
     private createProjectile(dir: geom.Vector) {
-        console.log("shoot");
         dir = dir.norm();
         dir = geom.vectorFromAngle(dir.angle() + Random.randomFloat(-this.scatter, this.scatter));
         let body = new Body(this.owner.body.center, 0.4);
@@ -46,7 +45,6 @@ export class Weapon {
         projectile.setLifetime(this.range / this.projectileVel);
         projectile.baseEntity = this.owner;
         this.owner.game.entities.push(projectile);
-        console.log(projectile);
     }
 
     // Выстрелить

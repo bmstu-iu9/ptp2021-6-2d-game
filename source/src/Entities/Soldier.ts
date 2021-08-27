@@ -18,7 +18,6 @@ export class Soldier extends Person {
     public step() {
         if (this.commands.commands["shoot"]) {
             // выстрелить в направлении this.commands.pointer
-            console.log("aa");
             this.weapon.shoot(this.commands.pointer);
         }
         this.weapon.step();
