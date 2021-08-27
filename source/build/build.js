@@ -1655,13 +1655,15 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
     }());
     exports.Camera = Camera;
     var Color = (function () {
-        function Color(r, g, b) {
+        function Color(r, g, b, a) {
+            if (a === void 0) { a = 255; }
             this.r = r;
             this.g = g;
             this.b = b;
+            this.a = a;
         }
         Color.prototype.toString = function () {
-            return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
+            return "rgba(" + this.r + "," + this.g + "," + this.b + "," + this.a + ")";
         };
         return Color;
     }());
@@ -1670,6 +1672,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
     (function (Layer) {
         Layer[Layer["TileLayer"] = 0] = "TileLayer";
         Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
+        Layer[Layer["HudLayer"] = 2] = "HudLayer";
     })(Layer = exports.Layer || (exports.Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
@@ -1690,7 +1693,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             }
             this.ctx = canvas.getContext("2d");
             this.cam.scale = 1;
-            this.cam.pos = new geom.Vector();
+            this.cam.pos = size.mul(1 / 2);
             this.cam.center = size.mul(1 / 2);
         }
         Draw.loadImage = function (src) {
@@ -1716,12 +1719,13 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             posNew = posNew.add(this.cam.pos);
             return posNew;
         };
-        Draw.prototype.drawimage = function (image, pos, box, angle) {
+        Draw.prototype.drawimage = function (image, pos, box, angle, transparency) {
             var posNew = this.transform(pos);
             var boxNew = box.mul(this.cam.scale * 1.01);
             posNew = posNew.sub(boxNew.mul(1 / 2));
             this.ctx.imageSmoothingEnabled = false;
             if (angle % (2 * Math.PI) == 0) {
+                this.ctx.globalAlpha = transparency;
                 this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
             }
             else {
@@ -1729,44 +1733,41 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 buffer.width = boxNew.x * 2;
                 buffer.height = boxNew.y * 2;
                 var bctx = buffer.getContext('2d');
+                bctx.imageSmoothingEnabled = false;
                 bctx.translate(boxNew.x, boxNew.y);
                 bctx.rotate(angle);
-                bctx.drawImage(image, 0, 0, boxNew.x, boxNew.y);
-                this.ctx.drawImage(buffer, posNew.x, posNew.y);
+                bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+                this.ctx.globalAlpha = transparency;
+                this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
             }
+            this.ctx.globalAlpha = 1;
         };
-        Draw.prototype.resize = function (size) {
-            this.cam.center = size.mul(1 / 2);
-            this.canvas.width = size.x;
-            this.canvas.height = size.y;
-        };
-        Draw.prototype.attachToCanvas = function () {
-            this.cam.pos = this.cam.center;
-            this.cam.scale = 1;
-        };
-        Draw.prototype.image = function (image, pos, box, angle, layer) {
+        Draw.prototype.image = function (image, pos, box, angle, layer, transparency) {
+            if (transparency === void 0) { transparency = 1; }
             if (layer == 0) {
-                this.drawimage(image, pos, box, angle);
+                this.drawimage(image, pos, box, angle, transparency);
             }
-            if (layer == 1) {
-                var curqueue = { image: image, pos: pos, box: box, angle: angle };
+            else {
+                var curqueue = { image: image, pos: pos, box: box, angle: angle, layer: layer, transparency: transparency };
                 this.imagequeue.push(curqueue);
             }
         };
         Draw.prototype.getimage = function () {
             if (this.imagequeue.length > 0) {
                 this.imagequeue.sort(function (a, b) {
-                    if (a.pos.y > b.pos.y) {
+                    if (a.layer > b.layer)
                         return -1;
-                    }
-                    if (a.pos.y < b.pos.y) {
+                    if (a.layer < b.layer)
                         return 1;
-                    }
+                    if (a.pos.y > b.pos.y)
+                        return -1;
+                    if (a.pos.y < b.pos.y)
+                        return 1;
                     return 0;
                 });
                 for (; this.imagequeue.length > 0;) {
                     var temp = this.imagequeue.pop();
-                    this.drawimage(temp.image, temp.pos, temp.box, temp.angle);
+                    this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency);
                 }
             }
             for (; this.hpqueue.length > 0;) {
@@ -1829,6 +1830,15 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             }
             this.ctx.fillStyle = color.toString();
             this.ctx.fill();
+        };
+        Draw.prototype.line = function (begin, end, color, lineWidth) {
+            begin = this.transform(begin);
+            end = this.transform(end);
+            this.ctx.moveTo(begin.x, begin.y);
+            this.ctx.lineTo(end.x, end.y);
+            this.ctx.lineWidth = lineWidth;
+            this.ctx.strokeStyle = color.toString();
+            this.ctx.stroke();
         };
         Draw.prototype.strokePolygon = function (vertices, color, lineWidth) {
             for (var i = 0; i < vertices.length; i++) {
@@ -1971,6 +1981,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
         Mode[Mode["Wall"] = 1] = "Wall";
         Mode[Mode["Entity"] = 2] = "Entity";
         Mode[Mode["Selector"] = 3] = "Selector";
+        Mode[Mode["PosPicking"] = 4] = "PosPicking";
     })(Mode = exports.Mode || (exports.Mode = {}));
     var Cursor = (function () {
         function Cursor(level, draw) {
@@ -2032,6 +2043,8 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                             this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
                         }
                     }
+                    case Mode.PosPicking: {
+                    }
                 }
             }
             if (!Control_3.Control.isMouseLeftPressed()) {
@@ -2061,7 +2074,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorModel", "AuxLib"], function (require, exports, BehaviorModel_2, BehaviorModel_3, aux) {
+define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Cursor", "BehaviorModel", "AuxLib"], function (require, exports, BehaviorModel_2, Cursor_1, BehaviorModel_3, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ListOfPads = void 0;
@@ -2077,8 +2090,9 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
                 }
             }
         };
-        ListOfPads.init = function () {
+        ListOfPads.init = function (cursor) {
             var _this = this;
+            this.cursor = cursor;
             var listOfPads = document.querySelector(".listOfPads");
             listOfPads.addEventListener('dragstart', function (evt) {
                 var x = evt.target;
@@ -2118,10 +2132,11 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
                 listOfPads.children[0].remove();
             }
         };
-        ListOfPads.createBehaviorPad = function (src, text) {
+        ListOfPads.createBehaviorPad = function (src, tool) {
             var _this = this;
             var pad = document.createElement("li");
             pad.className = "behaviorPad";
+            var additionalElement = document.createElement("p");
             var icon = document.createElement("img");
             var label = document.createElement("p");
             var exitButton = document.createElement("img");
@@ -2130,7 +2145,28 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
             label.className = "behaviorPad_label";
             pad.id = "pad_" + this.amountOfPads;
             label.id = "padLabel_" + this.amountOfPads;
-            label.innerHTML = text;
+            switch (tool) {
+                case Cursor_1.ToolType.GoToPoint: {
+                    label.innerHTML = "Go to ";
+                    additionalElement.innerHTML = "(0, 0)";
+                    var posPick = function () {
+                        _this.cursor.mode = Cursor_1.Mode.PosPicking;
+                        _this.currentPad = additionalElement.parentElement;
+                    };
+                    additionalElement.onclick = posPick;
+                    break;
+                }
+                case Cursor_1.ToolType.GoToPoint: {
+                    label.innerHTML = "Wait ";
+                    additionalElement.innerHTML = "(1000)";
+                    additionalElement.contentEditable = "true";
+                    break;
+                }
+                case Cursor_1.ToolType.Pursuit: {
+                    label.innerHTML = "Pursuit";
+                    break;
+                }
+            }
             exitButton.className = "behaviorPad_exitButton";
             exitButton.src = "textures/Editor/cross.ico";
             var deleteDiv = function () { _this.deleteBehaviorPad(exitButton); };
@@ -2141,6 +2177,9 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
             exitButton.draggable = false;
             pad.appendChild(icon);
             pad.appendChild(label);
+            if (tool != Cursor_1.ToolType.Pursuit) {
+                pad.appendChild(additionalElement);
+            }
             pad.appendChild(exitButton);
             pad.addEventListener("dragover", function (evt) {
                 evt.preventDefault();
@@ -2164,19 +2203,23 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
                 switch (instruction.operations[i]) {
                     case BehaviorModel_3.Operations.goToPoint: {
                         src = "textures/Editor/arrow.png";
-                        this.createBehaviorPad(src, "Going to ("
+                        var pad = this.createBehaviorPad(src, Cursor_1.ToolType.GoToPoint);
+                        var ae = pad.children[2];
+                        ae.innerHTML = "("
                             + new String(instruction.operationsData[i].x) + ","
-                            + new String(instruction.operationsData[i].y) + ")");
+                            + new String(instruction.operationsData[i].y) + ")";
                         break;
                     }
                     case BehaviorModel_3.Operations.wait: {
                         src = "textures/Editor/waiting.png";
-                        this.createBehaviorPad(src, "Waiting (" + new String(instruction.operationsData[i]) + ")");
+                        var pad = this.createBehaviorPad(src, Cursor_1.ToolType.Waiting);
+                        var ae = pad.children[2];
+                        ae.innerHTML = "(" + new String(instruction.operationsData[i]) + ")";
                         break;
                     }
                     case BehaviorModel_3.Operations.pursuit: {
                         src = "textures/Editor/pursuit.png";
-                        this.createBehaviorPad(src, "Pursuit");
+                        this.createBehaviorPad(src, Cursor_1.ToolType.Pursuit);
                         break;
                     }
                 }
@@ -2189,14 +2232,14 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "BehaviorMod
     }());
     exports.ListOfPads = ListOfPads;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_1, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_4, ListOfPads_1) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_11, Level_2, geom, Cursor_2, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_4, ListOfPads_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
     var Editor = (function () {
         function Editor() {
             this.level = new Level_2.Level(new geom.Vector(10, 10));
-            this.cursor = new Cursor_1.Cursor(this.level);
+            this.cursor = new Cursor_2.Cursor(this.level);
             this.palette1_bitmap = [0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
                 1, 0, 1, 0, 0,
@@ -2261,7 +2304,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTile = function () {
-                _this.cursor.mode = Cursor_1.Mode.Wall;
+                _this.cursor.mode = Cursor_2.Mode.Wall;
                 if (type.length > 0) {
                     var prep = new Number(type);
                     if (_this.isTileSubImage(prep.valueOf())) {
@@ -2295,7 +2338,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var button = document.createElement("img");
             if (entityType == "Soldier") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_1.Mode.Entity;
+                    _this.cursor.mode = Cursor_2.Mode.Entity;
                     _this.cursor.entity = new Soldier_4.Soldier(null, new Body_3.Body(new geom.Vector(0, 0), 1), Person_7.PersonMode.Fine);
                     _this.cursor.entity.animation = new Animation_5.Animation("Soldier", 8);
                 };
@@ -2304,7 +2347,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             }
             if (entityType == "Scientist") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_1.Mode.Entity;
+                    _this.cursor.mode = Cursor_2.Mode.Entity;
                     _this.cursor.entity = new Scientist_4.Scientist(null, new Body_3.Body(new geom.Vector(0, 0), 1), Person_7.PersonMode.Fine);
                     _this.cursor.entity.animation = new Animation_5.Animation("Scientist", 8);
                 };
@@ -2313,7 +2356,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             }
             if (entityType == "Monster") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_1.Mode.Entity;
+                    _this.cursor.mode = Cursor_2.Mode.Entity;
                     _this.cursor.entity = new Monster_5.Monster(null, new Body_3.Body(new geom.Vector(0, 0), 1));
                     _this.cursor.entity.animation = new Animation_5.Animation("Monster", 8);
                 };
@@ -2331,15 +2374,15 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             button.className = "toolButton";
             var src = "";
             switch (toolType) {
-                case Cursor_1.ToolType.GoToPoint: {
+                case Cursor_2.ToolType.GoToPoint: {
                     src = "textures/Editor/arrow.png";
                     break;
                 }
-                case Cursor_1.ToolType.Waiting: {
+                case Cursor_2.ToolType.Waiting: {
                     src = "textures/Editor/waiting.png";
                     break;
                 }
-                case Cursor_1.ToolType.Pursuit: {
+                case Cursor_2.ToolType.Pursuit: {
                     src = "textures/Editor/pursuit.png";
                     break;
                 }
@@ -2348,7 +2391,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTool = function () {
-                _this.cursor.mode = Cursor_1.Mode.Selector;
+                _this.cursor.mode = Cursor_2.Mode.Selector;
                 console.log(_this.cursor.selectedEntity);
                 if (_this.cursor.selectedEntity != null) {
                     if (_this.cursor.selectedEntity instanceof Person_7.Person) {
@@ -2361,22 +2404,21 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                             behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType] = new BehaviorModel_4.Instruction();
                         }
                         switch (toolType) {
-                            case Cursor_1.ToolType.GoToPoint: {
+                            case Cursor_2.ToolType.GoToPoint: {
                                 console.log("well");
                                 behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addGoingToPoint(new geom.Vector(0, 0));
-                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, "Going to (0, 0)");
                                 break;
                             }
-                            case Cursor_1.ToolType.Waiting: {
+                            case Cursor_2.ToolType.Waiting: {
                                 behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addWaiting(1000);
-                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, "Waiting (1000)");
                                 break;
                             }
-                            case Cursor_1.ToolType.Pursuit: {
-                                behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addPursuit();
-                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, "Pursuit");
-                                break;
-                            }
+                            case Cursor_2.ToolType.Pursuit:
+                                {
+                                    behaviorModel.instructions[ListOfPads_1.ListOfPads.instructionType].addPursuit();
+                                    break;
+                                }
+                                var pad = ListOfPads_1.ListOfPads.createBehaviorPad(src, toolType);
                         }
                     }
                 }
@@ -2385,7 +2427,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
         };
         Editor.prototype.initHTML = function () {
             var _this = this;
-            ListOfPads_1.ListOfPads.init();
+            ListOfPads_1.ListOfPads.init(this.cursor);
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
             for (var i = 0; i < 47; i++)
@@ -2397,9 +2439,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createEntityButton("Scientist", "4");
             this.createEntityButton("Soldier", "4");
             this.createEntityButton("Monster", "4");
-            this.createToolButton(Cursor_1.ToolType.GoToPoint, "5");
-            this.createToolButton(Cursor_1.ToolType.Waiting, "5");
-            this.createToolButton(Cursor_1.ToolType.Pursuit, "5");
+            this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
+            this.createToolButton(Cursor_2.ToolType.Waiting, "5");
+            this.createToolButton(Cursor_2.ToolType.Pursuit, "5");
             this.cursor.drawPreview = new Draw_11.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
             document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";

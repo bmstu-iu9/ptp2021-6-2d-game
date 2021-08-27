@@ -11,6 +11,7 @@ import { Level } from "../Level";
 import { CollisionType, Tile } from "../Tile";
 import { BehaviorModel } from "../BehaviorModel";
 import * as aux from "../AuxLib";
+import { ListOfPads } from "./ListOfPads";
 
 export enum ToolType {
     GoToPoint,
@@ -22,7 +23,8 @@ export enum Mode {
     Eraser = 0,
     Wall,
     Entity,
-    Selector
+    Selector,
+    PosPicking
   }
 
 // Курсор для редактора уровней. Хранит в себе позицию и
@@ -90,10 +92,14 @@ export class Cursor {
                 case Mode.Selector: {
                     if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
                         this.selectedEntity = this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]];
+                        if (this.selectedEntity instanceof Person) {
+                            ListOfPads.compileBehaviorModel(this.selectedEntity.behaviorModel);
+                        }
                     }
-                    // if (this.selectedEntity instanceof Person) {
-                    //     this.compileBehaviorModel(this.selectedEntity.behaviorModel);
-                    // }
+                    break;
+                }
+                case Mode.PosPicking: {
+                    ListOfPads.
                 }
             }
         }

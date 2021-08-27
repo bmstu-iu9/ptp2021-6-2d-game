@@ -100,7 +100,7 @@ export class Draw {
         return posNew;
     }
     // Функция для отрисовки изображения
-    private drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
+    public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale * 1.01);
         posNew = posNew.sub(boxNew.mul(1 / 2));

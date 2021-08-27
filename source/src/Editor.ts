@@ -193,19 +193,17 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                         case ToolType.GoToPoint: {
                             console.log("well");
                             behaviorModel.instructions[ListOfPads.instructionType].addGoingToPoint(new geom.Vector(0, 0));
-                            let pad = ListOfPads.createBehaviorPad(src, "Going to (0, 0)");
                             break;
                         }
                         case ToolType.Waiting: {
                             behaviorModel.instructions[ListOfPads.instructionType].addWaiting(1000);
-                            let pad = ListOfPads.createBehaviorPad(src, "Waiting (1000)");
                             break;
                         }
                         case ToolType.Pursuit: {
                             behaviorModel.instructions[ListOfPads.instructionType].addPursuit();
-                            let pad = ListOfPads.createBehaviorPad(src, "Pursuit");
                             break;
                         }
+                        let pad = ListOfPads.createBehaviorPad(src, toolType);
                     }
                 }
             }
@@ -215,7 +213,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
 
     // Инициализирует взаимодействие с HTML
     private initHTML() {
-        ListOfPads.init();
+        ListOfPads.init(this.cursor);
         // Обработка кнопок
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
@@ -354,7 +352,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
 
         for (let i = 0; i < this.level.Entities.length; i++) {
             this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),
-                this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0);
+                this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 0);
         }
         this.cursor.display();
     }

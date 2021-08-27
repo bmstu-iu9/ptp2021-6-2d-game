@@ -1,5 +1,5 @@
 import { BehaviorModel, Instruction } from "../BehaviorModel";
-import { ToolType } from "./Cursor";
+import { Cursor, Mode, ToolType } from "./Cursor";
 import { Operations } from "../BehaviorModel";
 import * as aux from "../AuxLib";
 
@@ -7,6 +7,8 @@ export class ListOfPads {
     private static amountOfPads = 0;
     public static instructionType = "default";
     public static behaviorModel = null;
+    public static cursor : Cursor;
+    private static currentPad : HTMLElement;
 
     private static getPadPlace(pad : Element) {
         const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
@@ -18,7 +20,8 @@ export class ListOfPads {
         }
     }
 
-    public static init() {
+    public static init(cursor : Cursor) {
+        this.cursor = cursor;
         const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
         listOfPads.addEventListener('dragstart', (evt) => {
             let x = evt.target as HTMLObjectElement;
@@ -67,10 +70,11 @@ export class ListOfPads {
         }
     }
 
-    public static createBehaviorPad(src: string, text: string) {
+    public static createBehaviorPad(src: string, tool : ToolType) {
         let pad = document.createElement("li");
         pad.className = "behaviorPad";
 
+        let additionalElement = document.createElement("p");
         let icon = document.createElement("img") as HTMLImageElement;
         let label = document.createElement("p");
         let exitButton = document.createElement("img") as HTMLImageElement;
@@ -81,7 +85,28 @@ export class ListOfPads {
 
         pad.id = "pad_" + this.amountOfPads;
         label.id = "padLabel_" + this.amountOfPads;
-        label.innerHTML = text;
+        switch (tool) {
+            case ToolType.GoToPoint: {
+                label.innerHTML = "Go to ";
+                additionalElement.innerHTML = "(0, 0)";
+                let posPick = () => {
+                    this.cursor.mode = Mode.PosPicking;
+                    this.currentPad = additionalElement.parentElement;
+                };
+                additionalElement.onclick = posPick;
+                break;
+            }
+            case ToolType.GoToPoint: {
+                label.innerHTML = "Wait ";
+                additionalElement.innerHTML = "(1000)";
+                additionalElement.contentEditable = "true";
+                break;
+            }
+            case ToolType.Pursuit: {
+                label.innerHTML = "Pursuit";
+                break;
+            }
+        }
 
         exitButton.className = "behaviorPad_exitButton";
         exitButton.src = "textures/Editor/cross.ico"
@@ -94,6 +119,9 @@ export class ListOfPads {
         exitButton.draggable = false;
         pad.appendChild(icon);
         pad.appendChild(label);
+        if (tool != ToolType.Pursuit) {
+            pad.appendChild(additionalElement);
+        }
         pad.appendChild(exitButton);
 
         pad.addEventListener(`dragover`, (evt) => {
@@ -124,19 +152,23 @@ export class ListOfPads {
             switch (instruction.operations[i]) {
                 case Operations.goToPoint: {
                     src = "textures/Editor/arrow.png";
-                    this.createBehaviorPad(src, "Going to ("
+                    let pad = this.createBehaviorPad(src, ToolType.GoToPoint);
+                    let ae = pad.children[2];
+                    ae.innerHTML = "("
                     + new String(instruction.operationsData[i].x) + ","
-                    + new String(instruction.operationsData[i].y) + ")");
+                    + new String(instruction.operationsData[i].y) + ")";
                     break;
                 }
                 case Operations.wait: {
                     src = "textures/Editor/waiting.png";
-                    this.createBehaviorPad(src, "Waiting (" + new String(instruction.operationsData[i]) + ")");
+                    let pad = this.createBehaviorPad(src, ToolType.Waiting);
+                    let ae = pad.children[2];
+                    ae.innerHTML = "(" + new String(instruction.operationsData[i]) + ")";
                     break;
                 }
                 case Operations.pursuit: {
                     src = "textures/Editor/pursuit.png";
-                    this.createBehaviorPad(src, "Pursuit");
+                    this.createBehaviorPad(src, ToolType.Pursuit);
                     break;
                 }
             }
