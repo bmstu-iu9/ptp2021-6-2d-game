@@ -3,6 +3,8 @@ import { Game } from "../Game";
 import { Body } from "./EntityAttributes/Body";
 import { Animation } from "./EntityAttributes/Animation";
 import { Weapon } from "./EntityAttributes/Weapon";
+import { Color, Draw } from "../Draw";
+import * as geom from "../Geom";
 
 export class Soldier extends Person {
     public weapon = new Weapon(this);
@@ -21,5 +23,10 @@ export class Soldier extends Person {
         }
         this.weapon.step();
         super.step();
+    }
+
+    public display(draw : Draw) {
+        super.display(draw);
+        this.weapon.display(draw);
     }
 }

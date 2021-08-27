@@ -157,6 +157,7 @@ export class Person extends Entity {
             this.hp / this.hpMax, // Percentage
             new Color(25, 25, 25), // Back color
             new Color(25, 255, 25), // Front color
-            [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax]);
+            [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax] // Marks
+        );
     }
 }

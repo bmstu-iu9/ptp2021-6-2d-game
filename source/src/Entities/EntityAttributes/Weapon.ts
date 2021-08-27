@@ -5,6 +5,7 @@ import * as geom from "../../Geom";
 import { Projectile } from "../Projectiles/Projectile";
 import { Random } from "../../Random";
 import { CombatProjectile } from "../Projectiles/CombatProjectile";
+import { Color, Draw } from "../../Draw";
 
 
 export class Weapon {
@@ -77,6 +78,30 @@ export class Weapon {
             console.log("a");
             this.isMagazineRecharging = false;
             this.projectilesInMagazine = this.magazineCapacity;
+        }
+    }
+
+    public display(draw : Draw) {
+        // Отрисовка состояния перезарядки
+        let color = new Color(255, 50, 50);
+        if (this.projectilesInMagazine <= 0) {
+            draw.bar(
+                this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), // Pos
+                new geom.Vector(1, 0.1), // Box
+                1 - this.timeToCooldown / this.magazineCooldown, // Percentage
+                new Color(25, 25, 25), // Back color
+                color.setAlpha(0.5), // Front color
+                [] // Marks
+            );
+        } else {
+            draw.bar(
+                this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), // Pos
+                new geom.Vector(1, 0.1), // Box
+                this.projectilesInMagazine / this.magazineCapacity, // Percentage
+                new Color(25, 25, 25), // Back color
+                color, // Front color
+                [] // Marks
+            );
         }
     }
 }

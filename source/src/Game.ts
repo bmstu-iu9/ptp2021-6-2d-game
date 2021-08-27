@@ -16,7 +16,6 @@ import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { Biomass } from "./Entities/Projectiles/Biomass";
-import { Projectile } from "./Entities/Projectiles/Projectile";
 
 export class Game {
     public static levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
