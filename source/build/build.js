@@ -804,11 +804,13 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         Debug.addPoint = function (place, color) {
             return this.points[this.points.length] = new Point(place, color);
         };
+        Debug.clear = function () {
+            this.points = [];
+        };
         Debug.drawPoints = function (game) {
             for (var i = 0; i < this.points.length; i++) {
                 this.points[i].drawPoint(game);
             }
-            this.points = [];
         };
         Debug.points = [];
         return Debug;
@@ -1657,7 +1659,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1809,6 +1811,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw.getimage();
             this.mimic.display(this.draw);
             this.draw.step();
+            Debug_3.Debug.clear();
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {
@@ -2074,16 +2077,16 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 var marks = temp.marks;
                 var bar = box.clone();
                 bar.x *= percentage;
-                this.fillRect(pos, box, frontColor);
+                this.fillRect(pos, box, backColor);
                 var posNew = pos.clone();
                 posNew.x -= (box.x - bar.x) / 2;
-                this.fillRect(posNew, bar, backColor);
+                this.fillRect(posNew, bar, frontColor);
                 bar.x = 2 / this.cam.scale;
                 pos.x -= box.x / 2;
                 for (var i = 0; i < marks.length; i++) {
                     posNew = pos.clone();
                     posNew.x += box.x * marks[i];
-                    this.fillRect(posNew, bar, frontColor);
+                    this.fillRect(posNew, bar, backColor);
                 }
             }
         };
@@ -2172,7 +2175,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
-        Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
+        Draw.prototype.bar = function (pos, box, percentage, backColor, frontColor, marks) {
             var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
             this.hpqueue.push(queue);
         };
@@ -2342,6 +2345,8 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var canvas = document.getElementById('gameCanvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     var draw = new Draw_16.Draw(canvas);
     draw.cam.scale = 0.4;
     Game_7.Game.levels = new Map();
@@ -2382,84 +2387,5 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     }
     else
         setInterval(step, Game_7.Game.dt * 1000);
-});
-define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", "Game"], function (require, exports, Entity_4, geom, Game_8) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Projectile = void 0;
-    var Projectile = (function (_super) {
-        __extends(Projectile, _super);
-        function Projectile(game, body, vel) {
-            var _this = _super.call(this, game, body) || this;
-            _this.vel = new geom.Vector();
-            _this.viscousFriction = 0;
-            _this.enableBouncing = false;
-            _this.vel = vel;
-            return _this;
-        }
-        Projectile.prototype.step = function () {
-            this.body.move(this.vel.mul(Game_8.Game.dt));
-            if (this.body.isWallNear != 0 && this.enableBouncing) {
-                if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
-                    (this.body.isWallNear == 3 && this.vel.x < 0)) {
-                    this.vel.x = -this.vel.x;
-                    console.log("bounce x %d", this.body.isWallNear);
-                }
-                if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
-                    (this.body.isWallNear == 4 && this.vel.y > 0)) {
-                    this.vel.y = -this.vel.y;
-                    console.log("bounce y %d", this.body.isWallNear);
-                }
-            }
-            this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_8.Game.dt));
-        };
-        return Projectile;
-    }(Entity_4.Entity));
-    exports.Projectile = Projectile;
-});
-define("Entities/Biomass", ["require", "exports", "Entities/Projectile", "Geom", "SpriteAnimation", "Draw", "Entities/Corpse"], function (require, exports, Projectile_3, geom, SpriteAnimation_4, Draw_17, Corpse_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Biomass = void 0;
-    var Biomass = (function (_super) {
-        __extends(Biomass, _super);
-        function Biomass(game, body, vel) {
-            var _this = _super.call(this, game, body, vel) || this;
-            _this.velLimit = 1;
-            _this.alive = true;
-            _this.viscousFriction = 10;
-            _this.vel = _this.vel.mul(_this.viscousFriction);
-            _this.spriteAnimation = new SpriteAnimation_4.SpriteAnimation();
-            _this.spriteAnimation.loadFrames("Biomass", 3);
-            _this.spriteAnimation.duration = 1000;
-            _this.spriteAnimation.frameDuration = 0.1;
-            _this.enableBouncing = true;
-            return _this;
-        }
-        Biomass.prototype.step = function () {
-            _super.prototype.step.call(this);
-            this.spriteAnimation.step();
-        };
-        Biomass.prototype.display = function (draw) {
-            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(1, 1), 0, Draw_17.Layer.EntityLayer);
-        };
-        Biomass.prototype.hasStopped = function () {
-            return this.vel.abs() < this.velLimit;
-        };
-        Biomass.prototype.checkTarget = function () {
-            var target = null;
-            for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
-                var entity = _a[_i];
-                if (entity instanceof Projectile_3.Projectile || entity instanceof Corpse_3.Corpse || entity == this.baseEntity)
-                    continue;
-                if (geom.dist(this.body.center, entity.body.center) < 1) {
-                    target = entity;
-                }
-            }
-            return target;
-        };
-        return Biomass;
-    }(Projectile_3.Projectile));
-    exports.Biomass = Biomass;
 });
 //# sourceMappingURL=build.js.map
