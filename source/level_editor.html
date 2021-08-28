@@ -1,11 +1,14 @@
 <html>
 <style>
     .canvass, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .window6,
-     .normalButton, .up_menu, .panicButton, .listOfPads, .overed_text {position: absolute}
+     .normalButton, .up_menu, .panicButton, .listOfPads, .overed_text, .palettes_text {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
         margin: 1px;
+    }
+    .tileButton::hover {
+        width: 70px;
     }
     .behaviorPad {
         height: 50px;
@@ -74,25 +77,31 @@
         initial-value: "1000";
     }
     .layer {
+        background: ghostwhite;
         overflow-y: scroll; /* Добавляем полосы прокрутки */
         width: 300px; /* Ширина блока */
         padding: 5px; /* Поля вокруг текста */
         border: solid 1px black; /* Параметры рамки */
         right: 0px;
+        border-radius: 4px;
    }
    .layer2 {
+        background: ghostwhite;
         overflow-y: scroll; /* Добавляем полосы прокрутки */
         width: 300px; /* Ширина блока */
         padding: 5px; /* Поля вокруг текста */
         border: solid 1px black; /* Параметры рамки */
         right: 0px;
+        border-radius: 4px;
    }
    .layer3 {
+        background: ghostwhite;
         overflow-y: scroll; /* Добавляем полосы прокрутки */
         width: 300px; /* Ширина блока */
         padding: 5px; /* Поля вокруг текста */
         border: solid 1px black; /* Параметры рамки */
         right: 0px;
+        border-radius: 4px;
    }
    .layer4 {
         /*overflow-y: scroll; */
@@ -130,6 +139,7 @@
         right: 410px;
    }
    .canvass {
+       background: ghostwhite;
        left: 0px;
        top: 0px;
        border: 3px solid black;
@@ -187,13 +197,28 @@
         width: 58px;
         right: 319px;
     }
+    .palettes_text {
+        text-align: center;
+        background-color:rgb(236, 247, 134);
+        border: solid 2px black;
+        border-radius: 4px;
+        width: 310px;
+        right: 0px;
+    }
+    .layer::-webkit-scrollbar {
+        width: 10px;
+        background-color: #8a8a8a;
+    }
+    .layer::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+    }
 </style>
 
 <!-- Невероятная важная невидимая вещь!!! -->
 <div id="mode" style="display: none" value="editor">editor</div>
 
 <!-- Не менять размер канваса, а то шквах -->
-<div>
+<div style="position: absolute; background: rgb(126, 123, 123); width: 100%; height: 100%; top: 0px; left: 0px;">
 <canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
 
 <div id="prev_menu" class="up_menu">
@@ -217,12 +242,20 @@
 
 <!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
 <div>
-    <div></div>
+    <div id="w1" class="palettes_text">
+        <b>Ceilings:</b>
+    </div>
     <div id="palette" class="layer"> <!-- Палитра краев стен -->
 
     </div>
+    <div id="w2" class="palettes_text">
+        <b>Walls:</b>
+    </div>
     <div id="palette2" class="layer2"> <!-- Палитра стен -->
 
+    </div>
+    <div id="w3" class="palettes_text">
+        <b>Floors:</b>
     </div>
     <div id="palette3" class="layer3"> <!-- Палитра полов -->
 
