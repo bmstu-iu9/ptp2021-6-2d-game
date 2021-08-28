@@ -1193,7 +1193,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
         };
         Person.prototype.display = function (draw) {
             _super.prototype.display.call(this, draw);
-            draw.bar(this.body.center.clone().add(new geom.Vector(0, -1)), new geom.Vector(1, 0.1), this.hp / this.hpMax, new Draw_5.Color(25, 25, 25), new Draw_5.Color(25, 255, 25), [this.hpThresholdCorrupted / this.hpMax, this.hpThresholdDying / this.hpMax]);
+            draw.bar(this.body.center.clone().add(new geom.Vector(0, -1)), new geom.Vector(1, 0.1), this.hp / this.hpMax, new Draw_5.Color(25, 25, 25), new Draw_5.Color(25, 255, 25), [this.hpThresholdCorrupted / this.hpMax, this.hpThresholdDying / this.hpMax], Draw_5.Hp_Layer.Health);
         };
         return Person;
     }(Entity_1.Entity));
@@ -1621,10 +1621,10 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
         Weapon.prototype.display = function (draw) {
             var color = new Draw_10.Color(255, 50, 50);
             if (this.projectilesInMagazine <= 0) {
-                draw.bar(this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), new geom.Vector(1, 0.1), 1 - this.timeToCooldown / this.magazineCooldown, new Draw_10.Color(25, 25, 25), color.setAlpha(0.5), []);
+                draw.bar(this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), new geom.Vector(1, 0.1), 1 - this.timeToCooldown / this.magazineCooldown, new Draw_10.Color(25, 25, 25), color.setAlpha(0.5), [], Draw_10.Hp_Layer.Weapon);
             }
             else {
-                draw.bar(this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), new geom.Vector(1, 0.1), this.projectilesInMagazine / this.magazineCapacity, new Draw_10.Color(25, 25, 25), color, []);
+                draw.bar(this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), new geom.Vector(1, 0.1), this.projectilesInMagazine / this.magazineCapacity, new Draw_10.Color(25, 25, 25), color, [], Draw_10.Hp_Layer.Weapon);
             }
         };
         return Weapon;
@@ -1941,7 +1941,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
 define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (require, exports, geom, SpriteAnimation_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Draw = exports.Layer = exports.Color = exports.Camera = void 0;
+    exports.Draw = exports.Hp_Layer = exports.Layer = exports.Color = exports.Camera = void 0;
     var Camera = (function () {
         function Camera() {
         }
@@ -1971,6 +1971,11 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
         Layer[Layer["EntityLayer"] = 1] = "EntityLayer";
         Layer[Layer["HudLayer"] = 2] = "HudLayer";
     })(Layer = exports.Layer || (exports.Layer = {}));
+    var Hp_Layer;
+    (function (Hp_Layer) {
+        Hp_Layer[Hp_Layer["Weapon"] = 0] = "Weapon";
+        Hp_Layer[Hp_Layer["Health"] = 1] = "Health";
+    })(Hp_Layer = exports.Hp_Layer || (exports.Hp_Layer = {}));
     var Draw = (function () {
         function Draw(canvas, size) {
             if (size === void 0) { size = null; }
@@ -2068,13 +2073,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 }
             }
             if (this.hpqueue.length > 0) {
-                this.hpqueue.sort(function (a, b) {
-                    if (a.pos.y > b.pos.y)
-                        return -1;
-                    if (a.pos.y < b.pos.y)
-                        return 1;
-                    return 0;
-                });
+                this.hpqueue = this.sorthpbar(this.hpqueue);
                 for (; this.hpqueue.length > 0;) {
                     var temp = this.hpqueue.pop();
                     var pos = temp.pos;
@@ -2098,6 +2097,65 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                     }
                 }
             }
+        };
+        Draw.prototype.sorthpbar = function (was) {
+            var output = [];
+            var current = [];
+            for (; was.length > 0;) {
+                var tempwas = was.pop();
+                var temp = {};
+                temp.was_weapon = false;
+                if (tempwas.hplayer == Hp_Layer.Weapon) {
+                    temp.was_weapon = true;
+                    temp.backColor_weapon = tempwas.backColor;
+                    temp.box_weapon = tempwas.box;
+                    temp.frontColor_weapon = tempwas.frontColor;
+                    temp.marks_weapon = tempwas.marks;
+                    temp.percentage_weapon = tempwas.percentage;
+                    temp.pos_weapon = tempwas.pos;
+                    tempwas = was.pop();
+                }
+                temp.backColor = tempwas.backColor;
+                temp.box = tempwas.box;
+                temp.frontColor = tempwas.frontColor;
+                temp.marks = tempwas.marks;
+                temp.percentage = tempwas.percentage;
+                temp.pos = tempwas.pos;
+                current.push(temp);
+            }
+            if (current.length > 0) {
+                current.sort(function (a, b) {
+                    if (a.pos.y > b.pos.y)
+                        return 1;
+                    if (a.pos.y < b.pos.y)
+                        return -1;
+                    return 0;
+                });
+            }
+            for (; current.length > 0;) {
+                var tempwas = current.pop();
+                var temp = {};
+                if (tempwas.was_weapon == true) {
+                    var temp2 = {};
+                    temp2.pos = tempwas.pos_weapon;
+                    temp2.backColor = tempwas.backColor_weapon;
+                    temp2.box = tempwas.box_weapon;
+                    temp2.frontColor = tempwas.frontColor_weapon;
+                    temp2.hplayer = Hp_Layer.Weapon;
+                    temp2.marks = tempwas.marks_weapon;
+                    temp2.percentage = tempwas.percentage_weapon;
+                    output.push(temp2);
+                }
+                temp.pos = tempwas.pos;
+                temp.backColor = tempwas.backColor;
+                temp.box = tempwas.box;
+                temp.frontColor = tempwas.frontColor;
+                temp.hplayer = Hp_Layer.Health;
+                temp.marks = tempwas.marks;
+                temp.percentage = tempwas.percentage;
+                output.push(temp);
+            }
+            return (output);
         };
         Draw.prototype.fillRect = function (pos, box, color) {
             var posNew = this.transform(pos);
@@ -2184,8 +2242,8 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
-        Draw.prototype.bar = function (pos, box, percentage, backColor, frontColor, marks) {
-            var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
+        Draw.prototype.bar = function (pos, box, percentage, backColor, frontColor, marks, hplayer) {
+            var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks, hplayer: hplayer };
             this.hpqueue.push(queue);
         };
         Draw.images = {};

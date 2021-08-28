@@ -33,6 +33,10 @@ export enum Layer { // Индентификатор текстуры (тайл �
     EntityLayer,
     HudLayer
 }
+export enum Hp_Layer { // Индентификатор здоровье или оружие
+    Weapon, 
+    Health,
+}
 type hashimages = {
     [key: string]: HTMLImageElement ; // Хеш таблица с изображениями
 };
@@ -45,15 +49,29 @@ interface queue { // Для правильной отрисовки слоев
     transparency? : number,
 }
 interface bar_queue { // Для отрисовки Hp бара
-
+    hplayer?:Hp_Layer,
     pos?: geom.Vector, 
     box?: geom.Vector, 
     percentage? : number, 
-    frontColor : Color, 
+    frontColor? : Color, 
     backColor? : Color, 
     marks?: number[],
 }
-
+interface bar_queue_weapon { // Для сортировки Hp бара (поправка на строку с оружием)
+    was_weapon? : boolean,
+    pos?: geom.Vector, 
+    box?: geom.Vector, 
+    percentage? : number, 
+    frontColor? : Color, 
+    backColor? : Color, 
+    marks?: number[],
+    pos_weapon?: geom.Vector, 
+    box_weapon?: geom.Vector, 
+    percentage_weapon? : number, 
+    frontColor_weapon? : Color, 
+    backColor_weapon? : Color, 
+    marks_weapon?: number[],
+}
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
@@ -157,13 +175,7 @@ export class Draw {
             }
         }
         if (this.hpqueue.length > 0){
-            this.hpqueue.sort(function (a, b) { // Сортировка
-                if (a.pos.y > b.pos.y)
-                    return -1;
-                if (a.pos.y < b.pos.y)
-                    return 1;
-                return 0;
-            });
+            this.hpqueue=this.sorthpbar(this.hpqueue);
             for (;this.hpqueue.length > 0;){ // Отрисовка hp бара
                 let temp = this.hpqueue.pop();
                 let pos = temp.pos;
@@ -189,6 +201,68 @@ export class Draw {
                 }
             }
         }
+    }
+    public sorthpbar(was : bar_queue[]){
+        let output :  bar_queue[]=[]; // Массив выходных данных
+        let current : bar_queue_weapon[]=[]; // Массив для текущей сортировки
+        for (;was.length>0;){ // Загоняем данные из начального массива в вспомогательный
+            let tempwas = was.pop();
+            let temp : bar_queue_weapon = <bar_queue_weapon>{};
+            temp.was_weapon = false;
+            if (tempwas.hplayer == Hp_Layer.Weapon){
+                temp.was_weapon = true;
+                temp.backColor_weapon=tempwas.backColor;
+                temp.box_weapon=tempwas.box;
+                temp.frontColor_weapon=tempwas.frontColor;
+                temp.marks_weapon=tempwas.marks;
+                temp.percentage_weapon=tempwas.percentage;
+                temp.pos_weapon=tempwas.pos;
+                tempwas = was.pop();
+            }
+            temp.backColor=tempwas.backColor;
+            temp.box=tempwas.box;
+            temp.frontColor=tempwas.frontColor;
+            temp.marks=tempwas.marks;
+            temp.percentage=tempwas.percentage;
+            temp.pos=tempwas.pos;
+            current.push(temp);
+        }
+        if (current.length>0){
+            current.sort(function (a, b) { // Сортировка баров по координате y бара здоровья
+                if (a.pos.y > b.pos.y)
+                    return 1;
+                if (a.pos.y < b.pos.y)
+                    return -1;
+                return 0;
+            });
+        }
+        for (;current.length>0;){ // Загоняем данных в массив для вывода из массива для сортировки
+            let tempwas = current.pop();
+            let temp : bar_queue = <bar_queue>{};
+            if (tempwas.was_weapon == true){
+                let temp2 : bar_queue = <bar_queue>{};
+                temp2.pos=tempwas.pos_weapon;
+                temp2.backColor=tempwas.backColor_weapon;
+                temp2.box=tempwas.box_weapon;
+                temp2.frontColor=tempwas.frontColor_weapon;
+                temp2.hplayer=Hp_Layer.Weapon;
+                temp2.marks=tempwas.marks_weapon;
+                temp2.percentage=tempwas.percentage_weapon;
+                output.push(temp2);
+            }
+            temp.pos=tempwas.pos;
+            temp.backColor=tempwas.backColor;
+            temp.box=tempwas.box;
+            temp.frontColor=tempwas.frontColor;
+            temp.hplayer=Hp_Layer.Health;
+            temp.marks=tempwas.marks;
+            temp.percentage=tempwas.percentage;
+            output.push(temp);
+
+        }
+        return(output)
+
+
     }
     // Заполненный прямоугольник
     public fillRect(pos: geom.Vector, box: geom.Vector, color: Color) {
@@ -297,8 +371,8 @@ export class Draw {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
     // hp бар 
-    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, backColor : Color, frontColor : Color, marks: number[]){
-        let queue : bar_queue = {pos,box,percentage,frontColor,backColor,marks};
+    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, backColor : Color, frontColor : Color, marks: number[],hplayer:Hp_Layer){
+        let queue : bar_queue = {pos,box,percentage,frontColor,backColor,marks,hplayer};
         this.hpqueue.push(queue); // Добавляем в очередь на отрисовку
 
         

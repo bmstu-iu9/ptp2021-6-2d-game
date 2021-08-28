@@ -3,7 +3,7 @@ import { Game } from "../Game"
 import { Body } from "./EntityAttributes/Body";
 import * as geom from "../Geom";
 import { Debug } from "../Debug";
-import { Color, Draw } from "../Draw";
+import { Color, Draw,Hp_Layer } from "../Draw";
 import { BehaviorModel } from "../BehaviorModel";
 
 export enum PersonMode {
@@ -157,7 +157,8 @@ export class Person extends Entity {
             this.hp / this.hpMax, // Percentage
             new Color(25, 25, 25), // Back color
             new Color(25, 255, 25), // Front color
-            [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax] // Marks
+            [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax], // Marks
+            Hp_Layer.Health // Индентификатор здоровья
         );
     }
 }
