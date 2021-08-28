@@ -1391,7 +1391,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             this.commands["MoveUp"] = false;
         };
         AI.prototype.go = function (point) {
-            var eps = 0.02;
+            var eps = 0.05;
             if (this.body.center.x < point.x + eps) {
                 this.commands["MoveRight"] = true;
             }
@@ -3042,13 +3042,14 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createToolButton(Cursor_2.ToolType.Waiting, "5");
             this.createToolButton(Cursor_2.ToolType.Pursuit, "5");
             this.cursor.drawPreview = new Draw_16.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
-            document.getElementById("palette")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette2")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette3")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
-            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 20 + "px";
+            var pal_standart_h = Math.round((window.innerHeight - 30) / 3);
+            document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
+            document.getElementById("palette2")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
+            document.getElementById("palette3")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
+            document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
-            document.getElementById("palette")["style"].top = "10px";
+            document.getElementById("palette")["style"].top = "24px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
@@ -3057,6 +3058,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w4")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
+            document.getElementById("w3")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
+            document.getElementById("w2")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
+            document.getElementById("w1")["style"].top = "0px";
             document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
             document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
