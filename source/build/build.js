@@ -759,11 +759,13 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         Debug.addPoint = function (place, color) {
             return this.points[this.points.length] = new Point(place, color);
         };
+        Debug.clear = function () {
+            this.points = [];
+        };
         Debug.drawPoints = function (game) {
             for (var i = 0; i < this.points.length; i++) {
                 this.points[i].drawPoint(game);
             }
-            this.points = [];
         };
         Debug.points = [];
         return Debug;
@@ -1598,7 +1600,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1750,6 +1752,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw.getimage();
             this.mimic.display(this.draw);
             this.draw.step();
+            Debug_3.Debug.clear();
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {
