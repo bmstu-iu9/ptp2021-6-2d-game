@@ -139,6 +139,7 @@ export class Game {
         // Processing entities
         this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
+        this.triggers.forEach(trigger => trigger.step());
         this.processEntities();
         this.processTriggers();
     }

@@ -1,31 +1,35 @@
 import * as aux from "./AuxLib";
 import { Entity } from "./Entities/Entity";
+import { Game } from "./Game";
 import { Vector } from "./Geom";
 
 export class Trigger {
     public active : boolean;
     public lifeTime : number;
-    public appearanceTime : number;
+    public timeLeft : number;
     public boundEntity : Entity;
     public triggeredEntities : Map<Entity, boolean>;
     public power = 1;
 
     constructor(lifeTime : number, boundEntity : Entity) {
-        this.lifeTime = lifeTime;
+        this.timeLeft = this.lifeTime = lifeTime;
         this.boundEntity = boundEntity;
         this.active = true;
-        this.appearanceTime = aux.getMilliCount();
         this.triggeredEntities = new Map();
     }
 
     public isActive() {
-        if (aux.getMilliCount() - this.appearanceTime > this.lifeTime) {
+        if (this.timeLeft <= 0) {
             this.active = false;
         }
         if (this.boundEntity == null || !this.boundEntity.alive) {
             this.active = false;
         }
         return this.active;
+    }
+
+    public step() {
+        this.timeLeft -= Game.dt;
     }
 
     public getCoordinates() {
