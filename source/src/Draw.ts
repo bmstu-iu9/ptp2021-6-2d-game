@@ -156,28 +156,37 @@ export class Draw {
                 this.drawimage(temp.image,temp.pos,temp.box,temp.angle, temp.transparency)
             }
         }
-        for (;this.hpqueue.length > 0;){ // Отрисовка hp бара
-            let temp = this.hpqueue.pop();
-            let pos = temp.pos;
-            let box = temp.box; 
-            let percentage = temp.percentage;
-            let frontColor = temp.frontColor; 
-            let backColor = temp.backColor;
-            let marks = temp.marks;
-            // hp бар
-            let bar = box.clone();
-            bar.x *= percentage;
-            this.fillRect(pos, box,backColor);
-            let posNew = pos.clone();
-            posNew.x -= (box.x - bar.x) / 2;
-            this.fillRect(posNew, bar, frontColor);
-            // Деления
-            bar.x = 2 / this.cam.scale;
-            pos.x -= box.x / 2;
-            for (var i = 0; i < marks.length ; i++){
-                posNew = pos.clone();
-                posNew.x += box.x * marks[i];
-                this.fillRect(posNew, bar, backColor);
+        if (this.hpqueue.length > 0){
+            this.hpqueue.sort(function (a, b) { // Сортировка
+                if (a.pos.y > b.pos.y)
+                    return -1;
+                if (a.pos.y < b.pos.y)
+                    return 1;
+                return 0;
+            });
+            for (;this.hpqueue.length > 0;){ // Отрисовка hp бара
+                let temp = this.hpqueue.pop();
+                let pos = temp.pos;
+                let box = temp.box; 
+                let percentage = temp.percentage;
+                let frontColor = temp.frontColor; 
+                let backColor = temp.backColor;
+                let marks = temp.marks;
+                // hp бар
+                let bar = box.clone();
+                bar.x *= percentage;
+                this.fillRect(pos, box,backColor);
+                let posNew = pos.clone();
+                posNew.x -= (box.x - bar.x) / 2;
+                this.fillRect(posNew, bar, frontColor);
+                // Деления
+                bar.x = 2 / this.cam.scale;
+                pos.x -= box.x / 2;
+                for (var i = 0; i < marks.length ; i++){
+                    posNew = pos.clone();
+                    posNew.x += box.x * marks[i];
+                    this.fillRect(posNew, bar, backColor);
+                }
             }
         }
     }

@@ -2067,26 +2067,35 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                     this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency);
                 }
             }
-            for (; this.hpqueue.length > 0;) {
-                var temp = this.hpqueue.pop();
-                var pos = temp.pos;
-                var box = temp.box;
-                var percentage = temp.percentage;
-                var frontColor = temp.frontColor;
-                var backColor = temp.backColor;
-                var marks = temp.marks;
-                var bar = box.clone();
-                bar.x *= percentage;
-                this.fillRect(pos, box, backColor);
-                var posNew = pos.clone();
-                posNew.x -= (box.x - bar.x) / 2;
-                this.fillRect(posNew, bar, frontColor);
-                bar.x = 2 / this.cam.scale;
-                pos.x -= box.x / 2;
-                for (var i = 0; i < marks.length; i++) {
-                    posNew = pos.clone();
-                    posNew.x += box.x * marks[i];
-                    this.fillRect(posNew, bar, backColor);
+            if (this.hpqueue.length > 0) {
+                this.hpqueue.sort(function (a, b) {
+                    if (a.pos.y > b.pos.y)
+                        return -1;
+                    if (a.pos.y < b.pos.y)
+                        return 1;
+                    return 0;
+                });
+                for (; this.hpqueue.length > 0;) {
+                    var temp = this.hpqueue.pop();
+                    var pos = temp.pos;
+                    var box = temp.box;
+                    var percentage = temp.percentage;
+                    var frontColor = temp.frontColor;
+                    var backColor = temp.backColor;
+                    var marks = temp.marks;
+                    var bar = box.clone();
+                    bar.x *= percentage;
+                    this.fillRect(pos, box, backColor);
+                    var posNew = pos.clone();
+                    posNew.x -= (box.x - bar.x) / 2;
+                    this.fillRect(posNew, bar, frontColor);
+                    bar.x = 2 / this.cam.scale;
+                    pos.x -= box.x / 2;
+                    for (var i = 0; i < marks.length; i++) {
+                        posNew = pos.clone();
+                        posNew.x += box.x * marks[i];
+                        this.fillRect(posNew, bar, backColor);
+                    }
                 }
             }
         };
