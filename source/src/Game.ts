@@ -112,8 +112,10 @@ export class Game {
 
     public step() {
         // Ксотыль
-        if (Game.levels[this.currentLevelName])
+        if (Game.levels[this.currentLevelName]) {
             this.currentLevel = Game.levels[this.currentLevelName];
+            this.entities = this.currentLevel.Entities;
+        }
 
         this.mimic.step();
         this.attachCamToMimic();
@@ -247,11 +249,13 @@ export class Game {
             if (value.dataType == 'Soldier') {
                 let soldier = this.makeSoldier(value.center) as Soldier;
                 soldier.behaviorModel = value.behaviorModel;
+                soldier.behaviorModel.myAI = soldier.myAI;
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
                 let scientist = this.makeScientist(value.center) as Scientist;
                 scientist.behaviorModel = value.behaviorModel;
+                scientist.behaviorModel.myAI = scientist.myAI;
                 return scientist;
             }
             if (value.dataType == "Monster") {
