@@ -1226,6 +1226,7 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/E
         function Monster(game, body) {
             var _this = _super.call(this, game, body, Person_1.PersonMode.Fine) || this;
             _this.animation = new Animation_2.Animation("Monster", 8);
+            _this.hpThresholdCorrupted = _this.hpThresholdDying = 0;
             return _this;
         }
         return Monster;
@@ -1584,10 +1585,10 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.timeToCooldown = 0;
             this.scatter = 0.2;
             this.projectilesInOneShot = 5;
-            this.projectileVel = 5;
+            this.projectileVel = 10;
             this.projectileAnimationName = "Flame";
             this.projectileAnimationFrames = 3;
-            this.range = 3;
+            this.range = 5;
             this.isMagazineRecharging = false;
             this.owner = owner;
         }
@@ -1644,7 +1645,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
     }());
     exports.Weapon = Weapon;
 });
-define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon"], function (require, exports, Person_4, Animation_4, Weapon_1) {
+define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon", "Entities/Monster"], function (require, exports, Person_4, Animation_4, Weapon_1, Monster_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Soldier = void 0;
@@ -1658,6 +1659,14 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
             return _this;
         }
         Soldier.prototype.step = function () {
+            this.myAI.commands.commands["shoot"] = false;
+            for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
+                var entity = _a[_i];
+                if (entity instanceof Monster_2.Monster) {
+                    this.myAI.commands.pointer = entity.body.center.sub(this.body.center);
+                    this.myAI.commands.commands["shoot"] = true;
+                }
+            }
             if (this.commands.commands["shoot"]) {
                 this.weapon.shoot(this.commands.pointer);
             }
@@ -1673,7 +1682,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_3, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1750,7 +1759,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.makeMonster = function (pos) {
             var body = this.makeBody(pos, 1);
-            var entity = new Monster_2.Monster(this, body);
+            var entity = new Monster_3.Monster(this, body);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
             this.makeTrigger(entity, 10, 100000);

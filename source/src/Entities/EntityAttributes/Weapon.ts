@@ -17,10 +17,10 @@ export class Weapon {
     public timeToCooldown = 0; // Время до перезарядки
     public scatter = 0.2; // Угол разброса
     public projectilesInOneShot = 5;
-    public projectileVel = 5; // Скорость снаряда
+    public projectileVel = 10; // Скорость снаряда
     public projectileAnimationName = "Flame";
     public projectileAnimationFrames = 3;
-    public range = 3; // Расстояние, на которое стреляет
+    public range = 5; // Расстояние, на которое стреляет
     private isMagazineRecharging = false; // Если true, перезаряжается обойма
 
     constructor(owner: Person) {
