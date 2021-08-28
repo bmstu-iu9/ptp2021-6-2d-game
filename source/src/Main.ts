@@ -6,6 +6,7 @@ import { Level } from "./Level";
 import { Editor } from "./Editor";
 import { Instruction } from "./BehaviorModel";
 import { Person } from "./Entities/Person";
+import { Scientist } from "./Entities/Scientist";
 
 aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LevelEditorPersons/source/env/"); // Если с Гита
 //aux.setEnvironment("http://127.0.0.1:4500/server.py"); // Если локальный сервер
@@ -18,29 +19,32 @@ aux.setEditorMode(levelEditorMode);
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas);
 draw.cam.scale = 10;
-Game.levels = new Map();
-Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
+game.levels = new Map();
+Game.currentGame = game;
+Game.loadMap("map.json", "map");
 game.makeScientist(new geom.Vector(1, 1));
-let person = game.entities[0] as Person;
-person.behaviorModel.changeCurrentInstruction("normal"); 
 
-game.mimic.takeControl(game.entities[1]);
+game.mimic.takeControl(game.entities[0]);
 
 let x = false;
 let t = 0;
 
 // В случае если режим игры
 function step() {
-    if (Game.levels["map"] != undefined) {
+    if (game.levels["map"] != undefined) {
         t++;
         if (x == false) {
+            console.log(game.entities[1]);
+            
+            let person = game.entities[1] as Scientist;
+            person.behaviorModel.changeCurrentInstruction("normal"); 
             //console.log(Game.levels["map"]);
             
             //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
             //game.makeTrigger(100000000, game.entities[1]);
-            console.log(Game.levels["map"].PathMatrix); 
+            console.log(game.levels["map"].PathMatrix); 
             x = true;
         }
         if (t % 100 == 0) {

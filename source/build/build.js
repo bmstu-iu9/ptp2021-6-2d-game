@@ -1033,6 +1033,12 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 center: value.body.center,
             };
         }
+        if (value instanceof BehaviorModel_2.BehaviorModel) {
+            return {
+                dataType: 'BehaviorModel',
+                instructions: value.instructions
+            };
+        }
         if (value instanceof BehaviorModel_2.Instruction) {
             return {
                 dataType: 'Instruction',
@@ -1119,7 +1125,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
     }());
     exports.Level = Level;
 });
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Game_1, Commands_2, aux, Debug_2, Draw_6) {
+define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Commands_2, aux, Debug_2, Draw_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AI = void 0;
@@ -1169,8 +1175,8 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             return new geom.Vector(place.y * this.game.currentLevel.tileSize / 2, place.x * this.game.currentLevel.tileSize / 2);
         };
         AI.prototype.chooseMeshPoint = function (currentPoint) {
-            var CollisionMesh = Game_1.Game.levels[this.game.currentLevelName].CollisionMesh;
-            var Grid = Game_1.Game.levels[this.game.currentLevelName].Grid;
+            var CollisionMesh = this.game.levels[this.game.currentLevelName].CollisionMesh;
+            var Grid = this.game.levels[this.game.currentLevelName].Grid;
             var posRound = new geom.Vector(Math.floor(currentPoint.x / this.game.currentLevel.tileSize), Math.floor(currentPoint.y / this.game.currentLevel.tileSize));
             var place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
             var answer = new geom.Vector(0, 0);
@@ -1191,7 +1197,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             return answer;
         };
         AI.prototype.makePath = function (start, finish) {
-            var pathMatrix = Game_1.Game.levels[this.game.currentLevelName].PathMatrix;
+            var pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
             if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
                 return [];
             }
@@ -1298,7 +1304,7 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], f
     }(StationaryObject_2.StationaryObject));
     exports.Corpse = Corpse;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Entities/Corpse", "SpriteAnimation"], function (require, exports, Game_2, geom, Control_1, Person_4, Monster_2, Corpse_1, SpriteAnimation_1) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Entities/Corpse", "SpriteAnimation"], function (require, exports, Game_1, geom, Control_1, Person_4, Monster_2, Corpse_1, SpriteAnimation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = void 0;
@@ -1331,7 +1337,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_4.Person) && !(this.controlledEntity instanceof Monster_2.Monster)) {
                 var person = this.controlledEntity;
-                person.hp -= Game_2.Game.dt;
+                person.hp -= Game_1.Game.dt;
                 if (person.hp < 0) {
                     var monster = this.game.makeMonster(this.controlledEntity.body.center);
                     this.controlledEntity = monster;
@@ -1429,6 +1435,129 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 });
             });
         };
+        Game.replacer = function (key, value) {
+            if (value instanceof Map) {
+                var val = void 0;
+                if (value.get("JSONkeys") != undefined) {
+                    var keys = value.get("JSONkeys");
+                    console.log("JSONkeys", keys);
+                    var remapping = new Map();
+                    for (var i = 0; i < keys.length; i++) {
+                        remapping.set(keys[i], value[keys[i]]);
+                    }
+                    val = Array.from(remapping.entries());
+                }
+                else {
+                    val = Array.from(value.entries());
+                }
+                console.log(val);
+                return {
+                    dataType: 'Map',
+                    value: val,
+                };
+            }
+            if (value instanceof HTMLImageElement) {
+                var name_2 = value.src;
+                var nameSplit = name_2.split("/");
+                var lastSplit = nameSplit[nameSplit.length - 1];
+                return {
+                    dataType: 'HTMLImageElement',
+                    value: lastSplit
+                };
+            }
+            if (value instanceof geom.Vector) {
+                return {
+                    dataType: 'Vector',
+                    x: value.x,
+                    y: value.y
+                };
+            }
+            if (value instanceof Soldier_2.Soldier) {
+                return {
+                    dataType: 'Soldier',
+                    center: value.body.center,
+                    behaviorModel: value.behaviorModel
+                };
+            }
+            if (value instanceof Scientist_2.Scientist) {
+                return {
+                    dataType: 'Scientist',
+                    center: value.body.center,
+                    behaviorModel: value.behaviorModel
+                };
+            }
+            if (value instanceof Monster_3.Monster) {
+                return {
+                    dataType: 'Monster',
+                    center: value.body.center
+                };
+            }
+            if (value instanceof StationaryObject_3.StationaryObject) {
+                return {
+                    dataType: 'StationaryObject',
+                    center: value.body.center,
+                };
+            }
+            if (value instanceof BehaviorModel_3.BehaviorModel) {
+                return {
+                    dataType: 'BehaviorModel',
+                    instructions: value.instructions
+                };
+            }
+            if (value instanceof BehaviorModel_3.Instruction) {
+                return {
+                    dataType: 'Instruction',
+                    operations: value.operations,
+                    operationsData: value.operationsData
+                };
+            }
+            return value;
+        };
+        Game.reviver = function (key, value) {
+            if (typeof value === 'object' && value !== null) {
+                if (value.dataType === 'Map') {
+                    return new Map(value.value);
+                }
+                if (value.dataType === 'HTMLImageElement') {
+                    return Draw_7.Draw.loadImage("./textures/tiles/" + value.value);
+                }
+                if (value.dataType === 'Vector') {
+                    return JSON.stringify(new geom.Vector(value.x, value.y));
+                }
+                if (value.dataType == 'Soldier') {
+                    var soldier = Game.currentGame.makeSoldier(value.center);
+                    soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
+                    soldier.behaviorModel = value.behaviorModel.instructions;
+                    return soldier;
+                }
+                if (value.dataType == 'Scientist') {
+                    console.log("loading scientist");
+                    var scientist = Game.currentGame.makeScientist(value.center);
+                    scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
+                    scientist.behaviorModel = value.behaviorModel.instructions;
+                    return scientist;
+                }
+                if (value.dataType == "Monster") {
+                    var monster = Game.currentGame.makeMonster(value.center);
+                    return monster;
+                }
+                if (value.dataType == 'StationaryObject') {
+                    var stationaryObject = new StationaryObject_3.StationaryObject(this.currentGame, new Body_1.Body(value.center, 1), "fine");
+                    return stationaryObject;
+                }
+                if (value.dataType == 'BehaviorModel') {
+                    var behaviorModel = new BehaviorModel_3.BehaviorModel(null);
+                    behaviorModel.instructions = value.instructions;
+                }
+                if (value.dataType == 'Instruction') {
+                    var instruction = new BehaviorModel_3.Instruction();
+                    instruction.operations = value.operations;
+                    instruction.operationsData = value.operationsData;
+                    return instruction;
+                }
+            }
+            return value;
+        };
         Game.loadMap = function (path, name) {
             return __awaiter(this, void 0, void 0, function () {
                 var result;
@@ -1438,10 +1567,11 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                         case 0: return [4, this.readTextFile(aux.environment + path)
                                 .then(function (result) {
                                 console.log(result);
-                                var prototype = JSON.parse(result, aux.reviver);
+                                console.log(_this.currentGame);
+                                var prototype = JSON.parse(result, _this.reviver);
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
-                                _this.levels[name] = level;
+                                Game.currentGame.levels[name] = level;
                             })];
                         case 1:
                             result = _a.sent();
@@ -1495,8 +1625,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
         };
         Game.prototype.step = function () {
-            if (Game.levels[this.currentLevelName]) {
-                this.currentLevel = Game.levels[this.currentLevelName];
+            if (this.levels[this.currentLevelName]) {
+                this.currentLevel = this.levels[this.currentLevelName];
             }
             this.mimic.step();
             this.attachCamToMimic();
@@ -1533,110 +1663,12 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw.getimage();
             this.draw.step();
         };
-        Game.prototype.replacer = function (key, value) {
-            if (value instanceof Map) {
-                return {
-                    dataType: 'Map',
-                    value: Array.from(value.entries()),
-                };
-            }
-            if (value instanceof HTMLImageElement) {
-                var name_2 = value.src;
-                var nameSplit = name_2.split("/");
-                var lastSplit = nameSplit[nameSplit.length - 1];
-                return {
-                    dataType: 'HTMLImageElement',
-                    value: lastSplit
-                };
-            }
-            if (value instanceof geom.Vector) {
-                return {
-                    dataType: 'Vector',
-                    x: value.x,
-                    y: value.y
-                };
-            }
-            if (value instanceof Soldier_2.Soldier) {
-                return {
-                    dataType: 'Soldier',
-                    center: value.body.center,
-                    behaviorModel: value.behaviorModel
-                };
-            }
-            if (value instanceof Scientist_2.Scientist) {
-                return {
-                    dataType: 'Scientist',
-                    center: value.body.center,
-                    behaviorModel: value.behaviorModel
-                };
-            }
-            if (value instanceof Monster_3.Monster) {
-                return {
-                    dataType: 'Monster',
-                    center: value.body.center
-                };
-            }
-            if (value instanceof StationaryObject_3.StationaryObject) {
-                return {
-                    dataType: 'StationaryObject',
-                    center: value.body.center,
-                };
-            }
-            if (value instanceof BehaviorModel_3.Instruction) {
-                return {
-                    dataType: 'Instruction',
-                    operations: value.operations,
-                    operationsData: value.operationsData
-                };
-            }
-            return value;
-        };
-        Game.prototype.reviver = function (key, value) {
-            if (typeof value === 'object' && value !== null) {
-                if (value.dataType === 'Map') {
-                    return new Map(value.value);
-                }
-                if (value.dataType === 'HTMLImageElement') {
-                    return Draw_7.Draw.loadImage("./textures/tiles/" + value.value);
-                }
-                if (value.dataType === 'Vector') {
-                    return JSON.stringify(new geom.Vector(value.x, value.y));
-                }
-                if (value.dataType == 'Soldier') {
-                    var soldier = this.makeSoldier(value.center);
-                    soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-                    soldier.behaviorModel = value.behaviorModel.instructions;
-                    return soldier;
-                }
-                if (value.dataType == 'Scientist') {
-                    console.log("loading scientist");
-                    var scientist = this.makeScientist(value.center);
-                    scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
-                    scientist.behaviorModel = value.behaviorModel.instructions;
-                    return scientist;
-                }
-                if (value.dataType == "Monster") {
-                    var monster = this.makeMonster(value.center);
-                    return monster;
-                }
-                if (value.dataType == 'StationaryObject') {
-                    var stationaryObject = new StationaryObject_3.StationaryObject(this, new Body_1.Body(value.center, 1), "fine");
-                    return stationaryObject;
-                }
-                if (value.dataType == 'Instruction') {
-                    var instruction = new BehaviorModel_3.Instruction();
-                    instruction.operations = value.operations;
-                    instruction.operationsData = value.operationsData;
-                }
-            }
-            return value;
-        };
         Game.dt = 0.02;
         return Game;
     }());
     exports.Game = Game;
 });
-define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_8, Game_3) {
+define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_8, Game_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpriteAnimation = exports.AnimationState = void 0;
@@ -1669,7 +1701,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
             return this.frames[frameNumber];
         };
         SpriteAnimation.prototype.step = function () {
-            this.time += Game_3.Game.dt;
+            this.time += Game_2.Game.dt;
         };
         SpriteAnimation.prototype.isOver = function () {
             return this.time > this.duration;
@@ -2696,7 +2728,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_13, Game_4, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_13, Game_3, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LevelEditorPersons/source/env/");
@@ -2705,20 +2737,22 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_13.Draw(canvas);
     draw.cam.scale = 10;
-    Game_4.Game.levels = new Map();
-    Game_4.Game.loadMap("map.json", "map");
-    var game = new Game_4.Game(draw);
+    var game = new Game_3.Game(draw);
+    game.levels = new Map();
+    Game_3.Game.currentGame = game;
+    Game_3.Game.loadMap("map.json", "map");
     game.makeScientist(new geom.Vector(1, 1));
-    var person = game.entities[0];
-    person.behaviorModel.changeCurrentInstruction("normal");
-    game.mimic.takeControl(game.entities[1]);
+    game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;
     function step() {
-        if (Game_4.Game.levels["map"] != undefined) {
+        if (game.levels["map"] != undefined) {
             t++;
             if (x == false) {
-                console.log(Game_4.Game.levels["map"].PathMatrix);
+                console.log(game.entities[1]);
+                var person = game.entities[1];
+                person.behaviorModel.changeCurrentInstruction("normal");
+                console.log(game.levels["map"].PathMatrix);
                 x = true;
             }
             if (t % 100 == 0) {
@@ -2741,6 +2775,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         setInterval(editorStep, 20);
     }
     else
-        setInterval(step, Game_4.Game.dt * 1000);
+        setInterval(step, Game_3.Game.dt * 1000);
 });
 //# sourceMappingURL=build.js.map

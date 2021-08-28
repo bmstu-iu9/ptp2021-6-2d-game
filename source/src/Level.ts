@@ -7,7 +7,7 @@ import { Soldier } from "./Entities/Soldier";
 import { Scientist } from "./Entities/Scientist";
 import { Monster } from "./Entities/Monster";
 import { StationaryObject } from "./Entities/StationaryObject";
-import { Instruction } from "./BehaviorModel";
+import { BehaviorModel, Instruction } from "./BehaviorModel";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
@@ -73,6 +73,12 @@ function replacer(key, value) { // функция замены классов д
         return {
             dataType: 'StationaryObject',
             center: value.body.center,
+        }
+    }
+    if (value instanceof BehaviorModel) {
+        return {
+            dataType: 'BehaviorModel',
+            instructions: value.instructions
         }
     }
     if (value instanceof Instruction) {
