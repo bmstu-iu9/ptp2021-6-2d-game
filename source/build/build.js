@@ -2290,10 +2290,9 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var game = new Game_7.Game(draw);
     game.makeSoldier(new geom.Vector(1, 1));
     var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-    soldier.behaviorModel.instructions["test"] = new BehaviorModel_2.Instruction();
-    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
-    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
-    soldier.behaviorModel.changeCurrentInstruction("test");
+    soldier.behaviorModel.instructions["normal"] = new BehaviorModel_2.Instruction();
+    soldier.behaviorModel.instructions["normal"].addPursuit();
+    soldier.behaviorModel.changeCurrentInstruction("normal");
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;

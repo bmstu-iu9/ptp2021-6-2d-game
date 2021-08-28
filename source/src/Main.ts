@@ -18,10 +18,10 @@ Game.loadMap("map.json", "map");
 let game = new Game(draw);
 game.makeSoldier(new geom.Vector(1, 1));
 let soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-soldier.behaviorModel.instructions["test"] = new Instruction();
-soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
-soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
-soldier.behaviorModel.changeCurrentInstruction("test");
+soldier.behaviorModel.instructions["normal"] = new Instruction();
+soldier.behaviorModel.instructions["normal"].addGoingToPoint(new geom.Vector(1, 1));
+soldier.behaviorModel.instructions["normal"].addGoingToPoint(new geom.Vector(6, 1));
+soldier.behaviorModel.changeCurrentInstruction("normal");
 
 game.mimic.takeControl(game.entities[0]);
 

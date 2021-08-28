@@ -13,23 +13,23 @@ export enum PersonMode {
 }
 
 export class Person extends Entity {
-    public viewRadius : number; // радиус сектора видимости
+    public viewRadius : number = 3; // радиус сектора видимости
     public viewingAngle : number; // угол сектора видимости
     public direction : geom.Vector; // направление взгляда
-    public alertLvl : number; // уровень тревоги    
+    public awareness = 0;
+    public awarenessThreshold = 10;  
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     public mode : PersonMode; // маркер состояния (переименовать по необходимости)
     protected type : string = null;
     public behaviorModel : BehaviorModel;
-
+    
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body)
         this.mode = mode;
         this.viewRadius = 3;
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
-        this.alertLvl = 0;
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
     }
@@ -39,11 +39,6 @@ export class Person extends Entity {
         this.hpThresholdCorrupted = dying + corrupted;
         this.hpMax = dying + corrupted + fine;
         this.hp = this.hpMax;
-    }
-
-    public upAlertLvl() { // поднятие уровня тревоги
-        // Возможно нужны еще манипуляции (тревога по карте и т.д.)
-        this.alertLvl++;
     }
 
     public die() {
@@ -65,7 +60,7 @@ export class Person extends Entity {
                         this.game.ghost = this.game.mimic.controlledEntity.body.center;
                     }
                     if (!this.game.triggers[i].isEntityTriggered(this)) {
-                        this.upAlertLvl();
+                        this.awareness ++;
                         this.game.triggers[i].entityTriggered(this);
                     }
                 }
