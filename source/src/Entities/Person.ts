@@ -141,8 +141,11 @@ export class Person extends Entity {
         this.checkTriggers();
         this.direction = new geom.Vector(x, y);
 
-        if(this.awareness >= this.awarenessThreshold)
+        // Проверка на awareness
+        if (this.awareness >= this.awarenessThreshold) {
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
+            this.awareness = this.awarenessThreshold;
+        }
 
         this.updateMode();
         this.behaviorModel.step();        
