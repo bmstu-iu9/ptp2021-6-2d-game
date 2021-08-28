@@ -16,10 +16,15 @@ export class Projectile extends Entity {
     public step() {
         this.body.move(this.vel.mul(Game.dt));
         if (this.body.isWallNear != 0 && this.enableBouncing) {
-            if (this.body.isWallNear == 1 || this.body.isWallNear == 3) {
+            if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
+                 (this.body.isWallNear == 3 && this.vel.x < 0)) {
                 this.vel.x = - this.vel.x;
-            } else if (this.body.isWallNear == 2 || this.body.isWallNear == 4) {
+                console.log("bounce x %d", this.body.isWallNear);
+            }
+            if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
+                 (this.body.isWallNear == 4 && this.vel.y > 0)) {
                 this.vel.y = - this.vel.y;
+                console.log("bounce y %d", this.body.isWallNear);
             }
         }
         this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game.dt));

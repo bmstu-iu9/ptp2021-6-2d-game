@@ -367,7 +367,14 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
 define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"], function (require, exports, geom, Tile_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Body = void 0;
+    exports.Body = exports.Direction = void 0;
+    var Direction;
+    (function (Direction) {
+        Direction[Direction["Right"] = 1] = "Right";
+        Direction[Direction["Up"] = 2] = "Up";
+        Direction[Direction["Left"] = 3] = "Left";
+        Direction[Direction["Down"] = 4] = "Down";
+    })(Direction = exports.Direction || (exports.Direction = {}));
     var Body = (function () {
         function Body(center, radius) {
             this.velocity = 0.05;
@@ -378,61 +385,59 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
         }
         Body.prototype.move = function (delta) {
             var delta1 = delta.add(this.collisionBox.mul(1 / 2));
-            var collisionUR = this.game.check_wall(this.center.add(delta1));
-            var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
-            var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
-            var collisionDR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
-            if (collisionUL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full) {
-                delta = new geom.Vector();
-                if (collisionUR == Tile_1.CollisionType.Full) {
-                    var collisionRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0.1, 0))));
+            var collisionDR = this.game.check_wall(this.center.add(delta1));
+            var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
+            var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
+            var collisionUR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
+            if (collisionDL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full) {
+                if (collisionDR == Tile_1.CollisionType.Full) {
+                    var collisionRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -delta.y))));
                     if (collisionRW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 1;
                     }
                     else {
-                        this.isWallNear = 2;
+                        this.isWallNear = 4;
                     }
                 }
-                else if (collisionUL == Tile_1.CollisionType.Full) {
-                    var collisionLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x - 0.1, 0))));
+                else if (collisionDL == Tile_1.CollisionType.Full) {
+                    var collisionLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -delta.y))));
                     if (collisionLW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 3;
                     }
                     else {
-                        this.isWallNear = 2;
+                        this.isWallNear = 4;
                     }
                 }
-                else if (collisionDL == Tile_1.CollisionType.Full) {
-                    var collisonLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x - 0.1, 0))));
+                else if (collisionUL == Tile_1.CollisionType.Full) {
+                    var collisonLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -(this.collisionBox.y + delta.y)))));
                     if (collisonLW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 3;
                     }
                     else {
-                        console.log("aboba");
-                        this.isWallNear = 4;
+                        this.isWallNear = 2;
                     }
                 }
                 else {
-                    var collisonRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0.1, 0))));
+                    var collisonRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -(this.collisionBox.y + delta.y)))));
                     if (collisonRW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 1;
                     }
                     else {
-                        console.log("aboba");
-                        this.isWallNear = 4;
+                        this.isWallNear = 2;
                     }
                 }
-                console.log('boba : %d', this.isWallNear);
+                delta = new geom.Vector();
+                console.log("boba %d", this.isWallNear);
             }
-            else if (collisionUL != Tile_1.CollisionType.Empty) {
+            else if (collisionDL != Tile_1.CollisionType.Empty) {
                 var norm = void 0;
-                if (collisionUL == Tile_1.CollisionType.CornerDL)
+                if (collisionDL == Tile_1.CollisionType.CornerDL)
                     norm = new geom.Vector(1, -1);
-                if (collisionUL == Tile_1.CollisionType.CornerDR)
+                if (collisionDL == Tile_1.CollisionType.CornerDR)
                     norm = new geom.Vector(-1, -1);
-                if (collisionUL == Tile_1.CollisionType.CornerUL)
+                if (collisionDL == Tile_1.CollisionType.CornerUL)
                     norm = new geom.Vector(1, 1);
-                if (collisionUL == Tile_1.CollisionType.CornerUR)
+                if (collisionDL == Tile_1.CollisionType.CornerUR)
                     norm = new geom.Vector(-1, 1);
                 delta = delta.sub(norm.mul(delta.dot(norm) / norm.dot(norm))).add(norm.mul(1 / 10000));
             }
@@ -1247,11 +1252,15 @@ define("Entities/Projectile", ["require", "exports", "Entities/Entity", "Geom", 
         Projectile.prototype.step = function () {
             this.body.move(this.vel.mul(Game_2.Game.dt));
             if (this.body.isWallNear != 0 && this.enableBouncing) {
-                if (this.body.isWallNear == 1 || this.body.isWallNear == 3) {
+                if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
+                    (this.body.isWallNear == 3 && this.vel.x < 0)) {
                     this.vel.x = -this.vel.x;
+                    console.log("bounce x %d", this.body.isWallNear);
                 }
-                else if (this.body.isWallNear == 2 || this.body.isWallNear == 4) {
+                if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
+                    (this.body.isWallNear == 4 && this.vel.y > 0)) {
                     this.vel.y = -this.vel.y;
+                    console.log("bounce y %d", this.body.isWallNear);
                 }
             }
             this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_2.Game.dt));
