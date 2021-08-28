@@ -16,14 +16,16 @@ export class Body {
     public velocity = 0.05; // скорость объекта
     public collisionBox = new geom.Vector(0.5, 0.3);
     public isWallNear = 0; 
+    private collisions = 0; // Счётчик коллизий
 
     constructor(center : geom.Vector, radius:number) {
         this.center = center;
         this.radius = radius;
     }
 
-    // функция передвижения с коллизионной проверкой    
-    public move(delta : geom.Vector) {
+    // функция передвижения с коллизионной проверкой, возвращает было ли касание со стеной
+    public move(delta : geom.Vector) : boolean {
+        let touched = false;
         let delta1 = delta.add(this.collisionBox.mul(1 / 2));
         let collisionDR = this.game.check_wall(this.center.add(delta1));
         let collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
@@ -60,6 +62,7 @@ export class Body {
                 }
             }
             delta = new geom.Vector();
+            touched = true;
             console.log("boba %d", this.isWallNear);
         } else if (collisionDL != CollisionType.Empty){
             let norm : geom.Vector;
@@ -71,5 +74,12 @@ export class Body {
         }
         let posNew = this.center.add(delta);
         this.center = posNew;
+        if (touched)
+            this.collisions++;
+        return touched;
+    }
+
+    public getCollisionsNumber() {
+        return this.collisions;
     }
 }

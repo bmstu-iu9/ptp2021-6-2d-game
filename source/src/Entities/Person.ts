@@ -16,9 +16,7 @@ export class Person extends Entity {
     public viewRadius : number; // радиус сектора видимости
     public viewingAngle : number; // угол сектора видимости
     public direction : geom.Vector; // направление взгляда
-    public alertLvl : number; // уровень тревоги
-    public hpMax = 15; // Максимальное здоровье
-    public hp = this.hpMax; // Текущее здоровье
+    public alertLvl : number; // уровень тревоги    
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     public mode : PersonMode; // маркер состояния (переименовать по необходимости)
@@ -49,7 +47,7 @@ export class Person extends Entity {
     }
 
     public die() {
-        this.hp = 0;
+        super.die();
         if (this.type)
             this.game.makeCorpse(this.body.center, this.type);
     }
@@ -146,21 +144,20 @@ export class Person extends Entity {
         this.direction = new geom.Vector(x, y);
 
         this.updateMode();
-        this.behaviorModel.step();
+        this.behaviorModel.step();        
 
         super.step();
     }
 
-    public display(draw : Draw) {
-        
+    public display(draw : Draw) {    
         super.display(draw);
-
-        let box = new geom.Vector(1, 0.1);
-        let pos = this.body.center.clone().add(new geom.Vector(0, -1));
-        let percentage = this.hp / this.hpMax;
-        let frontColor = new Color(25, 25, 25)
-        let backColor = new Color(25, 255, 25)
-        let marks = [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax];
-        draw.bar(pos, box, percentage, frontColor, backColor, marks)
+        draw.bar(
+            this.body.center.clone().add(new geom.Vector(0, -1)), // Pos
+            new geom.Vector(1, 0.1), // Box
+            this.hp / this.hpMax, // Percentage
+            new Color(25, 25, 25), // Back color
+            new Color(25, 255, 25), // Front color
+            [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax] // Marks
+        );
     }
 }

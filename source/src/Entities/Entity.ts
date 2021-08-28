@@ -13,6 +13,9 @@ export class Entity {
     public entityID : number;
     public myAI : AI;
     public commands : Commands = null;
+    public alive = true;
+    public hpMax = 15; // Максимальное здоровье
+    public hp = this.hpMax; // Текущее здоровье
     
     constructor(game : Game, body : Body) {
         this.game = game;
@@ -21,7 +24,13 @@ export class Entity {
         this.animation = new Animation("Scientist",8); // создание анимации персонажа
         this.commands = this.myAI.commands;
     }
-    public step() {        
+    public die() {
+        this.hp = 0;
+        this.alive = false;
+    }
+    public step() {
+        if (this.hp <= 0)
+            this.die();      
         if (!this.commands)
             return;
         this.myAI.step();

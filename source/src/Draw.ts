@@ -23,6 +23,10 @@ export class Color {
     public toString() : string {
         return "rgba(" + this.r + "," + this.g + "," + this.b  + "," + this.a + ")";
     }
+
+    public setAlpha(a : number) : Color {
+        return new Color(this.r, this.g, this.b, a);
+    }
 }
 export enum Layer { // Индентификатор текстуры (тайл или персонаж)
     TileLayer, 
