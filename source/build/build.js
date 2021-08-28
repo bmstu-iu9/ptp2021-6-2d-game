@@ -729,11 +729,13 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.changeCurrentInstruction(this.currentInstruction);
         };
         BehaviorModel.prototype.step = function () {
-            if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions[this.currentInstruction]) {
+            console.log("here?");
+            if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
+                console.log(this.currentInstruction, "in progress");
                 this.operationNum++;
-                this.operationNum %= this.instructions[this.currentInstruction].operations.length;
-                var operation = this.instructions[this.currentInstruction].operations[this.operationNum];
-                var data = this.instructions[this.currentInstruction].operationsData[this.operationNum];
+                this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
+                var operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];
+                var data = this.instructions.get(this.currentInstruction).operationsData[this.operationNum];
                 switch (operation) {
                     case Operations.goToPoint: {
                         this.myAI.goToPoint(data);
@@ -1522,7 +1524,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return Draw_7.Draw.loadImage("./textures/tiles/" + value.value);
                 }
                 if (value.dataType === 'Vector') {
-                    return JSON.stringify(new geom.Vector(value.x, value.y));
+                    return new geom.Vector(value.x, value.y);
                 }
                 if (value.dataType == 'Soldier') {
                     var soldier = Game.currentGame.makeSoldier(value.center);
@@ -1534,7 +1536,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     console.log("loading scientist");
                     var scientist = Game.currentGame.makeScientist(value.center);
                     scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
-                    scientist.behaviorModel = value.behaviorModel.instructions;
+                    scientist.behaviorModel = value.behaviorModel;
+                    scientist.behaviorModel.myAI = scientist.myAI;
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
@@ -1546,8 +1549,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return stationaryObject;
                 }
                 if (value.dataType == 'BehaviorModel') {
+                    console.log("beh mod");
                     var behaviorModel = new BehaviorModel_3.BehaviorModel(null);
                     behaviorModel.instructions = value.instructions;
+                    return behaviorModel;
                 }
                 if (value.dataType == 'Instruction') {
                     var instruction = new BehaviorModel_3.Instruction();

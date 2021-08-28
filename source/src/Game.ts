@@ -130,7 +130,7 @@ export class Game {
                 return Draw.loadImage("./textures/tiles/" + value.value);
             }
             if (value.dataType === 'Vector') { // распаковка Vector
-                return JSON.stringify(new geom.Vector(value.x, value.y));
+                return new geom.Vector(value.x, value.y);
             }
             if (value.dataType == 'Soldier') {
                 let soldier = Game.currentGame.makeSoldier(value.center) as Soldier;
@@ -142,7 +142,8 @@ export class Game {
                 console.log("loading scientist");
                 let scientist = Game.currentGame.makeScientist(value.center) as Scientist;
                 scientist.behaviorModel = new BehaviorModel(scientist.myAI);
-                scientist.behaviorModel = value.behaviorModel.instructions;
+                scientist.behaviorModel = value.behaviorModel;
+                scientist.behaviorModel.myAI = scientist.myAI;
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -154,8 +155,11 @@ export class Game {
                 return stationaryObject;
             }
             if (value.dataType == 'BehaviorModel') {
+                console.log("beh mod");
+                
                 let behaviorModel = new BehaviorModel(null);
                 behaviorModel.instructions = value.instructions;
+                return behaviorModel;
             }
             if (value.dataType == 'Instruction') {
                 let instruction = new Instruction();

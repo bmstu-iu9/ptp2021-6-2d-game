@@ -54,11 +54,15 @@ export class BehaviorModel {
     }
 
     public step() {
-        if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions[this.currentInstruction]) {
+        console.log("here?");
+        
+        if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions.get(this.currentInstruction)) {
+            console.log(this.currentInstruction, "in progress");
+            
             this.operationNum++;
-            this.operationNum %= this.instructions[this.currentInstruction].operations.length;
-            let operation = this.instructions[this.currentInstruction].operations[this.operationNum];
-            let data = this.instructions[this.currentInstruction].operationsData[this.operationNum];
+            this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
+            let operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];
+            let data = this.instructions.get(this.currentInstruction).operationsData[this.operationNum];
             switch (operation) {
                 case Operations.goToPoint: {
                     this.myAI.goToPoint(data);
