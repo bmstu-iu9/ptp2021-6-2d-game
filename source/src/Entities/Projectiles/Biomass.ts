@@ -14,6 +14,7 @@ export class Biomass extends Projectile {
         this.viscousFriction = 10;
         this.vel = this.vel.mul(this.viscousFriction);
         this.loadSpriteAnimation("Biomass", 3);
+        this.enableBouncing = true
     }
     
     public checkTarget() : Entity {

@@ -190,6 +190,7 @@ export class Game {
         this.draw.step();
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
+        Debug.clear();
     }
 
     public replacer(key, value) { // функция замены классов для преобразования в JSON
