@@ -804,11 +804,13 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
         Debug.addPoint = function (place, color) {
             return this.points[this.points.length] = new Point(place, color);
         };
+        Debug.clear = function () {
+            this.points = [];
+        };
         Debug.drawPoints = function (game) {
             for (var i = 0; i < this.points.length; i++) {
                 this.points[i].drawPoint(game);
             }
-            this.points = [];
         };
         Debug.points = [];
         return Debug;
@@ -1657,7 +1659,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_4.Person));
     exports.Soldier = Soldier;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1809,6 +1811,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw.getimage();
             this.mimic.display(this.draw);
             this.draw.step();
+            Debug_3.Debug.clear();
         };
         Game.prototype.replacer = function (key, value) {
             if (value instanceof Map) {
@@ -2074,16 +2077,16 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 var marks = temp.marks;
                 var bar = box.clone();
                 bar.x *= percentage;
-                this.fillRect(pos, box, frontColor);
+                this.fillRect(pos, box, backColor);
                 var posNew = pos.clone();
                 posNew.x -= (box.x - bar.x) / 2;
-                this.fillRect(posNew, bar, backColor);
+                this.fillRect(posNew, bar, frontColor);
                 bar.x = 2 / this.cam.scale;
                 pos.x -= box.x / 2;
                 for (var i = 0; i < marks.length; i++) {
                     posNew = pos.clone();
                     posNew.x += box.x * marks[i];
-                    this.fillRect(posNew, bar, frontColor);
+                    this.fillRect(posNew, bar, backColor);
                 }
             }
         };
@@ -2172,7 +2175,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
         Draw.prototype.clear = function () {
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
-        Draw.prototype.bar = function (pos, box, percentage, frontColor, backColor, marks) {
+        Draw.prototype.bar = function (pos, box, percentage, backColor, frontColor, marks) {
             var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
             this.hpqueue.push(queue);
         };

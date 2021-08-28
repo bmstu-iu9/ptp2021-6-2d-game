@@ -23,10 +23,13 @@ export class Debug {
         return this.points[this.points.length] =  new Point(place, color);
     }
 
+    public static clear() {
+        this.points = [];
+    }
+
     public static drawPoints(game : Game) {
         for (let i = 0; i < this.points.length; i++) {
             this.points[i].drawPoint(game);
-        }
-        this.points = [];
+        }        
     }
 }
