@@ -1106,13 +1106,16 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                 this.game.makeCorpse(this.body.center, this.type);
             _super.prototype.die.call(this);
         };
+        Person.prototype.isPointVisible = function (pos) {
+            return geom.dist(this.body.center, pos) <= this.viewRadius;
+        };
         Person.prototype.checkTriggers = function () {
             var center = this.body.center;
             for (var i = 0; i < this.game.triggers.length; i++) {
                 var triggerCoordinate = this.game.triggers[i].getCoordinates();
                 Debug_2.Debug.addPoint(triggerCoordinate, new Draw_5.Color(0, 0, 255));
                 var triggerVector = triggerCoordinate.sub(center);
-                if (triggerVector.abs() <= this.viewRadius) {
+                if (this.isPointVisible(triggerCoordinate)) {
                     if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                         this.game.ghost = this.game.mimic.controlledEntity.body.center;
                     }
@@ -1124,10 +1127,12 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             }
             for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
                 var entity = _a[_i];
-                if (entity == this)
+                if (entity == this || !this.isPointVisible(entity.body.center))
                     continue;
                 if (entity instanceof Person && entity.hp < entity.hpThresholdCorrupted)
                     this.awareness += 2 * Game_2.Game.dt;
+                if (entity instanceof Person && entity.awareness > this.awareness)
+                    this.awareness = entity.awareness;
             }
         };
         Person.prototype.modeToString = function () {

@@ -53,6 +53,10 @@ export class Person extends Entity {
         super.die();
     }
 
+    public isPointVisible(pos : geom.Vector) : boolean {
+        return geom.dist(this.body.center, pos) <= this.viewRadius;
+    }
+
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
         let center = this.body.center;
         for (let i = 0; i < this.game.triggers.length; i++) {
@@ -60,7 +64,7 @@ export class Person extends Entity {
             let triggerCoordinate = this.game.triggers[i].getCoordinates();
             Debug.addPoint(triggerCoordinate, new Color(0, 0, 255));
             let triggerVector = triggerCoordinate.sub(center);
-            if (triggerVector.abs() <= this.viewRadius) {
+            if (this.isPointVisible(triggerCoordinate)) {
                 if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                     this.game.ghost = this.game.mimic.controlledEntity.body.center;
                 }
@@ -73,12 +77,16 @@ export class Person extends Entity {
 
         // Проверка на пассивные триггеры
         for (let entity of this.game.entities) {
-            if (entity == this)
+            if (entity == this || !this.isPointVisible(entity.body.center))
                 continue;
             // Видим покоцанного челика
             if (entity instanceof Person && entity.hp < entity.hpThresholdCorrupted)
                 this.awareness += 2 * Game.dt;
+            // Видим настороженного челика
+            if (entity instanceof Person && entity.awareness > this.awareness)
+                this.awareness = entity.awareness;
         }
+
     }
 
     // Режим в строковом виде
