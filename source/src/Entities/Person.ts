@@ -12,6 +12,11 @@ export enum PersonMode {
     Dying
 }
 
+export enum Behavior {
+    Normal = "normal",
+    Panic = "panic"
+}
+
 export class Person extends Entity {
     public viewRadius : number = 3; // радиус сектора видимости
     public viewingAngle : number; // угол сектора видимости
@@ -27,7 +32,7 @@ export class Person extends Entity {
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body)
         this.mode = mode;
-        this.viewRadius = 3;
+        this.viewRadius = 5;
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
         this.behaviorModel = new BehaviorModel(this.myAI);
@@ -47,22 +52,20 @@ export class Person extends Entity {
             this.game.makeCorpse(this.body.center, this.type);
     }
 
-    public checkTriggers() { // проверка всех триггеров на попадание в сетор видимости
+    public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
         let center = this.body.center;
         for (let i = 0; i < this.game.triggers.length; i++) {
             
             let triggerCoordinate = this.game.triggers[i].getCoordinates();
             Debug.addPoint(triggerCoordinate, new Color(0, 0, 255));
             let triggerVector = triggerCoordinate.sub(center);
-            if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
-                if (triggerVector.abs() <= this.viewRadius) {
-                    if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
-                        this.game.ghost = this.game.mimic.controlledEntity.body.center;
-                    }
-                    if (!this.game.triggers[i].isEntityTriggered(this)) {
-                        this.awareness ++;
-                        this.game.triggers[i].entityTriggered(this);
-                    }
+            if (triggerVector.abs() <= this.viewRadius) {
+                if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
+                    this.game.ghost = this.game.mimic.controlledEntity.body.center;
+                }
+                if (!this.game.triggers[i].isEntityTriggered(this)) {
+                    this.awareness += this.game.triggers[i].power;
+                    this.game.triggers[i].entityTriggered(this);
                 }
             }
         }
@@ -138,10 +141,24 @@ export class Person extends Entity {
         this.checkTriggers();
         this.direction = new geom.Vector(x, y);
 
+        if(this.awareness >= this.awarenessThreshold)
+            this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
+
         this.updateMode();
         this.behaviorModel.step();        
 
         super.step();
+    }
+
+    public displayAwareness(draw : Draw) {
+        draw.bar(
+            this.body.center.clone().add(new geom.Vector(0, -0.9)), // Pos
+            new geom.Vector(1, 0.1), // Box
+            this.awareness / this.awarenessThreshold, // Percentage
+            new Color(25, 25, 25), // Back color
+            new Color(25, 150, 255), // Front color
+            [] // Marks
+        );
     }
 
     public display(draw : Draw) {    

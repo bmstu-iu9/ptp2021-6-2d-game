@@ -8,7 +8,6 @@ import { Corpse } from "./Entities/Corpse";
 import { Draw, Layer } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
 import { Biomass } from "./Entities/Projectiles/Biomass";
-import { Projectile } from "./Entities/Projectiles/Projectile";
 
 export class Aim {
     public vel = 0;

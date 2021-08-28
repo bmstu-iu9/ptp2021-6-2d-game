@@ -8,6 +8,7 @@ export class Trigger {
     public appearanceTime : number;
     public boundEntity : Entity;
     public triggeredEntities : Map<Entity, boolean>;
+    public power = 1;
 
     constructor(lifeTime : number, boundEntity : Entity) {
         this.lifeTime = lifeTime;
@@ -21,16 +22,13 @@ export class Trigger {
         if (aux.getMilliCount() - this.appearanceTime > this.lifeTime) {
             this.active = false;
         }
-        if (this.boundEntity == null) {
+        if (this.boundEntity == null || !this.boundEntity.alive) {
             this.active = false;
         }
         return this.active;
     }
 
     public getCoordinates() {
-        if (!this.isActive()) {
-            return new Vector(-1000, -1000); // несуществующая позиция, при необходимости поправить
-        }
         return this.boundEntity.body.center.clone();
     }
 

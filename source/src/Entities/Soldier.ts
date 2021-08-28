@@ -26,6 +26,7 @@ export class Soldier extends Person {
 
     public display(draw : Draw) {
         super.display(draw);
+        this.displayAwareness(draw);
         this.weapon.display(draw);
     }
 }

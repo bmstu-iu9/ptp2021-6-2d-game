@@ -83,6 +83,7 @@ export class Game {
         let entity = new Monster(this, body);//последнее - маркер состояния
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
+        this.makeTrigger(entity, 10, 100000);
         return entity;
     }
 
@@ -102,8 +103,10 @@ export class Game {
         return entity;
     }
 
-    public makeTrigger(lifeTime: number, boundEntity: Entity) { // создаёт триггер и возвращает ссылку
-        return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
+    public makeTrigger(boundEntity: Entity, power : number, lifeTime: number) { // создаёт триггер и возвращает ссылку
+        let trigger = new Trigger(lifeTime, boundEntity);
+        trigger.power = power;
+        return this.triggers[this.triggers.length] = trigger;
     }
 
     private processEntities() {
@@ -111,6 +114,16 @@ export class Game {
         for (let i = 0; i < this.entities.length; i++) {
             if (!this.entities[i].alive) {
                 this.entities.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    private processTriggers() {
+        // Удаление триггеров
+        for (let i = 0; i < this.triggers.length; i++) {
+            if (!this.triggers[i].active) {
+                this.triggers.splice(i, 1);
                 i--;
             }
         }
@@ -127,6 +140,7 @@ export class Game {
         this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
         this.processEntities();
+        this.processTriggers();
     }
 
     public attachCamToMimic() {

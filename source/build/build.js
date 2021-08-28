@@ -430,7 +430,6 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
                 }
                 delta = new geom.Vector();
                 touched = true;
-                console.log("boba %d", this.isWallNear);
             }
             else if (collisionDL != Tile_1.CollisionType.Empty) {
                 var norm = void 0;
@@ -1068,25 +1067,32 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
 define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Debug", "Draw", "BehaviorModel"], function (require, exports, Entity_1, geom, Debug_2, Draw_5, BehaviorModel_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Person = exports.PersonMode = void 0;
+    exports.Person = exports.Behavior = exports.PersonMode = void 0;
     var PersonMode;
     (function (PersonMode) {
         PersonMode[PersonMode["Fine"] = 0] = "Fine";
         PersonMode[PersonMode["Corrupted"] = 1] = "Corrupted";
         PersonMode[PersonMode["Dying"] = 2] = "Dying";
     })(PersonMode = exports.PersonMode || (exports.PersonMode = {}));
+    var Behavior;
+    (function (Behavior) {
+        Behavior["Normal"] = "normal";
+        Behavior["Panic"] = "panic";
+    })(Behavior = exports.Behavior || (exports.Behavior = {}));
     var Person = (function (_super) {
         __extends(Person, _super);
         function Person(game, body, mode) {
             var _this = _super.call(this, game, body) || this;
+            _this.viewRadius = 3;
+            _this.awareness = 0;
+            _this.awarenessThreshold = 10;
             _this.hpThresholdCorrupted = 10;
             _this.hpThresholdDying = 5;
             _this.type = null;
             _this.mode = mode;
-            _this.viewRadius = 3;
+            _this.viewRadius = 5;
             _this.viewingAngle = Math.PI / 4;
             _this.direction = new geom.Vector(1, 0);
-            _this.alertLvl = 0;
             _this.behaviorModel = new BehaviorModel_1.BehaviorModel(_this.myAI);
             _this.setModeTimings(10, 5, 5);
             return _this;
@@ -1096,9 +1102,6 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             this.hpThresholdCorrupted = dying + corrupted;
             this.hpMax = dying + corrupted + fine;
             this.hp = this.hpMax;
-        };
-        Person.prototype.upAlertLvl = function () {
-            this.alertLvl++;
         };
         Person.prototype.die = function () {
             _super.prototype.die.call(this);
@@ -1111,15 +1114,13 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
                 var triggerCoordinate = this.game.triggers[i].getCoordinates();
                 Debug_2.Debug.addPoint(triggerCoordinate, new Draw_5.Color(0, 0, 255));
                 var triggerVector = triggerCoordinate.sub(center);
-                if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
-                    if (triggerVector.abs() <= this.viewRadius) {
-                        if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
-                            this.game.ghost = this.game.mimic.controlledEntity.body.center;
-                        }
-                        if (!this.game.triggers[i].isEntityTriggered(this)) {
-                            this.upAlertLvl();
-                            this.game.triggers[i].entityTriggered(this);
-                        }
+                if (triggerVector.abs() <= this.viewRadius) {
+                    if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
+                        this.game.ghost = this.game.mimic.controlledEntity.body.center;
+                    }
+                    if (!this.game.triggers[i].isEntityTriggered(this)) {
+                        this.awareness += this.game.triggers[i].power;
+                        this.game.triggers[i].entityTriggered(this);
                     }
                 }
             }
@@ -1187,9 +1188,14 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Geom", "Deb
             this.changedirection(x, y);
             this.checkTriggers();
             this.direction = new geom.Vector(x, y);
+            if (this.awareness >= this.awarenessThreshold)
+                this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
             this.updateMode();
             this.behaviorModel.step();
             _super.prototype.step.call(this);
+        };
+        Person.prototype.displayAwareness = function (draw) {
+            draw.bar(this.body.center.clone().add(new geom.Vector(0, -0.9)), new geom.Vector(1, 0.1), this.awareness / this.awarenessThreshold, new Draw_5.Color(25, 25, 25), new Draw_5.Color(25, 150, 255), []);
         };
         Person.prototype.display = function (draw) {
             _super.prototype.display.call(this, draw);
@@ -1431,12 +1437,13 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
     }());
     exports.Mimic = Mimic;
 });
-define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, exports, aux, Geom_5) {
+define("Trigger", ["require", "exports", "AuxLib"], function (require, exports, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Trigger = void 0;
     var Trigger = (function () {
         function Trigger(lifeTime, boundEntity) {
+            this.power = 1;
             this.lifeTime = lifeTime;
             this.boundEntity = boundEntity;
             this.active = true;
@@ -1447,15 +1454,12 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
             if (aux.getMilliCount() - this.appearanceTime > this.lifeTime) {
                 this.active = false;
             }
-            if (this.boundEntity == null) {
+            if (this.boundEntity == null || !this.boundEntity.alive) {
                 this.active = false;
             }
             return this.active;
         };
         Trigger.prototype.getCoordinates = function () {
-            if (!this.isActive()) {
-                return new Geom_5.Vector(-1000, -1000);
-            }
             return this.boundEntity.body.center.clone();
         };
         Trigger.prototype.entityTriggered = function (entity) {
@@ -1480,6 +1484,10 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities
             _this.type = "Scientist";
             return _this;
         }
+        Scientist.prototype.display = function (draw) {
+            this.displayAwareness(draw);
+            _super.prototype.display.call(this, draw);
+        };
         return Scientist;
     }(Person_3.Person));
     exports.Scientist = Scientist;
@@ -1653,6 +1661,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
         };
         Soldier.prototype.display = function (draw) {
             _super.prototype.display.call(this, draw);
+            this.displayAwareness(draw);
             this.weapon.display(draw);
         };
         return Soldier;
@@ -1739,6 +1748,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             var entity = new Monster_2.Monster(this, body);
             entity.entityID = this.entities.length;
             this.entities[this.entities.length] = entity;
+            this.makeTrigger(entity, 10, 100000);
             return entity;
         };
         Game.prototype.makeCorpse = function (pos, type) {
@@ -1755,13 +1765,23 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.entities[this.entities.length] = entity;
             return entity;
         };
-        Game.prototype.makeTrigger = function (lifeTime, boundEntity) {
-            return this.triggers[this.triggers.length] = new Trigger_1.Trigger(lifeTime, boundEntity);
+        Game.prototype.makeTrigger = function (boundEntity, power, lifeTime) {
+            var trigger = new Trigger_1.Trigger(lifeTime, boundEntity);
+            trigger.power = power;
+            return this.triggers[this.triggers.length] = trigger;
         };
         Game.prototype.processEntities = function () {
             for (var i = 0; i < this.entities.length; i++) {
                 if (!this.entities[i].alive) {
                     this.entities.splice(i, 1);
+                    i--;
+                }
+            }
+        };
+        Game.prototype.processTriggers = function () {
+            for (var i = 0; i < this.triggers.length; i++) {
+                if (!this.triggers[i].active) {
+                    this.triggers.splice(i, 1);
                     i--;
                 }
             }
@@ -1774,6 +1794,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
             this.processEntities();
+            this.processTriggers();
         };
         Game.prototype.attachCamToMimic = function () {
             this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
@@ -2340,7 +2361,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_16, Game_7, Editor_1, BehaviorModel_2) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel", "Entities/Person"], function (require, exports, geom, aux, Draw_16, Game_7, Editor_1, BehaviorModel_2, Person_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
@@ -2354,9 +2375,12 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     var game = new Game_7.Game(draw);
     game.makeSoldier(new geom.Vector(1, 1));
     var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-    soldier.behaviorModel.instructions["normal"] = new BehaviorModel_2.Instruction();
-    soldier.behaviorModel.instructions["normal"].addPursuit();
-    soldier.behaviorModel.changeCurrentInstruction("normal");
+    soldier.behaviorModel.instructions[Person_6.Behavior.Normal] = new BehaviorModel_2.Instruction();
+    soldier.behaviorModel.instructions[Person_6.Behavior.Normal].addGoingToPoint(new geom.Vector(1, 1));
+    soldier.behaviorModel.instructions[Person_6.Behavior.Normal].addGoingToPoint(new geom.Vector(6, 1));
+    soldier.behaviorModel.instructions[Person_6.Behavior.Panic] = new BehaviorModel_2.Instruction();
+    soldier.behaviorModel.instructions[Person_6.Behavior.Panic].addPursuit();
+    soldier.behaviorModel.changeCurrentInstruction(Person_6.Behavior.Normal);
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;
@@ -2366,7 +2390,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
             t++;
             if (x == false) {
                 game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-                game.makeTrigger(100000000, game.entities[1]);
                 console.log(Game_7.Game.levels["map"].PathMatrix);
                 x = true;
             }
