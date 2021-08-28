@@ -32,7 +32,7 @@ export class AI {
     }
 
     private go(point : geom.Vector) { // функция движения в направлении к точке
-        let eps = 0.01;
+        let eps = 0.02;
         if (this.body.center.x < point.x + eps) {
             this.commands["MoveRight"] = true;
         }
