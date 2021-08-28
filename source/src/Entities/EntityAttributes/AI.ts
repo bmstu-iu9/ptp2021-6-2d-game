@@ -98,7 +98,7 @@ export class AI {
         let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
 
         // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
-        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
+        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)) == undefined || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
             return [];
         }
 
@@ -106,9 +106,7 @@ export class AI {
         if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
             let answer : geom.Vector[];
             answer = [];
-            answer[0] = this.getPointCoordinate(finish);
-            console.log("Path from ", start, " to ", finish, " is ", answer);
-            
+            answer[0] = this.getPointCoordinate(finish);            
             return answer;
         }
 

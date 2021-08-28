@@ -16,6 +16,7 @@ import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
+import { Biomass } from "./Entities/Projectiles/Biomass";
 
 export class Game {
     public levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -187,11 +188,9 @@ export class Game {
 
     constructor(draw: Draw) {
         console.log("im here!!");
-
         Control.init();
         this.draw = draw;
         this.currentLevel.Grid = [];
-
         this.mimic = new Mimic(this);
     }
 
@@ -234,13 +233,22 @@ export class Game {
         return entity;
     }
 
+    public makeBiomass(pos: geom.Vector, vel: geom.Vector): Biomass {
+        let body = this.makeBody(pos, 1);
+        let entity = new Biomass(this, body, vel);
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
+
     public makeTrigger(lifeTime: number, boundEntity: Entity) { // создаёт триггер и возвращает ссылку
         return this.triggers[this.triggers.length] = new Trigger(lifeTime, boundEntity);
     }
 
     private processEntities() {
+        // Удаление сущностей
         for (let i = 0; i < this.entities.length; i++) {
-            if (this.entities[i] instanceof Person && (this.entities[i] as Person).hp <= 0) {
+            if (!this.entities[i].alive) {
                 this.entities.splice(i, 1);
                 i--;
             }
@@ -293,23 +301,34 @@ export class Game {
         return CollisionType.Empty;
     }
 
+    private configureCamScale() {
+        // Масштаб с учётом прицела
+        this.draw.cam.scale = 80 * (1 + 0.1 * (this.mimic.aim.charge / this.mimic.aim.chargeMax));
+        // Подёргивание камеры
+        if (this.mimic.aim.charge > 0) {
+            this.draw.cam.pos.x += Math.sin(aux.getMilliCount() * 0.01) * 0.01;
+            this.draw.cam.pos.y += Math.cos(aux.getMilliCount() * 0.01) * 0.01;
+        }
+    }
+
     public display() {
-        //this.draw.cam.pos = new geom.Vector(0, 0);
-        this.draw.cam.scale = 100;
-        // Tiles
+        // Настройка камеры
+        this.configureCamScale();
+        
+        // Орисовка тайлов
         this.currentLevel.display(this.draw);
 
-        // People
+        // Отрисовка Entities
         for (let entity of this.entities) {
             entity.display(this.draw);
-            //let pos = entity.body.center.clone().add(new geom.Vector(0,0.4));
-            //this.drawCollisionCheck(pos, new geom.Vector(0.8, 0.3), new Color(0, 0, 255));
         }
         this.draw.getimage();
 
+        // Мимик
+        this.mimic.display(this.draw);
+
         // Анимации
         this.draw.step();
-
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
     }

@@ -60,11 +60,12 @@ export class Control {
         for (let i = 0; i < 256; i++) {
             Control._keys[i] = false;
         }
+        let canvas = document.getElementById("gameCanvas");
         if (!aux.editorMode) {
             window.addEventListener("keydown", Control.onKeyDown);
             window.addEventListener("keyup", Control.onKeyUp);
         }
-        window.addEventListener("click", Control.onClick);
+        canvas.addEventListener("click", Control.onClick);
         window.addEventListener("wheel", Control.onWheel);
         window.addEventListener("mousemove", Control.onMouseMove);
         window.addEventListener("mousedown", Control.onMouseDown);

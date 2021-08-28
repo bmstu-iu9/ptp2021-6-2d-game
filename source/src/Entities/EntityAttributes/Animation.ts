@@ -22,6 +22,7 @@ export class Animation {
         this.direction="right";
         this.Imageloader();
     }
+    
     async Imageloader(){
         let direction = ["top", "down", "left","right","stand"];
         let mods:string[];

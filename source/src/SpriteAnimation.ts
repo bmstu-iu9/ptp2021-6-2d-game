@@ -40,7 +40,7 @@ export class SpriteAnimation {
         );
     }
 
-    private getCurrentFrame() : HTMLImageElement{
+    public getCurrentFrame() : HTMLImageElement{
         let frameNumber = Math.floor(this.time / this.frameDuration) % this.frames.length;
         return this.frames[frameNumber];
     }

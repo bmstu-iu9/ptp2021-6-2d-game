@@ -1,4 +1,4 @@
-import { Tile } from "./Tile";
+import { CollisionType, Tile } from "./Tile";
 import * as geom from "./Geom";
 import { Color, Draw } from "./Draw";
 import { PathGenerator } from "./Editor/PathGenerator";
@@ -8,6 +8,8 @@ import { Scientist } from "./Entities/Scientist";
 import { Monster } from "./Entities/Monster";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
+import { sign } from "crypto";
+import * as aux from "./AuxLib";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
@@ -190,6 +192,14 @@ export class Level {
                 if (advanced)
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
                     .add(size.mul(1 / 2)), size,  new Color(0, 0, 0), 0.03)
+            }
+        }
+    }
+    public displayColisionGrid(draw:Draw){
+        for(let i = 0; i < this.Grid.length; i++){
+            for (let j = 0; j < this.Grid[i].length; j++)
+            if (this.Grid[i][j].colision == CollisionType.Full) {
+                draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5*Math.sin(aux.getMilliCount()*0.005) + 0.5));
             }
         }
     }

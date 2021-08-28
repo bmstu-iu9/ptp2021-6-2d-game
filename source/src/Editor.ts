@@ -20,8 +20,8 @@ export class Editor {
     private mousePrev: geom.Vector;
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
-    public draw: Draw;
-
+    public draw : Draw;
+    private showCollisionGrid = false;
     constructor() {
         this.mousePrev = Control.mousePos();
         this.initHTML();
@@ -224,7 +224,8 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         // Обработка кнопок
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
-
+        let showcolision = () => {this.showCollisionGrid = true;}
+        document.getElementById("showcolision").onclick = showcolision;
         // Создание кнопок для тайлов
         for (let i = 0; i < 47; i++)
             this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
@@ -355,8 +356,9 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
 
     public display() {
         this.level.display(this.draw, true);
-        //console.log(this.level.Entities.length);
-
+        if (this.showCollisionGrid == true){
+            this.level.displayColisionGrid(this.draw);
+        }
         this.cursor.display();
         for (let i = 0; i < this.level.Entities.length; i++) {
             this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),
