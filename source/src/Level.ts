@@ -7,12 +7,28 @@ import { Soldier } from "./Entities/Soldier";
 import { Scientist } from "./Entities/Scientist";
 import { Monster } from "./Entities/Monster";
 import { StationaryObject } from "./Entities/StationaryObject";
+import { Instruction } from "./BehaviorModel";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
+        let val : any;
+        if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
+            
+            let keys = value.get("JSONkeys");
+            console.log("JSONkeys", keys);
+            let remapping = new Map();
+            for (let i = 0; i < keys.length; i++) {
+                remapping.set(keys[i], value[keys[i]]);
+            }
+            val = Array.from(remapping.entries());
+        } else {
+            val = Array.from(value.entries());
+        }
+        console.log(val);
+        
         return {
             dataType: 'Map',
-            value: Array.from(value.entries()), // or with spread: value: [...value]
+            value: val, // or with spread: value: [...value]
         };
     }
     if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
@@ -40,7 +56,7 @@ function replacer(key, value) { // функция замены классов д
             behaviorModel: value.behaviorModel
         }
     }
-    if (value instanceof Scientist) {
+    if (value instanceof Scientist) {            
         return {
             dataType: 'Scientist',
             center: value.body.center,
@@ -50,13 +66,20 @@ function replacer(key, value) { // функция замены классов д
     if (value instanceof Monster) {
         return {
             dataType: 'Monster',
-            center: value.body.center,
+            center: value.body.center
         }
     }
     if (value instanceof StationaryObject) {
         return {
             dataType: 'StationaryObject',
-            place: value.body.center,
+            center: value.body.center,
+        }
+    }
+    if (value instanceof Instruction) {
+        return {
+            dataType: 'Instruction',
+            operations: value.operations,
+            operationsData: value.operationsData
         }
     }
     return value;

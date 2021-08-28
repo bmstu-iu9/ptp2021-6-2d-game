@@ -189,6 +189,10 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                     //ListOfPads.compileBehaviorModel(behaviorModel);
                     if (behaviorModel.instructions[ListOfPads.instructionType] == undefined) {
                         behaviorModel.instructions[ListOfPads.instructionType] = new Instruction();
+                        
+                    }
+                    if (behaviorModel.instructions.get("JSONkeys") == undefined) {
+                        behaviorModel.instructions.set("JSONkeys", ["normal", "panic"]);
                     }
                     switch (toolType) {
                         case ToolType.GoToPoint: {
@@ -206,7 +210,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                         }
                     }
                     let pad = ListOfPads.createBehaviorPad(src, toolType);
-                    console.log(behaviorModel);
+                    //console.log(behaviorModel, behaviorModel.instructions.);
                     
                 }
             }

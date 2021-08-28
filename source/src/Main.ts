@@ -5,8 +5,9 @@ import { Game } from "./Game";
 import { Level } from "./Level";
 import { Editor } from "./Editor";
 import { Instruction } from "./BehaviorModel";
+import { Person } from "./Entities/Person";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LevelEditorPersons/source/env/"); // Если с Гита
 //aux.setEnvironment("http://127.0.0.1:4500/server.py"); // Если локальный сервер
 
 // Флаг режима редактора уровней
@@ -16,19 +17,16 @@ aux.setEditorMode(levelEditorMode);
 
 let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 let draw = new Draw(canvas);
-draw.cam.scale = 50;
+draw.cam.scale = 10;
 Game.levels = new Map();
 Game.loadMap("map.json", "map");
 
 let game = new Game(draw);
 game.makeScientist(new geom.Vector(1, 1));
-let soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-soldier.behaviorModel.instructions["test"] = new Instruction();
-soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
-soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
-soldier.behaviorModel.changeCurrentInstruction("test");
+let person = game.entities[0] as Person;
+person.behaviorModel.changeCurrentInstruction("normal"); 
 
-game.mimic.takeControl(game.entities[0]);
+game.mimic.takeControl(game.entities[1]);
 
 let x = false;
 let t = 0;
@@ -40,17 +38,18 @@ function step() {
         if (x == false) {
             //console.log(Game.levels["map"]);
             
-            game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-            game.makeTrigger(100000000, game.entities[1]);
+            //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
+            //game.makeTrigger(100000000, game.entities[1]);
             console.log(Game.levels["map"].PathMatrix); 
             x = true;
         }
         if (t % 100 == 0) {
+            console.log(game.entities);
             //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
-            for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
-                console.log(game.entities[1].myAI.Path[i]);
-                
-            }
+            //for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
+            //    console.log(game.entities[1].myAI.Path[i]);
+            //    
+            //}
         }
         draw.clear();
         game.step();

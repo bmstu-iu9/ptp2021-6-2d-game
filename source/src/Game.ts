@@ -15,6 +15,7 @@ import { Soldier } from "./Entities/Soldier";
 import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
+import { BehaviorModel, Instruction } from "./BehaviorModel";
 
 export class Game {
     public static levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -114,7 +115,7 @@ export class Game {
         // Ксотыль
         if (Game.levels[this.currentLevelName]) {
             this.currentLevel = Game.levels[this.currentLevelName];
-            this.entities = this.currentLevel.Entities;
+            //this.entities = this.currentLevel.Entities;
         }
 
         this.mimic.step();
@@ -213,7 +214,7 @@ export class Game {
                 behaviorModel: value.behaviorModel
             }
         }
-        if (value instanceof Scientist) {
+        if (value instanceof Scientist) {            
             return {
                 dataType: 'Scientist',
                 center: value.body.center,
@@ -232,6 +233,13 @@ export class Game {
                 center: value.body.center,
             }
         }
+        if (value instanceof Instruction) {
+            return {
+                dataType: 'Instruction',
+                operations: value.operations,
+                operationsData: value.operationsData
+            }
+        }
         return value;
     }
 
@@ -248,14 +256,15 @@ export class Game {
             }
             if (value.dataType == 'Soldier') {
                 let soldier = this.makeSoldier(value.center) as Soldier;
-                soldier.behaviorModel = value.behaviorModel;
-                soldier.behaviorModel.myAI = soldier.myAI;
+                soldier.behaviorModel = new BehaviorModel(soldier.myAI);
+                soldier.behaviorModel = value.behaviorModel.instructions;
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
+                console.log("loading scientist");
                 let scientist = this.makeScientist(value.center) as Scientist;
-                scientist.behaviorModel = value.behaviorModel;
-                scientist.behaviorModel.myAI = scientist.myAI;
+                scientist.behaviorModel = new BehaviorModel(scientist.myAI);
+                scientist.behaviorModel = value.behaviorModel.instructions;
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -264,6 +273,12 @@ export class Game {
             }
             if (value.dataType == 'StationaryObject') {
                 let stationaryObject = new StationaryObject(this, new Body(value.center, 1), "fine");
+                return stationaryObject;
+            }
+            if (value.dataType == 'Instruction') {
+                let instruction = new Instruction();
+                instruction.operations = value.operations;
+                instruction.operationsData = value.operationsData;
             }
         }
         return value;

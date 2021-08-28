@@ -966,15 +966,29 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
     }(Entity_2.Entity));
     exports.StationaryObject = StationaryObject;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject"], function (require, exports, Tile_3, geom, Draw_5, PathGenerator_1, Soldier_1, Scientist_1, Monster_1, StationaryObject_1) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel"], function (require, exports, Tile_3, geom, Draw_5, PathGenerator_1, Soldier_1, Scientist_1, Monster_1, StationaryObject_1, BehaviorModel_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LevelJSON = void 0;
     function replacer(key, value) {
         if (value instanceof Map) {
+            var val = void 0;
+            if (value.get("JSONkeys") != undefined) {
+                var keys = value.get("JSONkeys");
+                console.log("JSONkeys", keys);
+                var remapping = new Map();
+                for (var i = 0; i < keys.length; i++) {
+                    remapping.set(keys[i], value[keys[i]]);
+                }
+                val = Array.from(remapping.entries());
+            }
+            else {
+                val = Array.from(value.entries());
+            }
+            console.log(val);
             return {
                 dataType: 'Map',
-                value: Array.from(value.entries()),
+                value: val,
             };
         }
         if (value instanceof HTMLImageElement) {
@@ -1010,13 +1024,20 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         if (value instanceof Monster_1.Monster) {
             return {
                 dataType: 'Monster',
-                center: value.body.center,
+                center: value.body.center
             };
         }
         if (value instanceof StationaryObject_1.StationaryObject) {
             return {
                 dataType: 'StationaryObject',
-                place: value.body.center,
+                center: value.body.center,
+            };
+        }
+        if (value instanceof BehaviorModel_2.Instruction) {
+            return {
+                dataType: 'Instruction',
+                operations: value.operations,
+                operationsData: value.operationsData
             };
         }
         return value;
@@ -1373,7 +1394,7 @@ define("Trigger", ["require", "exports", "AuxLib", "Geom"], function (require, e
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_7, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_2, Soldier_2, Monster_3, Corpse_2, StationaryObject_3) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel"], function (require, exports, geom, aux, Body_1, Person_5, Control_2, Draw_7, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_2, Soldier_2, Monster_3, Corpse_2, StationaryObject_3, BehaviorModel_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -1474,8 +1495,9 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
         };
         Game.prototype.step = function () {
-            if (Game.levels[this.currentLevelName])
+            if (Game.levels[this.currentLevelName]) {
                 this.currentLevel = Game.levels[this.currentLevelName];
+            }
             this.mimic.step();
             this.attachCamToMimic();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
@@ -1560,6 +1582,13 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     center: value.body.center,
                 };
             }
+            if (value instanceof BehaviorModel_3.Instruction) {
+                return {
+                    dataType: 'Instruction',
+                    operations: value.operations,
+                    operationsData: value.operationsData
+                };
+            }
             return value;
         };
         Game.prototype.reviver = function (key, value) {
@@ -1575,12 +1604,15 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
                 if (value.dataType == 'Soldier') {
                     var soldier = this.makeSoldier(value.center);
-                    soldier.behaviorModel = value.behaviorModel;
+                    soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
+                    soldier.behaviorModel = value.behaviorModel.instructions;
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
+                    console.log("loading scientist");
                     var scientist = this.makeScientist(value.center);
-                    scientist.behaviorModel = value.behaviorModel;
+                    scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
+                    scientist.behaviorModel = value.behaviorModel.instructions;
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
@@ -1589,6 +1621,12 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
                 if (value.dataType == 'StationaryObject') {
                     var stationaryObject = new StationaryObject_3.StationaryObject(this, new Body_1.Body(value.center, 1), "fine");
+                    return stationaryObject;
+                }
+                if (value.dataType == 'Instruction') {
+                    var instruction = new BehaviorModel_3.Instruction();
+                    instruction.operations = value.operations;
+                    instruction.operationsData = value.operationsData;
                 }
             }
             return value;
@@ -2039,7 +2077,7 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
     }());
     exports.EditorGUI = EditorGUI;
 });
-define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Cursor", "BehaviorModel", "AuxLib", "Geom", "Editor/EditorGUI", "Draw"], function (require, exports, BehaviorModel_2, Cursor_1, BehaviorModel_3, aux, Geom_6, EditorGUI_1, Draw_10) {
+define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Cursor", "BehaviorModel", "AuxLib", "Geom", "Editor/EditorGUI", "Draw"], function (require, exports, BehaviorModel_4, Cursor_1, BehaviorModel_5, aux, Geom_6, EditorGUI_1, Draw_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ListOfPads = void 0;
@@ -2182,7 +2220,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             var currentPos = this.entityPos;
             for (var i = 0; i < this.behaviorModel.operations; i++) {
                 switch (this.behaviorModel.operations[i]) {
-                    case BehaviorModel_3.Operations.goToPoint: {
+                    case BehaviorModel_5.Operations.goToPoint: {
                         console.log(currentPos, this.behaviorModel.operationsData[i]);
                         EditorGUI_1.EditorGUI.addLine(currentPos, this.behaviorModel.operationsData[i], new Draw_10.Color(0, 255, 0, 1));
                         currentPos = this.behaviorModel.operationsData[i];
@@ -2193,10 +2231,10 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
         };
         ListOfPads.compileBehaviorModel = function (behaviorModel) {
             if (behaviorModel == undefined) {
-                behaviorModel = new BehaviorModel_2.BehaviorModel(null);
+                behaviorModel = new BehaviorModel_4.BehaviorModel(null);
             }
             if (behaviorModel.instructions[this.instructionType] == undefined) {
-                behaviorModel.instructions[this.instructionType] = new BehaviorModel_2.Instruction();
+                behaviorModel.instructions[this.instructionType] = new BehaviorModel_4.Instruction();
             }
             this.behaviorModel = behaviorModel;
             this.clear();
@@ -2204,7 +2242,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             for (var i = 0; i < instruction.operations.length; i++) {
                 var src = "";
                 switch (instruction.operations[i]) {
-                    case BehaviorModel_3.Operations.goToPoint: {
+                    case BehaviorModel_5.Operations.goToPoint: {
                         src = "textures/Editor/arrow.png";
                         var pad = this.createBehaviorPad(src, Cursor_1.ToolType.GoToPoint);
                         var ae = pad.children[2];
@@ -2213,14 +2251,14 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                             + new String(instruction.operationsData[i].y) + ")";
                         break;
                     }
-                    case BehaviorModel_3.Operations.wait: {
+                    case BehaviorModel_5.Operations.wait: {
                         src = "textures/Editor/waiting.png";
                         var pad = this.createBehaviorPad(src, Cursor_1.ToolType.Waiting);
                         var ae = pad.children[2];
                         ae.innerHTML = new String(instruction.operationsData[i]).valueOf();
                         break;
                     }
-                    case BehaviorModel_3.Operations.pursuit: {
+                    case BehaviorModel_5.Operations.pursuit: {
                         src = "textures/Editor/pursuit.png";
                         this.createBehaviorPad(src, Cursor_1.ToolType.Pursuit);
                         break;
@@ -2353,7 +2391,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads", "Editor/EditorGUI"], function (require, exports, Control_4, Draw_12, Level_2, geom, Cursor_2, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_4, ListOfPads_2, EditorGUI_2) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_12, Level_2, geom, Cursor_2, Tile_6, Body_3, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_6, ListOfPads_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -2517,12 +2555,15 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 if (_this.cursor.selectedEntity != null) {
                     if (_this.cursor.selectedEntity instanceof Person_7.Person) {
                         if (_this.cursor.selectedEntity.behaviorModel == undefined) {
-                            _this.cursor.selectedEntity.behaviorModel = new BehaviorModel_4.BehaviorModel(null);
+                            _this.cursor.selectedEntity.behaviorModel = new BehaviorModel_6.BehaviorModel(null);
                         }
                         var behaviorModel = _this.cursor.selectedEntity.behaviorModel;
                         console.log(behaviorModel);
                         if (behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType] == undefined) {
-                            behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType] = new BehaviorModel_4.Instruction();
+                            behaviorModel.instructions[ListOfPads_2.ListOfPads.instructionType] = new BehaviorModel_6.Instruction();
+                        }
+                        if (behaviorModel.instructions.get("JSONkeys") == undefined) {
+                            behaviorModel.instructions.set("JSONkeys", ["normal", "panic"]);
                         }
                         switch (toolType) {
                             case Cursor_2.ToolType.GoToPoint: {
@@ -2540,7 +2581,6 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                             }
                         }
                         var pad = ListOfPads_2.ListOfPads.createBehaviorPad(src, toolType);
-                        console.log(behaviorModel);
                     }
                 }
             };
@@ -2651,47 +2691,38 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             for (var i = 0; i < this.level.Entities.length; i++) {
                 this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
             }
-            ListOfPads_2.ListOfPads.GUIstep();
-            EditorGUI_2.EditorGUI.display(this.draw);
         };
         return Editor;
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "BehaviorModel"], function (require, exports, geom, aux, Draw_13, Game_4, Editor_1, BehaviorModel_5) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_13, Game_4, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LevelEditorPersons/source/env/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
     var draw = new Draw_13.Draw(canvas);
-    draw.cam.scale = 50;
+    draw.cam.scale = 10;
     Game_4.Game.levels = new Map();
     Game_4.Game.loadMap("map.json", "map");
     var game = new Game_4.Game(draw);
     game.makeScientist(new geom.Vector(1, 1));
-    var soldier = game.makeSoldier(new geom.Vector(2.5, 1));
-    soldier.behaviorModel.instructions["test"] = new BehaviorModel_5.Instruction();
-    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(1, 1));
-    soldier.behaviorModel.instructions["test"].addGoingToPoint(new geom.Vector(6, 1));
-    soldier.behaviorModel.changeCurrentInstruction("test");
-    game.mimic.takeControl(game.entities[0]);
+    var person = game.entities[0];
+    person.behaviorModel.changeCurrentInstruction("normal");
+    game.mimic.takeControl(game.entities[1]);
     var x = false;
     var t = 0;
     function step() {
         if (Game_4.Game.levels["map"] != undefined) {
             t++;
             if (x == false) {
-                game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-                game.makeTrigger(100000000, game.entities[1]);
                 console.log(Game_4.Game.levels["map"].PathMatrix);
                 x = true;
             }
             if (t % 100 == 0) {
-                for (var i = 0; i < game.entities[1].myAI.Path.length; i++) {
-                    console.log(game.entities[1].myAI.Path[i]);
-                }
+                console.log(game.entities);
             }
             draw.clear();
             game.step();

@@ -34,7 +34,7 @@ export class Instruction {
 export class BehaviorModel {
     private operationNum = 0;
     private currentInstruction : string;
-    public instructions = new Map<string, Instruction>();
+    public instructions = new Map<string, any>();
     public myAI : AI;
 
     constructor(myAI : AI) {
