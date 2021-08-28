@@ -12,7 +12,8 @@ export class Projectile extends Entity {
     public viscousFriction = 0;
     public spriteAnimation : SpriteAnimation;
     public shouldBeKilledByWall = false; // Должен ли убиваться при ударе об стену
-
+    public enableBouncing = false;
+    
     constructor(game : Game, body : Body, vel : geom.Vector) {
         super(game, body);
         this.vel = vel;
@@ -31,6 +32,18 @@ export class Projectile extends Entity {
 
     public step() {
         this.body.move(this.vel.mul(Game.dt));
+        if (this.body.isWallNear != 0 && this.enableBouncing) {
+            if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
+                 (this.body.isWallNear == 3 && this.vel.x < 0)) {
+                this.vel.x = - this.vel.x;
+                console.log("bounce x %d", this.body.isWallNear);
+            }
+            if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
+                 (this.body.isWallNear == 4 && this.vel.y > 0)) {
+                this.vel.y = - this.vel.y;
+                console.log("bounce y %d", this.body.isWallNear);
+            }
+        }
         this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game.dt));
         this.spriteAnimation.step();
     }
