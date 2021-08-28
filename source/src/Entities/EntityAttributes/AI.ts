@@ -89,7 +89,7 @@ export class AI {
                 }
             }
         }
-        console.log(currentPoint, answer)
+        //console.log(currentPoint, answer)
         return answer;
     }
 
@@ -121,7 +121,7 @@ export class AI {
     }
 
     public goToPoint(point : geom.Vector) { // функция, прокладывающая путь до точки
-        console.log("q");
+        //console.log("q");
         this.destination = point;   
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);

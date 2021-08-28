@@ -44,7 +44,6 @@ export class Mimic {
     }
 
     public takeControl(entity : Entity) {
-        console.log("biba", entity);
         if (this.controlledEntity) {
             this.game.draw.spriteAnimation(
                 "MimicTransfer", 3,

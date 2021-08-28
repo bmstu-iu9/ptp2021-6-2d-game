@@ -5,6 +5,7 @@ import * as geom from "../Geom";
 import { Debug } from "../Debug";
 import { Color, Draw } from "../Draw";
 import { BehaviorModel } from "../BehaviorModel";
+import { domainToASCII } from "url";
 
 export enum PersonMode {
     Fine,
@@ -47,9 +48,9 @@ export class Person extends Entity {
     }
 
     public die() {
-        super.die();
-        if (this.type)
+        if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
+        super.die();
     }
 
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
@@ -68,6 +69,15 @@ export class Person extends Entity {
                     this.game.triggers[i].entityTriggered(this);
                 }
             }
+        }
+
+        // Проверка на пассивные триггеры
+        for (let entity of this.game.entities) {
+            if (entity == this)
+                continue;
+            // Видим покоцанного челика
+            if (entity instanceof Person && entity.hp < entity.hpThresholdCorrupted)
+                this.awareness += 2 * Game.dt;
         }
     }
 

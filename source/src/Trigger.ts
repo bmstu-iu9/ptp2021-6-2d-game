@@ -18,18 +18,10 @@ export class Trigger {
         this.triggeredEntities = new Map();
     }
 
-    public isActive() {
-        if (this.timeLeft <= 0) {
-            this.active = false;
-        }
-        if (this.boundEntity == null || !this.boundEntity.alive) {
-            this.active = false;
-        }
-        return this.active;
-    }
-
     public step() {
         this.timeLeft -= Game.dt;
+        if (this.timeLeft <= 0 || !this.boundEntity.alive)
+            this.active = false;
     }
 
     public getCoordinates() {

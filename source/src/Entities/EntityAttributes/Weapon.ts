@@ -71,9 +71,8 @@ export class Weapon {
 
     public step() {
         this.timeToCooldown -= Game.dt;
-        // Ели
+        // Если магазин перезаряжен
         if (this.timeToCooldown <= 0 && this.isMagazineRecharging) {
-            console.log("a");
             this.isMagazineRecharging = false;
             this.projectilesInMagazine = this.magazineCapacity;
         }

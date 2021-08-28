@@ -92,6 +92,8 @@ export class Game {
         let entity = new Corpse(this, body, type);//последнее - маркер состояния
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
+        this.makeTrigger(entity, 6, 100000);
+        console.log("corpse");
         return entity;
     }
 
@@ -100,6 +102,7 @@ export class Game {
         let entity = new Biomass(this, body, vel);
         entity.entityID = this.entities.length;
         this.entities[this.entities.length] = entity;
+        this.makeTrigger(entity, 3, 100000);
         return entity;
     }
 
