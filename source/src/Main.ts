@@ -9,7 +9,9 @@ import { Instruction } from "./BehaviorModel";
 aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
 //aux.setEnvironment("http://127.0.0.1:4500"); // Если локальный сервер
 
-let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+let canvas:HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        canvas.width=window.innerWidth ;
+        canvas.height = window.innerHeight;
 let draw = new Draw(canvas);
 draw.cam.scale = 0.4;
 Game.levels = new Map();
