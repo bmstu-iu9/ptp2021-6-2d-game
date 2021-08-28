@@ -18,13 +18,19 @@ export function swap(a, b: any) {
 }
 
 export function arrayMove(arr, old_index, new_index) {
-    if (new_index >= arr.length) {
-        let k = new_index - arr.length + 1;
-        while (k--) {
-            arr.push(undefined);
-        }
+    // if (new_index >= arr.length) {
+    //     let k = new_index - arr.length + 1;
+    //     while (k--) {
+    //         arr.push(undefined);
+    //     }
+    // }
+    // arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+    let elem = arr[old_index];
+    if (old_index < new_index) {
+        new_index--;
     }
-    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+    arr.splice(old_index, 1);
+    arr.splice(new_index, 0, elem);
 };
 
 export function getMilliCount() {

@@ -730,6 +730,26 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             var place = this.operations.length;
             this.operations[place] = Operations.pursuit;
         };
+        Instruction.prototype.clone = function () {
+            var copy = new Instruction();
+            for (var i = 0; i < this.operations.length; i++) {
+                switch (this.operations[i]) {
+                    case Operations.goToPoint: {
+                        copy.addGoingToPoint(this.operationsData[i].clone());
+                        break;
+                    }
+                    case Operations.pursuit: {
+                        copy.addPursuit();
+                        break;
+                    }
+                    case Operations.wait: {
+                        copy.addWaiting(this.operationsData[i]);
+                        break;
+                    }
+                }
+            }
+            return copy;
+        };
         return Instruction;
     }());
     exports.Instruction = Instruction;
@@ -1371,7 +1391,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             this.commands["MoveUp"] = false;
         };
         AI.prototype.go = function (point) {
-            var eps = 0.01;
+            var eps = 0.02;
             if (this.body.center.x < point.x + eps) {
                 this.commands["MoveRight"] = true;
             }
@@ -2234,8 +2254,10 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
         Draw.prototype.line = function (begin, end, color, lineWidth) {
             begin = this.transform(begin);
             end = this.transform(end);
+            this.ctx.beginPath();
             this.ctx.moveTo(begin.x, begin.y);
             this.ctx.lineTo(end.x, end.y);
+            this.ctx.closePath();
             this.ctx.lineWidth = lineWidth;
             this.ctx.strokeStyle = color.toString();
             this.ctx.stroke();
@@ -2314,13 +2336,12 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
     }
     exports.swap = swap;
     function arrayMove(arr, old_index, new_index) {
-        if (new_index >= arr.length) {
-            var k = new_index - arr.length + 1;
-            while (k--) {
-                arr.push(undefined);
-            }
+        var elem = arr[old_index];
+        if (old_index < new_index) {
+            new_index--;
         }
-        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+        arr.splice(old_index, 1);
+        arr.splice(new_index, 0, elem);
     }
     exports.arrayMove = arrayMove;
     ;
@@ -2377,7 +2398,7 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
     var GUIElement = (function () {
         function GUIElement() {
         }
-        GUIElement.prototype.draw = function (draw) { };
+        GUIElement.prototype.display = function (draw) { };
         return GUIElement;
     }());
     var GUIImage = (function (_super) {
@@ -2389,7 +2410,8 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
             _this.box = box;
             return _this;
         }
-        GUIImage.prototype.draw = function (draw) {
+        GUIImage.prototype.display = function (draw) {
+            console.log("drawed");
             draw.drawimage(this.image, this.pos, this.box, 0, 1);
         };
         return GUIImage;
@@ -2403,8 +2425,8 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
             _this.color = color;
             return _this;
         }
-        GUILine.prototype.draw = function (draw) {
-            draw.line(this.begin, this.end, this.color, 10);
+        GUILine.prototype.display = function (draw) {
+            draw.line(this.begin, this.end, this.color, 2);
         };
         return GUILine;
     }(GUIElement));
@@ -2418,8 +2440,9 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
             return this.GUIelements[this.GUIelements.length] = new GUILine(begin, end, color);
         };
         EditorGUI.display = function (draw) {
+            console.log(this.GUIelements.length);
             for (var i = 0; i < this.GUIelements.length; i++) {
-                this.GUIelements[i].draw(draw);
+                this.GUIelements[i].display(draw);
             }
             this.GUIelements = [];
         };
@@ -2435,6 +2458,12 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
     var ListOfPads = (function () {
         function ListOfPads() {
         }
+        ListOfPads.updateInstructionCopy = function () {
+            if (this.behaviorModel != undefined && this.behaviorModel.instructions != undefined
+                && this.behaviorModel.instructions[this.instructionType] != undefined) {
+                this.instructionCopy = this.behaviorModel.instructions[this.instructionType].clone();
+            }
+        };
         ListOfPads.getPadPlace = function (pad) {
             var listOfPads = document.querySelector(".listOfPads");
             var pads = listOfPads.children;
@@ -2451,10 +2480,12 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             listOfPads.addEventListener('dragstart', function (evt) {
                 var x = evt.target;
                 x.classList.add('selected');
+                _this.updateInstructionCopy();
             });
             listOfPads.addEventListener('dragend', function (evt) {
                 var x = evt.target;
                 x.classList.remove('selected');
+                _this.updateInstructionCopy();
             });
             listOfPads.addEventListener("dragover", function (evt) {
                 evt.preventDefault();
@@ -2472,6 +2503,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                 aux.arrayMove(instruction.operations, _this.getPadPlace(activeElement), _this.getPadPlace(nextElement));
                 aux.arrayMove(instruction.operationsData, _this.getPadPlace(activeElement), _this.getPadPlace(nextElement));
                 listOfPads.insertBefore(activeElement, nextElement);
+                _this.updateInstructionCopy();
             });
         };
         ListOfPads.deleteBehaviorPad = function (exitButton) {
@@ -2480,6 +2512,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             instruction.operations.splice(this.getPadPlace(pad), 1);
             instruction.operationsData.splice(this.getPadPlace(pad), 1);
             exitButton.parentElement.remove();
+            this.updateInstructionCopy();
         };
         ListOfPads.clear = function () {
             var listOfPads = document.querySelector(".listOfPads");
@@ -2510,6 +2543,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                         additionalElement.classList.add("selected");
                         _this.cursor.mode = Cursor_1.Mode.PosPicking;
                         _this.currentPad = additionalElement.parentElement;
+                        _this.updateInstructionCopy();
                     };
                     additionalElement.onclick = posPick;
                     break;
@@ -2529,6 +2563,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                         }
                         else {
                         }
+                        _this.updateInstructionCopy();
                     };
                     additionalElement.addEventListener("input", changeVal);
                     break;
@@ -2540,7 +2575,10 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             }
             exitButton.className = "behaviorPad_exitButton";
             exitButton.src = "textures/Editor/cross.ico";
-            var deleteDiv = function () { _this.deleteBehaviorPad(exitButton); };
+            var deleteDiv = function () {
+                _this.deleteBehaviorPad(exitButton);
+                _this.updateInstructionCopy();
+            };
             exitButton.onclick = deleteDiv;
             pad.draggable = true;
             icon.draggable = false;
@@ -2554,6 +2592,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             pad.appendChild(exitButton);
             document.getElementById("mainListPads").append(pad);
             this.amountOfPads += 1;
+            this.updateInstructionCopy();
             return pad;
         };
         ListOfPads.choosePoint = function (point) {
@@ -2563,22 +2602,43 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             this.currentPad.children[2].innerHTML = "(" + new String(point.x) + "," + new String(point.y) + ")";
             this.currentPad.children[2].classList.remove("selected");
             this.behaviorModel.instructions[this.instructionType].operationsData[this.getPadPlace(this.currentPad)] = point;
+            this.updateInstructionCopy();
         };
         ListOfPads.GUIstep = function () {
-            if (this.behaviorModel == null) {
+            console.log(this.instructionCopy);
+            if (this.instructionCopy == null) {
                 return;
             }
             var currentPos = this.entityPos;
-            for (var i = 0; i < this.behaviorModel.operations; i++) {
-                switch (this.behaviorModel.operations[i]) {
+            var imageMas = [];
+            var imageSize = 1;
+            for (var i = 0; i < this.instructionCopy.operations.length; i++) {
+                switch (this.instructionCopy.operations[i]) {
                     case BehaviorModel_5.Operations.goToPoint: {
-                        console.log(currentPos, this.behaviorModel.operationsData[i]);
-                        EditorGUI_1.EditorGUI.addLine(currentPos, this.behaviorModel.operationsData[i], new Draw_14.Color(0, 255, 0, 1));
-                        currentPos = this.behaviorModel.operationsData[i];
+                        console.log(currentPos, this.instructionCopy.operationsData[i]);
+                        var oldPos = currentPos;
+                        EditorGUI_1.EditorGUI.addLine(currentPos, this.instructionCopy.operationsData[i], new Draw_14.Color(0, 255, 0, 1));
+                        currentPos = this.instructionCopy.operationsData[i];
+                        for (var j = 0; j < imageMas.length; j++) {
+                            EditorGUI_1.EditorGUI.addImage(oldPos.add(new Geom_6.Vector((-imageMas.length * 0.5 + 0.5 + j) * imageSize, 0)), imageMas[j], new Geom_6.Vector(imageSize, imageSize));
+                        }
+                        imageMas = [];
+                        break;
+                    }
+                    case BehaviorModel_5.Operations.wait: {
+                        imageMas[imageMas.length] = Draw_14.Draw.loadImage("textures/Editor/waiting.png");
+                        break;
+                    }
+                    case BehaviorModel_5.Operations.pursuit: {
+                        imageMas[imageMas.length] = Draw_14.Draw.loadImage("textures/Editor/pursuit.png");
                         break;
                     }
                 }
             }
+            for (var j = 0; j < imageMas.length; j++) {
+                EditorGUI_1.EditorGUI.addImage(currentPos.add(new Geom_6.Vector(-imageMas.length * 0.5 + 0.5 + j, 0)), imageMas[j], new Geom_6.Vector(imageSize, imageSize));
+            }
+            imageMas = [];
         };
         ListOfPads.compileBehaviorModel = function (behaviorModel) {
             if (behaviorModel == undefined) {
@@ -2616,6 +2676,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                     }
                 }
             }
+            this.updateInstructionCopy();
         };
         ListOfPads.amountOfPads = 0;
         ListOfPads.instructionType = "default";
@@ -2712,6 +2773,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                     case Mode.PosPicking: {
                         var fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(), new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                         ListOfPads_1.ListOfPads.choosePoint(fixedPos);
+                        this.mode = Mode.Selector;
                     }
                 }
             }
@@ -2742,7 +2804,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads"], function (require, exports, Control_4, Draw_16, Level_2, geom, Cursor_2, Tile_6, Body_4, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_6, ListOfPads_2) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads", "Editor/EditorGUI"], function (require, exports, Control_4, Draw_16, Level_2, geom, Cursor_2, Tile_6, Body_4, Soldier_4, Scientist_4, Person_7, Monster_5, Animation_5, BehaviorModel_6, ListOfPads_2, EditorGUI_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -2934,6 +2996,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                             }
                         }
                         var pad = ListOfPads_2.ListOfPads.createBehaviorPad(src, toolType);
+                        ListOfPads_2.ListOfPads.updateInstructionCopy();
                     }
                 }
             };
@@ -2996,7 +3059,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("w4")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
             document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
-            document.getElementById("prev_menu")["style"].left = document.getElementById("gameCanvas").clientWidth + 20 + "px";
+            document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
             var normal = function () {
                 if (ListOfPads_2.ListOfPads.instructionType == "normal") {
                     return;
@@ -3010,6 +3073,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 normalButton.classList.add('selected');
                 var panicButton = document.getElementById("panicMode");
                 panicButton.classList.remove("selected");
+                ListOfPads_2.ListOfPads.updateInstructionCopy();
             };
             document.getElementById("normalMode").onclick = normal;
             var panic = function () {
@@ -3025,6 +3089,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 panicButton.classList.add('selected');
                 var normalButton = document.getElementById("normalMode");
                 normalButton.classList.remove("selected");
+                ListOfPads_2.ListOfPads.updateInstructionCopy();
             };
             document.getElementById("panicMode").onclick = panic;
             normal();
@@ -3074,6 +3139,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             for (var i = 0; i < this.level.Entities.length; i++) {
                 this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
             }
+            ListOfPads_2.ListOfPads.GUIstep();
+            EditorGUI_2.EditorGUI.display(this.draw);
         };
         return Editor;
     }());

@@ -211,6 +211,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                         }
                     }
                     let pad = ListOfPads.createBehaviorPad(src, toolType);
+                    ListOfPads.updateInstructionCopy();
                     //console.log(behaviorModel, behaviorModel.instructions.);
                     
                 }
@@ -300,7 +301,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         document.getElementById("generate")["style"].top = "112px";
         document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 15 + "px";*/
 
-        document.getElementById("prev_menu")["style"].left = document.getElementById("gameCanvas").clientWidth + 20 + "px";
+        document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
 
 
         let normal = () => {
@@ -315,7 +316,8 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
             let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
             normalButton.classList.add('selected');
             let panicButton = document.getElementById("panicMode") as HTMLObjectElement;
-            panicButton.classList.remove("selected")
+            panicButton.classList.remove("selected");
+            ListOfPads.updateInstructionCopy();
         };
 
         document.getElementById("normalMode").onclick = normal;
@@ -332,7 +334,8 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
             let panicButton = document.getElementById("panicMode") as HTMLObjectElement;
             panicButton.classList.add('selected');
             let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
-            normalButton.classList.remove("selected")            
+            normalButton.classList.remove("selected");
+            ListOfPads.updateInstructionCopy();            
         };
 
         document.getElementById("panicMode").onclick = panic;
@@ -399,7 +402,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                 this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
         }
 
-        //ListOfPads.GUIstep();
-        //EditorGUI.display(this.draw);
+        ListOfPads.GUIstep();
+        EditorGUI.display(this.draw);
     }
 }

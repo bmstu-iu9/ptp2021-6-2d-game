@@ -3,7 +3,7 @@ import { Vector } from "../Geom";
 
 class GUIElement {
     constructor() {}
-    public draw(draw : Draw) {}
+    public display(draw : Draw) {}
 }
 
 class GUIImage extends GUIElement {
@@ -18,7 +18,9 @@ class GUIImage extends GUIElement {
         this.box = box;
     }
 
-    public draw(draw : Draw) {
+    public display(draw : Draw) {
+        console.log("drawed");
+        
         draw.drawimage(this.image, this.pos, this.box, 0, 1);
     }
 }
@@ -35,8 +37,8 @@ class GUILine extends GUIElement {
         this.color =  color;
     }
 
-    public draw(draw : Draw) {
-        draw.line(this.begin, this.end, this.color, 10);
+    public display(draw : Draw) {
+        draw.line(this.begin, this.end, this.color, 2);
     }
 }
 
@@ -52,10 +54,10 @@ export class EditorGUI {
     }
 
     public static display(draw : Draw) {
-        //console.log(this.GUIelements.length);
+        console.log(this.GUIelements.length);
         
         for (let i = 0; i < this.GUIelements.length; i++) {
-            this.GUIelements[i].draw(draw);
+            this.GUIelements[i].display(draw);
         }
 
         this.GUIelements = [];

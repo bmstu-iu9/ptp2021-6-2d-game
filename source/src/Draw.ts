@@ -238,8 +238,10 @@ export class Draw {
     public line(begin : geom.Vector, end : geom.Vector, color : Color, lineWidth : number) {
         begin = this.transform(begin);
         end = this.transform(end);
+        this.ctx.beginPath();
         this.ctx.moveTo(begin.x, begin.y);
         this.ctx.lineTo(end.x, end.y);
+        this.ctx.closePath();
         this.ctx.lineWidth = lineWidth;
         this.ctx.strokeStyle = color.toString();
         this.ctx.stroke();

@@ -5,17 +5,25 @@ import * as aux from "../AuxLib";
 import { Vector } from "../Geom";
 import { Editor } from "../Editor";
 import { EditorGUI } from "./EditorGUI";
-import { Color } from "../Draw";
+import { Color, Draw } from "../Draw";
 
 export class ListOfPads {
     private static amountOfPads = 0;
     public static instructionType = "default";
     public static entityPos = new Vector(0, 0);
     public static behaviorModel = null;
-    public static cursor : Cursor;
-    private static currentPad : HTMLElement = null;
+    public static cursor: Cursor;
+    private static currentPad: HTMLElement = null;
+    private static instructionCopy;
 
-    private static getPadPlace(pad : Element) {
+    public static updateInstructionCopy() {
+        if (this.behaviorModel != undefined && this.behaviorModel.instructions != undefined
+            && this.behaviorModel.instructions[this.instructionType] != undefined) {
+            this.instructionCopy = this.behaviorModel.instructions[this.instructionType].clone();
+        }
+    }
+
+    private static getPadPlace(pad: Element) {
         const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
         let pads = listOfPads.children;
         for (let i = 0; i < pads.length; i++) {
@@ -25,17 +33,19 @@ export class ListOfPads {
         }
     }
 
-    public static init(cursor : Cursor) {
+    public static init(cursor: Cursor) {
         this.cursor = cursor;
         const listOfPads = document.querySelector(`.listOfPads`) as HTMLObjectElement;
         listOfPads.addEventListener('dragstart', (evt) => {
             let x = evt.target as HTMLObjectElement;
-            x.classList.add('selected')
+            x.classList.add('selected');
+            this.updateInstructionCopy();
         });
 
         listOfPads.addEventListener('dragend', (evt) => {
             let x = evt.target as HTMLObjectElement;
-            x.classList.remove('selected')
+            x.classList.remove('selected');
+            this.updateInstructionCopy();
         });
 
         listOfPads.addEventListener(`dragover`, (evt) => {
@@ -58,15 +68,17 @@ export class ListOfPads {
             aux.arrayMove(instruction.operationsData, this.getPadPlace(activeElement), this.getPadPlace(nextElement));
 
             listOfPads.insertBefore(activeElement, nextElement);
+            this.updateInstructionCopy();
         });
     }
 
     private static deleteBehaviorPad(exitButton: HTMLImageElement) {
         let instruction = this.behaviorModel.instructions[this.instructionType];
-        let pad  = exitButton.parentElement;
+        let pad = exitButton.parentElement;
         instruction.operations.splice(this.getPadPlace(pad), 1);
         instruction.operationsData.splice(this.getPadPlace(pad), 1);
         exitButton.parentElement.remove();
+        this.updateInstructionCopy();
     }
 
     public static clear() {
@@ -76,7 +88,7 @@ export class ListOfPads {
         }
     }
 
-    public static createBehaviorPad(src: string, tool : ToolType) {
+    public static createBehaviorPad(src: string, tool: ToolType) {
         let pad = document.createElement("li");
         pad.className = "behaviorPad";
 
@@ -100,10 +112,11 @@ export class ListOfPads {
                 additionalElement.innerHTML = "(0, 0)";
                 let posPick = () => {
                     console.log("clicked");
-                    
+
                     additionalElement.classList.add("selected");
                     this.cursor.mode = Mode.PosPicking;
                     this.currentPad = additionalElement.parentElement;
+                    this.updateInstructionCopy();
                 };
                 additionalElement.onclick = posPick;
                 break;
@@ -115,7 +128,7 @@ export class ListOfPads {
                 additionalElement.contentEditable = "true";
                 let changeVal = (evt) => {
                     //console.log("changed");
-                    
+
                     let elem = evt.target as HTMLObjectElement;
                     let val = new Number(elem.innerHTML);
                     console.log("val is ", val, " is integer ", Number.isInteger(val.valueOf()))
@@ -126,6 +139,7 @@ export class ListOfPads {
                     } else {
                         //elem.innerHTML = new String(instruction.operationsData[this.getPadPlace(elem.parentElement)]).valueOf();
                     }
+                    this.updateInstructionCopy();
                 }
                 additionalElement.addEventListener("input", changeVal);
                 break;
@@ -138,7 +152,10 @@ export class ListOfPads {
 
         exitButton.className = "behaviorPad_exitButton";
         exitButton.src = "textures/Editor/cross.ico"
-        let deleteDiv = () => { this.deleteBehaviorPad(exitButton) }
+        let deleteDiv = () => {
+            this.deleteBehaviorPad(exitButton);
+            this.updateInstructionCopy();
+        }
         exitButton.onclick = deleteDiv;
 
         pad.draggable = true;
@@ -158,34 +175,61 @@ export class ListOfPads {
         //palette.appendChild(pad);
         this.amountOfPads += 1;
 
+        this.updateInstructionCopy();
         return pad;
     }
 
-    public static choosePoint(point : Vector) {
+    public static choosePoint(point: Vector) {
         if (this.currentPad == null) {
             return;
         }
-        this.currentPad.children[2].innerHTML = "("+ new String(point.x) + "," + new String(point.y) +")";
+        this.currentPad.children[2].innerHTML = "(" + new String(point.x) + "," + new String(point.y) + ")";
         this.currentPad.children[2].classList.remove("selected");
         this.behaviorModel.instructions[this.instructionType].operationsData[this.getPadPlace(this.currentPad)] = point;
+        this.updateInstructionCopy();
     }
 
     public static GUIstep() {
-        if (this.behaviorModel == null) {
+        console.log(this.instructionCopy);
+        
+        if (this.instructionCopy == null) {
             return;
         }
         let currentPos = this.entityPos;
-        for (let i = 0; i < this.behaviorModel.operations; i++) {
-            switch (this.behaviorModel.operations[i]) {
+        let imageMas : HTMLImageElement[] = [];
+        let imageSize = 1;
+        for (let i = 0; i < this.instructionCopy.operations.length; i++) {
+            switch (this.instructionCopy.operations[i]) {
                 case Operations.goToPoint: {
-                    console.log(currentPos, this.behaviorModel.operationsData[i]);
-                    
-                    EditorGUI.addLine(currentPos, this.behaviorModel.operationsData[i], new Color(0, 255, 0, 1));
-                    currentPos = this.behaviorModel.operationsData[i];
+                    console.log(currentPos, this.instructionCopy.operationsData[i]);
+
+                    let oldPos = currentPos;
+                    EditorGUI.addLine(currentPos, this.instructionCopy.operationsData[i], new Color(0, 255, 0, 1));
+                    currentPos = this.instructionCopy.operationsData[i];
+
+                    for (let j = 0; j < imageMas.length; j++) {
+                        EditorGUI.addImage(oldPos.add(new Vector((-imageMas.length * 0.5 + 0.5 + j) * imageSize, 0)),
+                         imageMas[j], new Vector(imageSize, imageSize));
+                    }
+                    imageMas = [];
+
+                    break;
+                }
+                case Operations.wait: {
+                    imageMas[imageMas.length] = Draw.loadImage("textures/Editor/waiting.png");
+                    break;
+                }
+                case Operations.pursuit: {
+                    imageMas[imageMas.length] = Draw.loadImage("textures/Editor/pursuit.png");
                     break;
                 }
             }
         }
+        for (let j = 0; j < imageMas.length; j++) {
+            EditorGUI.addImage(currentPos.add(new Vector(-imageMas.length * 0.5 + 0.5 + j, 0)),
+             imageMas[j], new Vector(imageSize, imageSize));
+        }
+        imageMas = [];
     }
 
     public static compileBehaviorModel(behaviorModel: BehaviorModel) {
@@ -206,8 +250,8 @@ export class ListOfPads {
                     let pad = this.createBehaviorPad(src, ToolType.GoToPoint);
                     let ae = pad.children[2];
                     ae.innerHTML = "("
-                    + new String(instruction.operationsData[i].x) + ","
-                    + new String(instruction.operationsData[i].y) + ")";
+                        + new String(instruction.operationsData[i].x) + ","
+                        + new String(instruction.operationsData[i].y) + ")";
                     break;
                 }
                 case Operations.wait: {
@@ -224,5 +268,6 @@ export class ListOfPads {
                 }
             }
         }
+        this.updateInstructionCopy();
     }
 }

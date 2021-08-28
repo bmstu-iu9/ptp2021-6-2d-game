@@ -2,6 +2,7 @@ import { Vector } from "./Geom";
 import { eps } from "./Geom";
 import { AI } from "./Entities/EntityAttributes/AI";
 import * as aux from "./AuxLib";
+import { copyFile } from "fs";
 
 export enum Operations {
     goToPoint,
@@ -28,6 +29,27 @@ export class Instruction {
     public addPursuit() {
         let place = this.operations.length;
         this.operations[place] = Operations.pursuit;
+    }
+    
+    public clone() {
+        let copy = new Instruction();
+        for (let i = 0; i < this.operations.length; i++) {
+            switch (this.operations[i]) {
+                case Operations.goToPoint: {
+                    copy.addGoingToPoint(this.operationsData[i].clone());
+                    break;
+                }
+                case Operations.pursuit: {
+                    copy.addPursuit();
+                    break;
+                }
+                case Operations.wait: {
+                    copy.addWaiting(this.operationsData[i]);
+                    break;
+                }
+            }
+        }
+        return copy;
     }
 }
 

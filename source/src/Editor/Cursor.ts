@@ -103,6 +103,7 @@ export class Cursor {
                     let fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(),
                     new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                     ListOfPads.choosePoint(fixedPos);
+                    this.mode = Mode.Selector;
                 }
             }
         }
