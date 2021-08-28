@@ -22,6 +22,7 @@ export class Editor {
     private cursor = new Cursor(this.level);
     public draw : Draw;
     private showCollisionGrid = false;
+    private hideGrid = false;
     constructor() {
         this.mousePrev = Control.mousePos();
         this.initHTML();
@@ -224,8 +225,26 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         // Обработка кнопок
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
-        let showcolision = () => {this.showCollisionGrid = true;}
-        document.getElementById("showcolision").onclick = showcolision;
+        let showcollision = () => {
+            this.showCollisionGrid = !this.showCollisionGrid;
+            let b = document.getElementById("button_col");
+            if (b["style"].backgroundColor == "lime") {
+                b["style"].backgroundColor = "red";
+            } else {
+                b["style"].backgroundColor = "lime";
+            }
+        }
+        document.getElementById("showcolision").onclick = showcollision;
+        let hidegrid = () => {
+            this.hideGrid = !this.hideGrid;
+            let b = document.getElementById("button_grid");
+            if (b["style"].backgroundColor == "red") {
+                b["style"].backgroundColor = "lime";
+            } else {
+                b["style"].backgroundColor = "red";
+            }
+        }
+        document.getElementById("hidegrid").onclick = hidegrid;
         // Создание кнопок для тайлов
         for (let i = 0; i < 47; i++)
             this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
@@ -266,10 +285,16 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
 
         //document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
 
-        document.getElementById("preview")["style"].top = "0px";
+        document.getElementById("button_col")["style"].top = "0px";
+        document.getElementById("button_col")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+        
+        document.getElementById("button_grid")["style"].top = "25px";
+        document.getElementById("button_grid")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+        
+        document.getElementById("preview")["style"].top = "50px";
         document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
 
-        document.getElementById("generate")["style"].top = "62px";
+        document.getElementById("generate")["style"].top = "112px";
         document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
 
 
@@ -355,7 +380,11 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
     }
 
     public display() {
-        this.level.display(this.draw, true);
+        if (this.hideGrid) {
+            this.level.display(this.draw, false);
+        } else {
+            this.level.display(this.draw, true);
+        }
         if (this.showCollisionGrid == true){
             this.level.displayColisionGrid(this.draw);
         }

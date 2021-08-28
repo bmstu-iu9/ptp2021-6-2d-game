@@ -2751,6 +2751,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.level = new Level_2.Level(new geom.Vector(10, 10));
             this.cursor = new Cursor_2.Cursor(this.level);
             this.showCollisionGrid = false;
+            this.hideGrid = false;
             this.palette1_bitmap = [0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
                 1, 0, 1, 0, 0,
@@ -2943,8 +2944,28 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             ListOfPads_2.ListOfPads.init(this.cursor);
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
-            var showcolision = function () { _this.showCollisionGrid = true; };
-            document.getElementById("showcolision").onclick = showcolision;
+            var showcollision = function () {
+                _this.showCollisionGrid = !_this.showCollisionGrid;
+                var b = document.getElementById("button_col");
+                if (b["style"].backgroundColor == "lime") {
+                    b["style"].backgroundColor = "red";
+                }
+                else {
+                    b["style"].backgroundColor = "lime";
+                }
+            };
+            document.getElementById("showcolision").onclick = showcollision;
+            var hidegrid = function () {
+                _this.hideGrid = !_this.hideGrid;
+                var b = document.getElementById("button_grid");
+                if (b["style"].backgroundColor == "red") {
+                    b["style"].backgroundColor = "lime";
+                }
+                else {
+                    b["style"].backgroundColor = "red";
+                }
+            };
+            document.getElementById("hidegrid").onclick = hidegrid;
             for (var i = 0; i < 47; i++)
                 this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", Tile_6.CollisionType.Full, "");
             for (var i = 0; i < 64; i++)
@@ -2972,9 +2993,13 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
-            document.getElementById("preview")["style"].top = "0px";
+            document.getElementById("button_col")["style"].top = "0px";
+            document.getElementById("button_col")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+            document.getElementById("button_grid")["style"].top = "25px";
+            document.getElementById("button_grid")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
+            document.getElementById("preview")["style"].top = "50px";
             document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
-            document.getElementById("generate")["style"].top = "62px";
+            document.getElementById("generate")["style"].top = "112px";
             document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 12 + "px";
             var normal = function () {
                 if (ListOfPads_2.ListOfPads.instructionType == "normal") {
@@ -3040,7 +3065,12 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.cursor.step();
         };
         Editor.prototype.display = function () {
-            this.level.display(this.draw, true);
+            if (this.hideGrid) {
+                this.level.display(this.draw, false);
+            }
+            else {
+                this.level.display(this.draw, true);
+            }
             if (this.showCollisionGrid == true) {
                 this.level.displayColisionGrid(this.draw);
             }

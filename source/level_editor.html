@@ -1,7 +1,7 @@
 <html>
 <style>
     .canvass, .prevCanvass, .buttonGen, .layer, .layer2, .layer3, .layer4, .layer5, .layer6,
-     .normalButton, .panicButton, .listOfPads {position: absolute}
+     .normalButton, .panicButton, .listOfPads, .showing_col, .hiding_grid {position: absolute}
     .tileButton {
         width: 50px;
         height: auto;
@@ -10,7 +10,7 @@
     .behaviorPad {
         height: 50px;
         width: 230px;
-        /*border-radius: 5px;*/
+        border-radius: 5px;
         /*border: solid 1px black;*/
         text-align: center;
         cursor: move;
@@ -135,7 +135,26 @@
     .selected {
         opacity: 0.6;
     }
-
+    .showing_col {
+        display: flex;
+        background-color: red;
+        border-radius: 4px;
+    }
+    .showing_col_2 {
+        display: flex;
+        background-color: lime;
+        border-radius: 4px;
+    }
+    .hiding_grid {
+        display: flex;
+        background-color: lime;
+        border-radius: 4px;
+    }
+    .hiding_grid_2 {
+        display: flex;
+        background-color: red;
+        border-radius: 4px;
+    }
 </style>
 
 <!-- Невероятная важная невидимая вещь!!! -->
@@ -145,9 +164,13 @@
 <canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
 <canvas id="preview" class="prevCanvass"></canvas>
 <button id="generate" class = "buttonGen"> Generate </button>
-<div>
+<div id="button_col" class="showing_col">
     <input type="checkbox" id="showcolision" name="showcolision">
-    <label for="showcolision">Show colision</label>
+    <label for="showcolision">Show collision</label>
+</div>
+<div id="button_grid" class="hiding_grid">
+    <input type="checkbox" id="hidegrid" name="hidegrid">
+    <label for="hidegrid">Hide grid</label>
 </div>
 <!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
 <div>
