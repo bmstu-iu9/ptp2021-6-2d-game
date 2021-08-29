@@ -25,37 +25,37 @@ export class AI {
     }
 
     private stop() { // функция остановки
-        this.commands["MoveRight"] = false;
-        this.commands["MoveLeft"] = false;
-        this.commands["MoveDown"] = false;
-        this.commands["MoveUp"] = false;
+        this.commands.active["MoveRight"] = false;
+        this.commands.active["MoveLeft"] = false;
+        this.commands.active["MoveDown"] = false;
+        this.commands.active["MoveUp"] = false;
     }
 
     private go(point : geom.Vector) { // функция движения в направлении к точке
-        let eps = 0.01;
+        let eps = 0.05;
         if (this.body.center.x < point.x + eps) {
-            this.commands["MoveRight"] = true;
+            this.commands.active["MoveRight"] = true;
         }
         else {
-            this.commands["MoveRight"] = false;
+            this.commands.active["MoveRight"] = false;
         }
         if (this.body.center.x > point.x - eps) {
-            this.commands["MoveLeft"] = true;
+            this.commands.active["MoveLeft"] = true;
         }
         else {
-            this.commands["MoveLeft"] = false;
+            this.commands.active["MoveLeft"] = false;
         }
         if (this.body.center.y < point.y + eps) {
-            this.commands["MoveDown"] = true;
+            this.commands.active["MoveDown"] = true;
         }
         else {
-            this.commands["MoveDown"] = false;
+            this.commands.active["MoveDown"] = false;
         }
         if (this.body.center.y > point.y - eps) {
-            this.commands["MoveUp"] = true;
+            this.commands.active["MoveUp"] = true;
         }
         else {
-            this.commands["MoveUp"] = false;
+            this.commands.active["MoveUp"] = false;
         }
     }
 
@@ -66,8 +66,8 @@ export class AI {
 
     // находит ближайшую точку коллизионной сетки
     private chooseMeshPoint(currentPoint : geom.Vector) : geom.Vector {
-        let CollisionMesh = Game.levels[this.game.currentLevelName].CollisionMesh;
-        let Grid = Game.levels[this.game.currentLevelName].Grid;
+        let CollisionMesh = this.game.levels[this.game.currentLevelName].CollisionMesh;
+        let Grid = this.game.levels[this.game.currentLevelName].Grid;
         let posRound = new geom.Vector(
             Math.floor(currentPoint.x / this.game.currentLevel.tileSize), 
             Math.floor(currentPoint.y / this.game.currentLevel.tileSize)
@@ -89,16 +89,16 @@ export class AI {
                 }
             }
         }
-        console.log(currentPoint, answer)
+        //console.log(currentPoint, answer)
         return answer;
     }
 
     // рекурсивная функция создающая путь по точкам коллизионной сетки
     private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
-        let pathMatrix = Game.levels[this.game.currentLevelName].PathMatrix;
+        let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
 
         // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
-        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
+        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)) == undefined || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
             return [];
         }
 
@@ -106,9 +106,7 @@ export class AI {
         if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
             let answer : geom.Vector[];
             answer = [];
-            answer[0] = this.getPointCoordinate(finish);
-            console.log("Path from ", start, " to ", finish, " is ", answer);
-            
+            answer[0] = this.getPointCoordinate(finish);            
             return answer;
         }
 
@@ -123,7 +121,7 @@ export class AI {
     }
 
     public goToPoint(point : geom.Vector) { // функция, прокладывающая путь до точки
-        console.log("q");
+        //console.log("q");
         this.destination = point;   
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);

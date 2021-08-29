@@ -2,14 +2,103 @@ import { CollisionType, Tile } from "./Tile";
 import * as geom from "./Geom";
 import { Color, Draw } from "./Draw";
 import { PathGenerator } from "./Editor/PathGenerator";
-import { replacer } from "./AuxLib";
+import { Entity } from "./Entities/Entity";
+import { Soldier } from "./Entities/Soldier";
+import { Scientist } from "./Entities/Scientist";
+import { Monster } from "./Entities/Monster";
+import { StationaryObject } from "./Entities/StationaryObject";
+import { BehaviorModel, Instruction } from "./BehaviorModel";
+import { sign } from "crypto";
 import * as aux from "./AuxLib";
 import { Queue } from "./Queue";
 import { Random } from "./Random";
 
+function replacer(key, value) { // функция замены классов для преобразования в JSON
+    if (value instanceof Map) { // упаковка Map
+        let val : any;
+        if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
+            
+            let keys = value.get("JSONkeys");
+            console.log("JSONkeys", keys);
+            let remapping = new Map();
+            for (let i = 0; i < keys.length; i++) {
+                remapping.set(keys[i], value[keys[i]]);
+            }
+            val = Array.from(remapping.entries());
+        } else {
+            val = Array.from(value.entries());
+        }
+        console.log(val);
+        
+        return {
+            dataType: 'Map',
+            value: val, // or with spread: value: [...value]
+        };
+    }
+    if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
+        // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
+        let name = value.src;
+        let nameSplit = name.split("/");
+        let lastSplit = nameSplit[nameSplit.length - 1];
+
+        return {
+            dataType: 'HTMLImageElement',
+            value: lastSplit
+        };
+    }
+    if (value instanceof geom.Vector) { // упаковка Vector
+        return {
+            dataType: 'Vector',
+            x: value.x,
+            y: value.y
+        };
+    }
+    if (value instanceof Soldier) {
+        return {
+            dataType: 'Soldier',
+            center: value.body.center,
+            behaviorModel: value.behaviorModel
+        }
+    }
+    if (value instanceof Scientist) {            
+        return {
+            dataType: 'Scientist',
+            center: value.body.center,
+            behaviorModel: value.behaviorModel
+        }
+    }
+    if (value instanceof Monster) {
+        return {
+            dataType: 'Monster',
+            center: value.body.center
+        }
+    }
+    if (value instanceof StationaryObject) {
+        return {
+            dataType: 'StationaryObject',
+            center: value.body.center,
+        }
+    }
+    if (value instanceof BehaviorModel) {
+        return {
+            dataType: 'BehaviorModel',
+            instructions: value.instructions
+        }
+    }
+    if (value instanceof Instruction) {
+        return {
+            dataType: 'Instruction',
+            operations: value.operations,
+            operationsData: value.operationsData
+        }
+    }
+    return value;
+}
+
 // Так выглядел старый класс, я на всякий оставил, но не думаю, что он сейчас нужен
 export class LevelJSON {
     Grid? : Tile[][];
+    Entities? : Entity[];
     CollisionMesh? : boolean[][];
     PathMatrix? : Map<any, any>;
 }
@@ -30,8 +119,10 @@ export class Level {
     public Grid : Tile[][];
     public CollisionMesh : boolean[][];
     public PathMatrix : Map<any, any>;
+    public Entities : Entity[] = [];
     public tileSize = 1;
     public lightSources : LightSource[] = [];
+    public showLighting = true;
 
     constructor(size = new geom.Vector(0, 0)) {
         this.Grid = [];
@@ -82,13 +173,15 @@ export class Level {
     // Заворачивает в json
     public serialize() {
         let newLevel : LevelJSON;
-        newLevel = {Grid: this.Grid, CollisionMesh: [], PathMatrix: new Map()};
+        newLevel = {Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
 
         console.log(newLevel.Grid);
+        
         PathGenerator.generateMatrix(newLevel);
 
         console.log(newLevel.CollisionMesh);
         console.log(newLevel.PathMatrix);
+
 
         const blob = new Blob([JSON.stringify(newLevel, replacer)], {
             type: 'application/json'
@@ -108,13 +201,20 @@ export class Level {
     }
 
     // Отрисовка
-    public display(draw : Draw, advanced = false) {        
+    public display(draw : Draw, advanced = false) {
         for (let i = 0; i < this.Grid.length; i++) {
             for (let j = 0; j < this.Grid[i].length; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
+                /**console.log(this.Grid)*/
                 draw.image(this.Grid[i][j].image, 
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
                     .add(size.mul(1 / 2)), size,0,0);
+                if (this.Grid[i][j].sub_image) {
+                    //console.log("nigga" + i + "_" + j)
+                    draw.image(this.Grid[i][j].sub_image, 
+                        (new geom.Vector(this.tileSize * i, this.tileSize * j))
+                        .add(size.mul(1 / 2)), size,0,0);
+                }
                 // Отрисовка сетки в расширенном режиме
                 if (advanced)
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))

@@ -62,10 +62,10 @@ export class Vector {
     }
 }
 
-export function dist(a : Vector, b : Vector) : number {
-    return a.sub(b).abs();
+export function vectorFromAngle(angle : number) : Vector {
+    return new Vector(Math.cos(angle), Math.sin(angle));
 }
 
-export function vectorFromAngle(angle : number) : Vector {
-    return new Vector(Math.sin(angle), Math.cos(angle));
+export function dist(a : Vector, b : Vector) : number {
+    return a.sub(b).abs();
 }

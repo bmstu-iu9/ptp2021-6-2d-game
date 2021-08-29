@@ -12,7 +12,7 @@ export class Random {
     }
   
     public static randomFloat(a : number, b : number) : number {
-        if (a < b) {
+        if (a > b) {
           [a, b] = [b, a];
         }
         return Math.random() * (b - a) + a;

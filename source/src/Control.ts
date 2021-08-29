@@ -38,7 +38,7 @@ export class Control {
                 let vals = Array.from(Control.keyMapping.values());
                 for (let i = 0; i < vals.length; i++) {
                     for (let j = 0; j < vals[i].length; j++) {
-                        Control.commands[vals[i][j]] = false;
+                        Control.commands.active[vals[i][j]] = false;
                         Control.commandsCounter[vals[i][j]] = 0;
                     }
                 }
@@ -49,7 +49,7 @@ export class Control {
             let vals = Array.from(Control.keyMapping.values());
             for (let i = 0; i < vals.length; i++) {
                 for (let j = 0; j < vals[i].length; j++) {
-                    Control.commands[vals[i][j]] = false;
+                    Control.commands.active[vals[i][j]] = false;
                     Control.commandsCounter[vals[i][j]] = 0;
                 }
             }
@@ -61,8 +61,10 @@ export class Control {
             Control._keys[i] = false;
         }
         let canvas = document.getElementById("gameCanvas");
-        window.addEventListener("keydown", Control.onKeyDown);
-        window.addEventListener("keyup", Control.onKeyUp);
+        if (!aux.editorMode) {
+            window.addEventListener("keydown", Control.onKeyDown);
+            window.addEventListener("keyup", Control.onKeyUp);
+        }
         canvas.addEventListener("click", Control.onClick);
         window.addEventListener("wheel", Control.onWheel);
         window.addEventListener("mousemove", Control.onMouseMove);
@@ -98,6 +100,10 @@ export class Control {
         return delta;
     }
 
+    public static clearWheelDelta() {
+        this.mouseWheelDelta = 0;
+    }
+
     public static mousePos() : geom.Vector {
         let canvas = document.getElementById("gameCanvas");
         return this.currentMousePos.sub(new geom.Vector(canvas.offsetLeft, canvas.offsetTop));
@@ -119,7 +125,7 @@ export class Control {
             for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                 let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]++;
-                Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                Control.commands.active[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
             }
         }
         Control._keys[event.keyCode] = true;
@@ -136,7 +142,7 @@ export class Control {
             for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                 let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]--;
-                Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                Control.commands.active[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
             }
         }
         Control._keys[event.keyCode] = false;
