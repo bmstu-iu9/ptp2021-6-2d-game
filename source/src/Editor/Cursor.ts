@@ -78,19 +78,19 @@ export class Cursor {
         this.mode = mode;
         switch (mode) {
             case Mode.Eraser: {
-                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png), auto";
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png) 9 21, auto";
                 break;
             }
             case Mode.Entity: {
-                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
                 break;
             }
             case Mode.Wall: {
-                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
                 break;
             }
             case Mode.PosPicking: {
-                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png), auto";
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png) 2 25, auto";
                 break;
             }
             case Mode.Selector: {
@@ -105,6 +105,13 @@ export class Cursor {
         this.gridPos = this.level.gridCoordinates(this.pos);
         if(Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
             switch(this.mode) {
+                case Mode.Eraser: {
+                    if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                        this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]] = null;
+                        this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = 0;
+                    }
+                    break;
+                }
                 case Mode.Wall: {
                     this.setBlock();
                     break;

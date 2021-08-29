@@ -2869,19 +2869,19 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.mode = mode;
             switch (mode) {
                 case Mode.Eraser: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png) 9 21, auto";
                     break;
                 }
                 case Mode.Entity: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
                     break;
                 }
                 case Mode.Wall: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
                     break;
                 }
                 case Mode.PosPicking: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png) 2 25, auto";
                     break;
                 }
                 case Mode.Selector: {
@@ -2895,6 +2895,13 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.gridPos = this.level.gridCoordinates(this.pos);
             if (Control_3.Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
                 switch (this.mode) {
+                    case Mode.Eraser: {
+                        if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                            this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]] = null;
+                            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = 0;
+                        }
+                        break;
+                    }
                     case Mode.Wall: {
                         this.setBlock();
                         break;
@@ -3148,6 +3155,23 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             };
             button.onclick = applyTool;
         };
+        Editor.prototype.createCursorButton = function (cursorType, type) {
+            var _this = this;
+            var button = document.createElement("img");
+            button.className = "cursorButton";
+            if (cursorType == Cursor_2.Mode.Eraser) {
+                button.src = "textures/Editor/Cursors/eraser1.png";
+            }
+            if (cursorType == Cursor_2.Mode.Selector) {
+                button.src = "textures/Editor/Cursors/cursor_old.png";
+            }
+            var palette = document.getElementById("palette" + type);
+            palette.appendChild(button);
+            var applyCursor = function () {
+                _this.cursor.changeMode(cursorType);
+            };
+            button.onclick = applyCursor;
+        };
         Editor.prototype.initHTML = function () {
             var _this = this;
             ListOfPads_2.ListOfPads.init(this.cursor);
@@ -3187,6 +3211,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
             this.createToolButton(Cursor_2.ToolType.Waiting, "5");
             this.createToolButton(Cursor_2.ToolType.Pursuit, "5");
+            this.createCursorButton(Cursor_2.Mode.Eraser, "7");
+            this.createCursorButton(Cursor_2.Mode.Selector, "7");
             this.cursor.drawPreview = new Draw_16.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
             var pal_standart_h = Math.round((window.innerHeight - 30) / 3);
             document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
