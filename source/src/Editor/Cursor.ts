@@ -79,13 +79,16 @@ export class Cursor {
         switch (mode) {
             case Mode.Eraser: {
                 document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png) 9 21, auto";
+                this.selectedEntity = null;
                 break;
             }
             case Mode.Entity: {
+                this.selectedEntity = null;
                 document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
                 break;
             }
             case Mode.Wall: {
+                this.selectedEntity = null;
                 document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
                 break;
             }
