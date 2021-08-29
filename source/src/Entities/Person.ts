@@ -6,6 +6,7 @@ import { Debug } from "../Debug";
 import { Color, Draw } from "../Draw";
 import { BehaviorModel } from "../BehaviorModel";
 import { domainToASCII } from "url";
+import { AnimationState } from "../SpriteAnimation";
 
 export enum PersonMode {
     Fine,
@@ -60,7 +61,7 @@ export class Person extends Entity {
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
         let center = this.body.center;
         for (let i = 0; i < this.game.triggers.length; i++) {
-            
+            let trigger = this.game.triggers[i];
             let triggerCoordinate = this.game.triggers[i].getCoordinates();
             Debug.addPoint(triggerCoordinate, new Color(0, 0, 255));
             let triggerVector = triggerCoordinate.sub(center);
@@ -71,6 +72,13 @@ export class Person extends Entity {
                 if (!this.game.triggers[i].isEntityTriggered(this)) {
                     this.awareness += this.game.triggers[i].power;
                     this.game.triggers[i].entityTriggered(this);
+                    // Animation
+                    this.game.draw.spriteAnimation(
+                        "Awareness", 1,
+                        new AnimationState(this.body.center.add(new geom.Vector(0, -1)), new geom.Vector(0.5, 0.5), 0),
+                        new AnimationState(this.body.center.add(new geom.Vector(0, -1.5)), new geom.Vector(2, 2), 0, 0),
+                        0.5, 1
+                    );
                 }
             }
         }

@@ -1,4 +1,4 @@
-import { Draw } from "./Draw";
+import { Draw, Layer } from "./Draw";
 import { Game } from "./Game";
 import * as geom from "./Geom";
 
@@ -6,10 +6,12 @@ export class AnimationState {
     public pos : geom.Vector;
     public box : geom.Vector;
     public angle : number;
-    constructor (pos : geom.Vector, box : geom.Vector, angle : number) {
+    public opacity : number;
+    constructor (pos : geom.Vector, box : geom.Vector, angle : number, opacity = 1) {
         this.pos = pos;
         this.box = box;
         this.angle = angle;
+        this.opacity = opacity;
     }
 }
 
@@ -36,7 +38,8 @@ export class SpriteAnimation {
         return new AnimationState(
             this.initialState.pos.mul(multA).add(this.finalState.pos.mul(multB)),
             this.initialState.box.mul(multA).add(this.finalState.box.mul(multB)),
-            this.initialState.angle * multA + this.finalState.angle * multB
+            this.initialState.angle * multA + this.finalState.angle * multB,
+            this.initialState.opacity * multA + this.finalState.opacity * multB
         );
     }
 
@@ -56,6 +59,6 @@ export class SpriteAnimation {
     public display(draw : Draw) {
         let state = this.getCurrentState();
         let frame = this.getCurrentFrame();
-        draw.image(frame, state.pos, state.box, state.angle,0);
+        draw.image(frame, state.pos, state.box, state.angle, Layer.EntityLayer, state.opacity);
     }
 };
