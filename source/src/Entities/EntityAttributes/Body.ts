@@ -63,7 +63,6 @@ export class Body {
             }
             delta = new geom.Vector();
             touched = true;
-            console.log("boba %d", this.isWallNear);
         } else if (collisionDL != CollisionType.Empty){
             let norm : geom.Vector;
             if (collisionDL == CollisionType.CornerDL) norm = new geom.Vector(1, -1);

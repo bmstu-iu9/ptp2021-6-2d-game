@@ -25,37 +25,37 @@ export class AI {
     }
 
     private stop() { // функция остановки
-        this.commands["MoveRight"] = false;
-        this.commands["MoveLeft"] = false;
-        this.commands["MoveDown"] = false;
-        this.commands["MoveUp"] = false;
+        this.commands.active["MoveRight"] = false;
+        this.commands.active["MoveLeft"] = false;
+        this.commands.active["MoveDown"] = false;
+        this.commands.active["MoveUp"] = false;
     }
 
     private go(point : geom.Vector) { // функция движения в направлении к точке
         let eps = 0.01;
         if (this.body.center.x < point.x + eps) {
-            this.commands["MoveRight"] = true;
+            this.commands.active["MoveRight"] = true;
         }
         else {
-            this.commands["MoveRight"] = false;
+            this.commands.active["MoveRight"] = false;
         }
         if (this.body.center.x > point.x - eps) {
-            this.commands["MoveLeft"] = true;
+            this.commands.active["MoveLeft"] = true;
         }
         else {
-            this.commands["MoveLeft"] = false;
+            this.commands.active["MoveLeft"] = false;
         }
         if (this.body.center.y < point.y + eps) {
-            this.commands["MoveDown"] = true;
+            this.commands.active["MoveDown"] = true;
         }
         else {
-            this.commands["MoveDown"] = false;
+            this.commands.active["MoveDown"] = false;
         }
         if (this.body.center.y > point.y - eps) {
-            this.commands["MoveUp"] = true;
+            this.commands.active["MoveUp"] = true;
         }
         else {
-            this.commands["MoveUp"] = false;
+            this.commands.active["MoveUp"] = false;
         }
     }
 
@@ -89,7 +89,7 @@ export class AI {
                 }
             }
         }
-        console.log(currentPoint, answer)
+        //console.log(currentPoint, answer)
         return answer;
     }
 
@@ -121,7 +121,7 @@ export class AI {
     }
 
     public goToPoint(point : geom.Vector) { // функция, прокладывающая путь до точки
-        console.log("q");
+        //console.log("q");
         this.destination = point;   
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
