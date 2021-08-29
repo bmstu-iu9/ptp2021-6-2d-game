@@ -178,17 +178,17 @@ export class Draw {
             // hp бар
             let bar = box.clone();
             bar.x *= percentage;
-            this.fillRect(pos, box,frontColor);
+            this.fillRect(pos, box,backColor);
             let posNew = pos.clone();
             posNew.x -= (box.x - bar.x) / 2;
-            this.fillRect(posNew, bar, backColor);
+            this.fillRect(posNew, bar, frontColor);
             // Деления
             bar.x = 2 / this.cam.scale;
             pos.x -= box.x / 2;
             for (var i = 0; i < marks.length ; i++){
                 posNew = pos.clone();
                 posNew.x += box.x * marks[i];
-                this.fillRect(posNew, bar, frontColor);
+                this.fillRect(posNew, bar, backColor);
             }
         }
     }
@@ -310,7 +310,7 @@ export class Draw {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
     // hp бар 
-    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, frontColor : Color, backColor : Color, marks: number[]){
+    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, backColor : Color, frontColor : Color, marks: number[]){
         let queue : bar_queue = {pos,box,percentage,frontColor,backColor,marks};
         this.hpqueue.push(queue); // Добавляем в очередь на отрисовку
 

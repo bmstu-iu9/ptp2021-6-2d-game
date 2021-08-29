@@ -5,6 +5,8 @@ import * as geom from "../Geom";
 import { Debug } from "../Debug";
 import { Color, Draw } from "../Draw";
 import { BehaviorModel } from "../BehaviorModel";
+import { domainToASCII } from "url";
+import { AnimationState } from "../SpriteAnimation";
 
 export enum PersonMode {
     Fine,
@@ -12,24 +14,29 @@ export enum PersonMode {
     Dying
 }
 
+export enum Behavior {
+    Normal = "normal",
+    Panic = "panic"
+}
+
 export class Person extends Entity {
-    public viewRadius : number; // радиус сектора видимости
+    public viewRadius : number = 3; // радиус сектора видимости
     public viewingAngle : number; // угол сектора видимости
     public direction : geom.Vector; // направление взгляда
-    public alertLvl : number; // уровень тревоги    
+    public awareness = 0;
+    public awarenessThreshold = 10;  
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     public mode : PersonMode; // маркер состояния (переименовать по необходимости)
     protected type : string = null;
     public behaviorModel : BehaviorModel;
-
+    
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body)
         this.mode = mode;
-        this.viewRadius = 3;
+        this.viewRadius = 5;
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
-        this.alertLvl = 0;
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
     }
@@ -41,36 +48,53 @@ export class Person extends Entity {
         this.hp = this.hpMax;
     }
 
-    public upAlertLvl() { // поднятие уровня тревоги
-        // Возможно нужны еще манипуляции (тревога по карте и т.д.)
-        this.alertLvl++;
-    }
-
     public die() {
-        super.die();
-        if (this.type)
+        if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
+        super.die();
     }
 
-    public checkTriggers() { // проверка всех триггеров на попадание в сетор видимости
+    public isPointVisible(pos : geom.Vector) : boolean {
+        return geom.dist(this.body.center, pos) <= this.viewRadius;
+    }
+
+    public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
         let center = this.body.center;
         for (let i = 0; i < this.game.triggers.length; i++) {
-            
+            let trigger = this.game.triggers[i];
             let triggerCoordinate = this.game.triggers[i].getCoordinates();
             Debug.addPoint(triggerCoordinate, new Color(0, 0, 255));
             let triggerVector = triggerCoordinate.sub(center);
-            if (Math.abs(this.direction.getAngle(triggerVector)) < this.viewingAngle / 2) {
-                if (triggerVector.abs() <= this.viewRadius) {
-                    if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
-                        this.game.ghost = this.game.mimic.controlledEntity.body.center;
-                    }
-                    if (!this.game.triggers[i].isEntityTriggered(this)) {
-                        this.upAlertLvl();
-                        this.game.triggers[i].entityTriggered(this);
-                    }
+            if (this.isPointVisible(triggerCoordinate)) {
+                if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
+                    this.game.ghost = this.game.mimic.controlledEntity.body.center;
+                }
+                if (!this.game.triggers[i].isEntityTriggered(this)) {
+                    this.awareness += this.game.triggers[i].power;
+                    this.game.triggers[i].entityTriggered(this);
+                    // Animation
+                    this.game.draw.spriteAnimation(
+                        "Awareness", 1,
+                        new AnimationState(this.body.center.add(new geom.Vector(0, -1)), new geom.Vector(0.5, 0.5), 0),
+                        new AnimationState(this.body.center.add(new geom.Vector(0, -1.5)), new geom.Vector(2, 2), 0, 0),
+                        0.5, 1
+                    );
                 }
             }
         }
+
+        // Проверка на пассивные триггеры
+        for (let entity of this.game.entities) {
+            if (entity == this || !this.isPointVisible(entity.body.center))
+                continue;
+            // Видим покоцанного челика
+            if (entity instanceof Person && entity.hp < entity.hpThresholdCorrupted)
+                this.awareness += 2 * Game.dt;
+            // Видим настороженного челика
+            if (entity instanceof Person && entity.awareness > this.awareness)
+                this.awareness = entity.awareness;
+        }
+
     }
 
     // Режим в строковом виде
@@ -115,6 +139,14 @@ export class Person extends Entity {
             this.mode = PersonMode.Fine;
     }
 
+    public stop() {
+        this.myAI.commands.active["MoveUp"] = false;
+        this.myAI.commands.active["MoveDown"] = false;
+        this.myAI.commands.active["MoveLeft"] = false;
+        this.myAI.commands.active["MoveRight"] = false;
+        console.log("stop");
+    }
+
     public step() {
         let x = 0;
         let y = 0;
@@ -123,19 +155,19 @@ export class Person extends Entity {
         // перемещение согласно commands
         if (!this.commands)
             return;
-        if(this.commands["MoveUp"]) {
+        if(this.commands.active["MoveUp"]) {
             y++;
             this.body.move(new geom.Vector(0, -vel));
         }
-        if(this.commands["MoveDown"]) {
+        if(this.commands.active["MoveDown"]) {
             y--;
             this.body.move(new geom.Vector(0, vel));
         }
-        if(this.commands["MoveRight"]) {
+        if(this.commands.active["MoveRight"]) {
             x++;
             this.body.move(new geom.Vector(vel, 0));
         }
-        if(this.commands["MoveLeft"]) {
+        if(this.commands.active["MoveLeft"]) {
             x--;
             this.body.move(new geom.Vector(-vel, 0));
         }
@@ -143,10 +175,27 @@ export class Person extends Entity {
         this.checkTriggers();
         this.direction = new geom.Vector(x, y);
 
+        // Проверка на awareness
+        if (this.awareness >= this.awarenessThreshold) {
+            this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
+            this.awareness = this.awarenessThreshold;
+        }
+
         this.updateMode();
         this.behaviorModel.step();        
 
         super.step();
+    }
+
+    public displayAwareness(draw : Draw) {
+        draw.bar(
+            this.body.center.clone().add(new geom.Vector(0, -0.9)), // Pos
+            new geom.Vector(1, 0.1), // Box
+            this.awareness / this.awarenessThreshold, // Percentage
+            new Color(25, 25, 25), // Back color
+            new Color(25, 150, 255), // Front color
+            [] // Marks
+        );
     }
 
     public display(draw : Draw) {    

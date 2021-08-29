@@ -7,16 +7,19 @@ import { Editor } from "./Editor";
 import { Instruction } from "./BehaviorModel";
 import { Person } from "./Entities/Person";
 import { Scientist } from "./Entities/Scientist";
+import { Behavior } from "./Entities/Person";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LevelEditorPersons/source/env/"); // Если с Гита
-//aux.setEnvironment("http://127.0.0.1:4500/server.py"); // Если локальный сервер
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
+//aux.setEnvironment("http://127.0.0.1:4500"); // Если локальный сервер
 
 // Флаг режима редактора уровней
 let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
 
 aux.setEditorMode(levelEditorMode);
 
-let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+let canvas:HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        canvas.width=window.innerWidth ;
+        canvas.height = window.innerHeight;
 let draw = new Draw(canvas);
 draw.cam.scale = 10;
 
