@@ -229,6 +229,9 @@ export class Editor {
         if (cursorType == Mode.Selector) {
             button.src = "textures/Editor/Cursors/cursor_old.png";
         }
+        if (cursorType == Mode.Light) {
+            button.src = "textures/Editor/Cursors/Bulb.png";
+        }
         let palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             let applyCursor = () => {
@@ -281,6 +284,7 @@ export class Editor {
 
         this.createCursorButton(Mode.Eraser, "7");
         this.createCursorButton(Mode.Selector, "7");
+        this.createCursorButton(Mode.Light, "7");
         // Окно превью
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,

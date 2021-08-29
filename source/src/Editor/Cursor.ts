@@ -25,7 +25,8 @@ export enum Mode {
     Wall,
     Entity,
     Selector,
-    PosPicking
+    PosPicking,
+    Light
   }
 
 // Курсор для редактора уровней. Хранит в себе позицию и

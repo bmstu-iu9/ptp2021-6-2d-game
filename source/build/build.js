@@ -2923,6 +2923,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
         Mode[Mode["Entity"] = 2] = "Entity";
         Mode[Mode["Selector"] = 3] = "Selector";
         Mode[Mode["PosPicking"] = 4] = "PosPicking";
+        Mode[Mode["Light"] = 5] = "Light";
     })(Mode = exports.Mode || (exports.Mode = {}));
     var Cursor = (function () {
         function Cursor(level, draw) {
@@ -3272,6 +3273,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             if (cursorType == Cursor_2.Mode.Selector) {
                 button.src = "textures/Editor/Cursors/cursor_old.png";
             }
+            if (cursorType == Cursor_2.Mode.Light) {
+                button.src = "textures/Editor/Cursors/Bulb.png";
+            }
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyCursor = function () {
@@ -3320,6 +3324,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createToolButton(Cursor_2.ToolType.Pursuit, "5");
             this.createCursorButton(Cursor_2.Mode.Eraser, "7");
             this.createCursorButton(Cursor_2.Mode.Selector, "7");
+            this.createCursorButton(Cursor_2.Mode.Light, "7");
             this.cursor.drawPreview = new Draw_16.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
             var pal_standart_h = Math.round((window.innerHeight - 30) / 3);
             document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
