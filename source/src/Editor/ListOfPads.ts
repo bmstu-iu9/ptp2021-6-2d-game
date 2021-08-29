@@ -194,7 +194,7 @@ export class ListOfPads {
     }
 
     public static GUIstep() {
-        console.log(this.instructionCopy);
+        //console.log(this.instructionCopy);
         
         if (this.instructionCopy == null) {
             return;

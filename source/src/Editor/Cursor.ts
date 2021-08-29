@@ -107,8 +107,14 @@ export class Cursor {
             switch(this.mode) {
                 case Mode.Eraser: {
                     if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
-                        this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]] = null;
-                        this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = 0;
+                        console.log(this.level.Entities);
+                        this.level.Entities.splice(this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)], 1);
+                        for (let j = 0; j < this.level.Entities.length; j++) {
+                            let gridCord = this.level.gridCoordinates(this.level.Entities[j].body.center);
+                            this.entityLocations[JSON.stringify(gridCord, aux.replacer)] = j;
+                        }
+                        console.log(this.level.Entities);
+                        this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = null;
                     }
                     break;
                 }

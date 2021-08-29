@@ -54,7 +54,7 @@ export class EditorGUI {
     }
 
     public static display(draw : Draw) {
-        console.log(this.GUIelements.length);
+        //console.log(this.GUIelements.length);
         
         for (let i = 0; i < this.GUIelements.length; i++) {
             this.GUIelements[i].display(draw);

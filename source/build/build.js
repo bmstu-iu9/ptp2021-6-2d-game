@@ -2656,7 +2656,6 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
             return this.GUIelements[this.GUIelements.length] = new GUILine(begin, end, color);
         };
         EditorGUI.display = function (draw) {
-            console.log(this.GUIelements.length);
             for (var i = 0; i < this.GUIelements.length; i++) {
                 this.GUIelements[i].display(draw);
             }
@@ -2826,7 +2825,6 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             this.updateInstructionCopy();
         };
         ListOfPads.GUIstep = function () {
-            console.log(this.instructionCopy);
             if (this.instructionCopy == null) {
                 return;
             }
@@ -2997,8 +2995,14 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                 switch (this.mode) {
                     case Mode.Eraser: {
                         if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
-                            this.level.Entities[this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)]] = null;
-                            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = 0;
+                            console.log(this.level.Entities);
+                            this.level.Entities.splice(this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)], 1);
+                            for (var j = 0; j < this.level.Entities.length; j++) {
+                                var gridCord = this.level.gridCoordinates(this.level.Entities[j].body.center);
+                                this.entityLocations[JSON.stringify(gridCord, aux.replacer)] = j;
+                            }
+                            console.log(this.level.Entities);
+                            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = null;
                         }
                         break;
                     }
