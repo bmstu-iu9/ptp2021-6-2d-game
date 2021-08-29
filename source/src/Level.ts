@@ -122,7 +122,7 @@ export class Level {
     public Entities : Entity[] = [];
     public tileSize = 1;
     public lightSources : LightSource[] = [];
-    public showLighting = true;
+    public showLighting = false;
 
     constructor(size = new geom.Vector(0, 0)) {
         this.Grid = [];
@@ -168,6 +168,11 @@ export class Level {
     // Возвращает тайл по координатам
     public getTile(pos : geom.Vector) : Tile {
         return this.Grid[pos.x][pos.y];
+    }
+
+    // Добавляет источник освещения
+    public makeLightSource(pos : geom.Vector, power : number) {
+        this.lightSources.push(new LightSource(pos, power));
     }
 
     // Заворачивает в json
