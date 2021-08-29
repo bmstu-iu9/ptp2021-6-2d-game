@@ -90,7 +90,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         let palette = document.getElementById("palette" + type);
         palette.appendChild(button);
         let applyTile = () => {
-            this.cursor.mode = Mode.Wall;
+            this.cursor.changeMode(Mode.Wall);
             
             if (type.length > 0) {
                 let prep = new Number(type);
@@ -122,7 +122,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         let button = document.createElement("img");
         if (entityType == "Soldier") {
             let applyEntity = () => {
-                this.cursor.mode = Mode.Entity;
+                this.cursor.changeMode(Mode.Entity);
                 this.cursor.entity = new Soldier(null, new Body(new geom.Vector(0, 0), 1), PersonMode.Fine);
                 this.cursor.entity.animation = new Animation("Soldier", 8);
             }
@@ -131,7 +131,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         }
         if (entityType == "Scientist") {
             let applyEntity = () => {
-                this.cursor.mode = Mode.Entity;
+                this.cursor.changeMode(Mode.Entity);
                 this.cursor.entity = new Scientist(null, new Body(new geom.Vector(0, 0), 1), PersonMode.Fine);
                 this.cursor.entity.animation = new Animation("Scientist", 8);
             }
@@ -140,7 +140,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         }
         if (entityType == "Monster") {
             let applyEntity = () => {
-                this.cursor.mode = Mode.Entity;
+                this.cursor.changeMode(Mode.Entity);
                 this.cursor.entity = new Monster(null, new Body(new geom.Vector(0, 0), 1));
                 this.cursor.entity.animation = new Animation("Monster", 8);
             }
@@ -176,7 +176,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         let palette = document.getElementById("palette" + type);
         palette.appendChild(button);
         let applyTool = () => {
-            this.cursor.mode = Mode.Selector;
+            this.cursor.changeMode(Mode.Selector);
             console.log(this.cursor.selectedEntity);
 
             if (this.cursor.selectedEntity != null) {
@@ -219,6 +219,9 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         }
         button.onclick = applyTool;
     }
+
+    // private createToolButton(toolType: ToolType, type: string) { 
+    // }
 
     // Инициализирует взаимодействие с HTML
     private initHTML() {
@@ -275,6 +278,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
+        document.getElementById("palette7")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
 
         document.getElementById("palette")["style"].top = "24px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
@@ -282,7 +286,10 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
-        
+        document.getElementById("palette7")["style"].top = "24px";
+
+
+        document.getElementById("w7")["style"].top = "0px";
         document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w4")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";

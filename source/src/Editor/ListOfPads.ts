@@ -118,7 +118,7 @@ export class ListOfPads {
                     console.log("clicked");
 
                     additionalElement.classList.add("selected");
-                    this.cursor.mode = Mode.PosPicking;
+                    this.cursor.changeMode(Mode.PosPicking);
                     this.currentPad = additionalElement.parentElement;
                     this.updateInstructionCopy();
                 };

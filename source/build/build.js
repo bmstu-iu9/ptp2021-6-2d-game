@@ -2662,7 +2662,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                     var posPick = function () {
                         console.log("clicked");
                         additionalElement.classList.add("selected");
-                        _this.cursor.mode = Cursor_1.Mode.PosPicking;
+                        _this.cursor.changeMode(Cursor_1.Mode.PosPicking);
                         _this.currentPad = additionalElement.parentElement;
                         _this.updateInstructionCopy();
                     };
@@ -2832,10 +2832,10 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             if (draw === void 0) { draw = null; }
             this.pos = new geom.Vector();
             this.gridPos = new geom.Vector();
-            this.mode = Mode.Wall;
             this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
             this.entity = new Entity_4.Entity(null, new Body_3.Body(new geom.Vector(0, 0), 1));
             this.selectedEntity = null;
+            this.mode = Mode.Wall;
             this.mouseLeftButtonClicked = true;
             this.entityLocations = new Map();
             this.level = level;
@@ -2863,6 +2863,19 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             if (this.entity instanceof Monster_5.Monster) {
                 var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
                 this.level.Entities[currentLocation] = new Monster_5.Monster(null, new Body_3.Body(pos, 1));
+            }
+        };
+        Cursor.prototype.changeMode = function (mode) {
+            this.mode = mode;
+            switch (mode) {
+                case Mode.Eraser: {
+                    document.getElementById("gameCanvas")["style"].cursor = "move";
+                    break;
+                }
+                case Mode.Selector: {
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/file.png), auto";
+                    break;
+                }
             }
         };
         Cursor.prototype.step = function () {
@@ -2999,7 +3012,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTile = function () {
-                _this.cursor.mode = Cursor_2.Mode.Wall;
+                _this.cursor.changeMode(Cursor_2.Mode.Wall);
                 if (type.length > 0) {
                     var prep = new Number(type);
                     if (_this.isTileSubImage(prep.valueOf())) {
@@ -3033,7 +3046,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var button = document.createElement("img");
             if (entityType == "Soldier") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_2.Mode.Entity;
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
                     _this.cursor.entity = new Soldier_4.Soldier(null, new Body_4.Body(new geom.Vector(0, 0), 1), Person_7.PersonMode.Fine);
                     _this.cursor.entity.animation = new Animation_5.Animation("Soldier", 8);
                 };
@@ -3042,7 +3055,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             }
             if (entityType == "Scientist") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_2.Mode.Entity;
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
                     _this.cursor.entity = new Scientist_4.Scientist(null, new Body_4.Body(new geom.Vector(0, 0), 1), Person_7.PersonMode.Fine);
                     _this.cursor.entity.animation = new Animation_5.Animation("Scientist", 8);
                 };
@@ -3051,7 +3064,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             }
             if (entityType == "Monster") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_2.Mode.Entity;
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
                     _this.cursor.entity = new Monster_6.Monster(null, new Body_4.Body(new geom.Vector(0, 0), 1));
                     _this.cursor.entity.animation = new Animation_5.Animation("Monster", 8);
                 };
@@ -3086,7 +3099,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTool = function () {
-                _this.cursor.mode = Cursor_2.Mode.Selector;
+                _this.cursor.changeMode(Cursor_2.Mode.Selector);
                 console.log(_this.cursor.selectedEntity);
                 if (_this.cursor.selectedEntity != null) {
                     if (_this.cursor.selectedEntity instanceof Person_7.Person) {
@@ -3170,12 +3183,15 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
+            document.getElementById("palette7")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
             document.getElementById("palette")["style"].top = "24px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("palette7")["style"].top = "24px";
+            document.getElementById("w7")["style"].top = "0px";
             document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w4")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";

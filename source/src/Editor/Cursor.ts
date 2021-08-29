@@ -12,6 +12,7 @@ import { CollisionType, Tile } from "../Tile";
 import { BehaviorModel } from "../BehaviorModel";
 import * as aux from "../AuxLib";
 import { ListOfPads } from "./ListOfPads";
+import { url } from "inspector";
 
 export enum ToolType {
     GoToPoint,
@@ -34,11 +35,11 @@ export class Cursor {
     public draw : Draw;
     public pos = new geom.Vector();
     public gridPos = new geom.Vector();
-    public mode = Mode.Wall;
     public tile = new Tile(CollisionType.Full);
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
     public selectedEntity : Entity = null;
     public drawPreview : Draw;
+    private mode = Mode.Wall;
     private mouseLeftButtonClicked = true;
     private entityLocations : Map<any, number> = new Map();
 
@@ -70,6 +71,32 @@ export class Cursor {
         if (this.entity instanceof Monster) {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
             this.level.Entities[currentLocation] = new Monster(null, new Body(pos, 1));
+        }
+    }
+
+    public changeMode(mode : Mode) {
+        this.mode = mode;
+        switch (mode) {
+            case Mode.Eraser: {
+                document.getElementById("gameCanvas")["style"].cursor = "move";
+                break;
+            }
+            // case Mode.Entity: {
+            //     document.getElementById("gameCanvas")["style"].cursor = url("");
+            //     break;
+            // }
+            // case Mode.Wall: {
+            //     document.getElementById("gameCanvas")["style"].cursor = url("");
+            //     break;
+            // }
+            // case Mode.PosPicking: {
+            //     document.getElementById("gameCanvas")["style"].cursor = url("");
+            //     break;
+            // }
+            case Mode.Selector: {
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/file.png), auto";
+                break;
+            }
         }
     }
 
