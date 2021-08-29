@@ -274,7 +274,6 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
         document.getElementById("palette2")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
         document.getElementById("palette3")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
-        
         document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
@@ -396,6 +395,21 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
 
     public step() {
         //ListOfPads.clear();
+
+        if (this.cursor.selectedEntity == null) {
+            document.getElementById("palette6")["style"].display = "none";
+            document.getElementById("palette6")["style"].animationPlayState = "pause";
+            document.getElementById("w6")["style"].display = "none";
+            document.getElementById("normalMode")["style"].display = "none";
+            document.getElementById("panicMode")["style"].display = "none";
+        } else {
+            document.getElementById("palette6")["style"].display = "block";
+            document.getElementById("palette6")["style"].animationPlayState = "running";
+            document.getElementById("w6")["style"].display = "block";
+            document.getElementById("normalMode")["style"].display = "block";
+            document.getElementById("panicMode")["style"].display = "block";
+        }
+
         this.moveCamera();
         this.cursor.step();
     }

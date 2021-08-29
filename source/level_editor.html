@@ -10,6 +10,7 @@
     .layer7,
     .window6,
     .normalButton,
+    .changeMode,
     .up_menu,
     .panicButton,
     .listOfPads,
@@ -26,6 +27,11 @@
 
     .tileButton:hover {
         box-shadow: 0 0 7px red;
+    }
+
+    .changeMode {
+        right: 400px;
+        top: 10px;
     }
 
     .behaviorPad {
@@ -354,6 +360,31 @@
         border-bottom-right-radius: 4px;
         border-top-right-radius: 4px;
     }
+    .anim_in {
+        animation-duration: 1s;
+        animation-timing-function: ease-in;
+        animation-name: slidein;
+        animation-play-state: paused;
+    }
+    @keyframes slidein {
+        from {
+            height: 0%;
+            margin-top: 20%;
+        }
+
+        90% {
+            height: 25%;
+        }
+
+        95% {
+            height: 40%;
+        }
+
+        to {
+            height: 100%;
+            margin-top: 0%;
+        }
+    }
 </style>
 
 <!-- Невероятная важная невидимая вещь!!! -->
@@ -431,7 +462,7 @@
                 <b>Behavior Pads:</b>
             </div>
         </div>
-        <div id="palette6" class="layer6">
+        <div id="palette6" class="layer6 anim_in">
             <!-- Палитра команд -->
             <ul id="mainListPads" class="listOfPads"></ul>
         </div>

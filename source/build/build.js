@@ -3263,6 +3263,20 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.cursor.draw = this.draw;
         };
         Editor.prototype.step = function () {
+            if (this.cursor.selectedEntity == null) {
+                document.getElementById("palette6")["style"].display = "none";
+                document.getElementById("palette6")["style"].animationPlayState = "pause";
+                document.getElementById("w6")["style"].display = "none";
+                document.getElementById("normalMode")["style"].display = "none";
+                document.getElementById("panicMode")["style"].display = "none";
+            }
+            else {
+                document.getElementById("palette6")["style"].display = "block";
+                document.getElementById("palette6")["style"].animationPlayState = "running";
+                document.getElementById("w6")["style"].display = "block";
+                document.getElementById("normalMode")["style"].display = "block";
+                document.getElementById("panicMode")["style"].display = "block";
+            }
             this.moveCamera();
             this.cursor.step();
         };
