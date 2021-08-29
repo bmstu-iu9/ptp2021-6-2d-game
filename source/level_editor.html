@@ -297,6 +297,14 @@
         height: 40px;
     }
 
+    .show_shadows {
+        align-items: center;
+        display: flex;
+        background-color: red;
+        border-radius: 4px;
+        height: 40px;
+    }
+
     .up_menu {
         top: 0px;
         background-color: darkgray;
@@ -410,6 +418,11 @@
         <div id="button_grid" class="hiding_grid">
             <input type="checkbox" id="hidegrid" name="hidegrid">
             <label for="hidegrid">Hide grid</label>
+        </div>
+
+        <div id="button_shadows" class="show_shadows">
+            <input type="checkbox" id="showShadows" name="showShadows">
+            <label for="showShadows">Show shadows</label>
         </div>
 
         <canvas id="preview" class="prevCanvass"></canvas>
