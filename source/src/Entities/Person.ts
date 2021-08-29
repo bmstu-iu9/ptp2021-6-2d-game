@@ -139,27 +139,36 @@ export class Person extends Entity {
             this.mode = PersonMode.Fine;
     }
 
+    public stop() {
+        this.myAI.commands.commands["MoveUp"] = false;
+        this.myAI.commands.commands["MoveDown"] = false;
+        this.myAI.commands.commands["MoveLeft"] = false;
+        this.myAI.commands.commands["MoveRight"] = false;
+        console.log("stop");
+    }
+
     public step() {
         let x = 0;
         let y = 0;
         let vel = this.body.velocity;
         
+        console.log(this.commands);
         // перемещение согласно commands
         if (!this.commands)
             return;
-        if(this.commands["MoveUp"]) {
+        if(this.commands.commands["MoveUp"]) {
             y++;
             this.body.move(new geom.Vector(0, -vel));
         }
-        if(this.commands["MoveDown"]) {
+        if(this.commands.commands["MoveDown"]) {
             y--;
             this.body.move(new geom.Vector(0, vel));
         }
-        if(this.commands["MoveRight"]) {
+        if(this.commands.commands["MoveRight"]) {
             x++;
             this.body.move(new geom.Vector(vel, 0));
         }
-        if(this.commands["MoveLeft"]) {
+        if(this.commands.commands["MoveLeft"]) {
             x--;
             this.body.move(new geom.Vector(-vel, 0));
         }

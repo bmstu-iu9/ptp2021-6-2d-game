@@ -172,7 +172,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                                     var vals = Array.from(Control.keyMapping.values());
                                     for (var i = 0; i < vals.length; i++) {
                                         for (var j = 0; j < vals[i].length; j++) {
-                                            Control.commands[vals[i][j]] = false;
+                                            Control.commands.commands[vals[i][j]] = false;
                                             Control.commandsCounter[vals[i][j]] = 0;
                                         }
                                     }
@@ -185,7 +185,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                             vals = Array.from(Control.keyMapping.values());
                             for (i = 0; i < vals.length; i++) {
                                 for (j = 0; j < vals[i].length; j++) {
-                                    Control.commands[vals[i][j]] = false;
+                                    Control.commands.commands[vals[i][j]] = false;
                                     Control.commandsCounter[vals[i][j]] = 0;
                                 }
                             }
@@ -246,7 +246,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                 for (var i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                     var currentCommand = Control.keyMapping.get(event.keyCode)[i];
                     Control.commandsCounter[currentCommand]++;
-                    Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                    Control.commands.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 }
             }
             Control._keys[event.keyCode] = true;
@@ -262,7 +262,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                 for (var i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                     var currentCommand = Control.keyMapping.get(event.keyCode)[i];
                     Control.commandsCounter[currentCommand]--;
-                    Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                    Control.commands.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 }
             }
             Control._keys[event.keyCode] = false;
@@ -830,36 +830,36 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             this.Path = [];
         }
         AI.prototype.stop = function () {
-            this.commands["MoveRight"] = false;
-            this.commands["MoveLeft"] = false;
-            this.commands["MoveDown"] = false;
-            this.commands["MoveUp"] = false;
+            this.commands.commands["MoveRight"] = false;
+            this.commands.commands["MoveLeft"] = false;
+            this.commands.commands["MoveDown"] = false;
+            this.commands.commands["MoveUp"] = false;
         };
         AI.prototype.go = function (point) {
             var eps = 0.01;
             if (this.body.center.x < point.x + eps) {
-                this.commands["MoveRight"] = true;
+                this.commands.commands["MoveRight"] = true;
             }
             else {
-                this.commands["MoveRight"] = false;
+                this.commands.commands["MoveRight"] = false;
             }
             if (this.body.center.x > point.x - eps) {
-                this.commands["MoveLeft"] = true;
+                this.commands.commands["MoveLeft"] = true;
             }
             else {
-                this.commands["MoveLeft"] = false;
+                this.commands.commands["MoveLeft"] = false;
             }
             if (this.body.center.y < point.y + eps) {
-                this.commands["MoveDown"] = true;
+                this.commands.commands["MoveDown"] = true;
             }
             else {
-                this.commands["MoveDown"] = false;
+                this.commands.commands["MoveDown"] = false;
             }
             if (this.body.center.y > point.y - eps) {
-                this.commands["MoveUp"] = true;
+                this.commands.commands["MoveUp"] = true;
             }
             else {
-                this.commands["MoveUp"] = false;
+                this.commands.commands["MoveUp"] = false;
             }
         };
         AI.prototype.getPointCoordinate = function (place) {
@@ -1175,25 +1175,33 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             else
                 this.mode = PersonMode.Fine;
         };
+        Person.prototype.stop = function () {
+            this.myAI.commands.commands["MoveUp"] = false;
+            this.myAI.commands.commands["MoveDown"] = false;
+            this.myAI.commands.commands["MoveLeft"] = false;
+            this.myAI.commands.commands["MoveRight"] = false;
+            console.log("stop");
+        };
         Person.prototype.step = function () {
             var x = 0;
             var y = 0;
             var vel = this.body.velocity;
+            console.log(this.commands);
             if (!this.commands)
                 return;
-            if (this.commands["MoveUp"]) {
+            if (this.commands.commands["MoveUp"]) {
                 y++;
                 this.body.move(new geom.Vector(0, -vel));
             }
-            if (this.commands["MoveDown"]) {
+            if (this.commands.commands["MoveDown"]) {
                 y--;
                 this.body.move(new geom.Vector(0, vel));
             }
-            if (this.commands["MoveRight"]) {
+            if (this.commands.commands["MoveRight"]) {
                 x++;
                 this.body.move(new geom.Vector(vel, 0));
             }
-            if (this.commands["MoveLeft"]) {
+            if (this.commands.commands["MoveLeft"]) {
                 x--;
                 this.body.move(new geom.Vector(-vel, 0));
             }
@@ -1648,7 +1656,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
     }());
     exports.Weapon = Weapon;
 });
-define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon", "Entities/Monster"], function (require, exports, Person_4, Animation_4, Weapon_1, Monster_2) {
+define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon", "Geom", "Entities/Monster"], function (require, exports, Person_4, Animation_4, Weapon_1, geom, Monster_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Soldier = void 0;
@@ -1666,8 +1674,11 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
             for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
                 var entity = _a[_i];
                 if (entity instanceof Monster_2.Monster) {
+                    if (geom.dist(entity.body.center, this.body.center) < this.weapon.range / 2)
+                        this.stop();
+                    if (geom.dist(entity.body.center, this.body.center) < this.weapon.range)
+                        this.myAI.commands.commands["shoot"] = true;
                     this.myAI.commands.pointer = entity.body.center.sub(this.body.center);
-                    this.myAI.commands.commands["shoot"] = true;
                 }
             }
             if (this.commands.commands["shoot"]) {

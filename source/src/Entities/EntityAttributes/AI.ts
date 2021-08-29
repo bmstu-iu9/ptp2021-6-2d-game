@@ -25,37 +25,37 @@ export class AI {
     }
 
     private stop() { // функция остановки
-        this.commands["MoveRight"] = false;
-        this.commands["MoveLeft"] = false;
-        this.commands["MoveDown"] = false;
-        this.commands["MoveUp"] = false;
+        this.commands.commands["MoveRight"] = false;
+        this.commands.commands["MoveLeft"] = false;
+        this.commands.commands["MoveDown"] = false;
+        this.commands.commands["MoveUp"] = false;
     }
 
     private go(point : geom.Vector) { // функция движения в направлении к точке
         let eps = 0.01;
         if (this.body.center.x < point.x + eps) {
-            this.commands["MoveRight"] = true;
+            this.commands.commands["MoveRight"] = true;
         }
         else {
-            this.commands["MoveRight"] = false;
+            this.commands.commands["MoveRight"] = false;
         }
         if (this.body.center.x > point.x - eps) {
-            this.commands["MoveLeft"] = true;
+            this.commands.commands["MoveLeft"] = true;
         }
         else {
-            this.commands["MoveLeft"] = false;
+            this.commands.commands["MoveLeft"] = false;
         }
         if (this.body.center.y < point.y + eps) {
-            this.commands["MoveDown"] = true;
+            this.commands.commands["MoveDown"] = true;
         }
         else {
-            this.commands["MoveDown"] = false;
+            this.commands.commands["MoveDown"] = false;
         }
         if (this.body.center.y > point.y - eps) {
-            this.commands["MoveUp"] = true;
+            this.commands.commands["MoveUp"] = true;
         }
         else {
-            this.commands["MoveUp"] = false;
+            this.commands.commands["MoveUp"] = false;
         }
     }
 

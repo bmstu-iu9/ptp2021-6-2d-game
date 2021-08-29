@@ -38,7 +38,7 @@ export class Control {
                 let vals = Array.from(Control.keyMapping.values());
                 for (let i = 0; i < vals.length; i++) {
                     for (let j = 0; j < vals[i].length; j++) {
-                        Control.commands[vals[i][j]] = false;
+                        Control.commands.commands[vals[i][j]] = false;
                         Control.commandsCounter[vals[i][j]] = 0;
                     }
                 }
@@ -49,7 +49,7 @@ export class Control {
             let vals = Array.from(Control.keyMapping.values());
             for (let i = 0; i < vals.length; i++) {
                 for (let j = 0; j < vals[i].length; j++) {
-                    Control.commands[vals[i][j]] = false;
+                    Control.commands.commands[vals[i][j]] = false;
                     Control.commandsCounter[vals[i][j]] = 0;
                 }
             }
@@ -119,7 +119,7 @@ export class Control {
             for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                 let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]++;
-                Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                Control.commands.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
             }
         }
         Control._keys[event.keyCode] = true;
@@ -136,7 +136,7 @@ export class Control {
             for (let i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                 let currentCommand = Control.keyMapping.get(event.keyCode)[i];
                 Control.commandsCounter[currentCommand]--;
-                Control.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                Control.commands.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
             }
         }
         Control._keys[event.keyCode] = false;

@@ -21,8 +21,14 @@ export class Soldier extends Person {
         this.myAI.commands.commands["shoot"] = false;
         for (let entity of this.game.entities) {
             if (entity instanceof Monster) {
+                // Остановка
+                if (geom.dist(entity.body.center, this.body.center) < this.weapon.range / 2)
+                    this.stop();
+                // Стрельба
+                if (geom.dist(entity.body.center, this.body.center) < this.weapon.range)
+                    this.myAI.commands.commands["shoot"] = true;
                 this.myAI.commands.pointer = entity.body.center.sub(this.body.center);
-                this.myAI.commands.commands["shoot"] = true;
+                
             }
         }
 
