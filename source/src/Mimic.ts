@@ -91,7 +91,7 @@ export class Mimic {
 
     public step() {
         // Подменяем комманды дя Entity, если мы не делаем это каждый ход, команды восстанавливаются сами (см Entity.step)
-        Control.commands.commands["shoot"] = Control.isMouseRightPressed();
+        Control.commands.active["shoot"] = Control.isMouseRightPressed();
         Control.commands.pointer = this.game.draw.transformBack(Control.mousePos()).sub(this.controlledEntity.body.center);
         this.controlledEntity.commands = Control.commands;
         // Наносим урон жертве        

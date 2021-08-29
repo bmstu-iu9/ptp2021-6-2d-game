@@ -140,10 +140,10 @@ export class Person extends Entity {
     }
 
     public stop() {
-        this.myAI.commands.commands["MoveUp"] = false;
-        this.myAI.commands.commands["MoveDown"] = false;
-        this.myAI.commands.commands["MoveLeft"] = false;
-        this.myAI.commands.commands["MoveRight"] = false;
+        this.myAI.commands.active["MoveUp"] = false;
+        this.myAI.commands.active["MoveDown"] = false;
+        this.myAI.commands.active["MoveLeft"] = false;
+        this.myAI.commands.active["MoveRight"] = false;
         console.log("stop");
     }
 
@@ -155,19 +155,19 @@ export class Person extends Entity {
         // перемещение согласно commands
         if (!this.commands)
             return;
-        if(this.commands.commands["MoveUp"]) {
+        if(this.commands.active["MoveUp"]) {
             y++;
             this.body.move(new geom.Vector(0, -vel));
         }
-        if(this.commands.commands["MoveDown"]) {
+        if(this.commands.active["MoveDown"]) {
             y--;
             this.body.move(new geom.Vector(0, vel));
         }
-        if(this.commands.commands["MoveRight"]) {
+        if(this.commands.active["MoveRight"]) {
             x++;
             this.body.move(new geom.Vector(vel, 0));
         }
-        if(this.commands.commands["MoveLeft"]) {
+        if(this.commands.active["MoveLeft"]) {
             x--;
             this.body.move(new geom.Vector(-vel, 0));
         }

@@ -18,7 +18,7 @@ export class Soldier extends Person {
 
     public step() {
         // Нападаем
-        this.myAI.commands.commands["shoot"] = false;
+        this.myAI.commands.active["shoot"] = false;
         for (let entity of this.game.entities) {
             if (entity instanceof Monster) {
                 // Остановка
@@ -26,13 +26,13 @@ export class Soldier extends Person {
                     this.stop();
                 // Стрельба
                 if (geom.dist(entity.body.center, this.body.center) < this.weapon.range)
-                    this.myAI.commands.commands["shoot"] = true;
+                    this.myAI.commands.active["shoot"] = true;
                 this.myAI.commands.pointer = entity.body.center.sub(this.body.center);
                 
             }
         }
 
-        if (this.commands.commands["shoot"]) {
+        if (this.commands.active["shoot"]) {
             // выстрелить в направлении this.commands.pointer
             this.weapon.shoot(this.commands.pointer);
         }

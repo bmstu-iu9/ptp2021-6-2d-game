@@ -119,7 +119,7 @@ define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], fun
     exports.Commands = void 0;
     var Commands = (function () {
         function Commands() {
-            this.commands = new Map();
+            this.active = new Map();
             this.pointer = new Geom_1.Vector();
         }
         return Commands;
@@ -172,7 +172,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                                     var vals = Array.from(Control.keyMapping.values());
                                     for (var i = 0; i < vals.length; i++) {
                                         for (var j = 0; j < vals[i].length; j++) {
-                                            Control.commands.commands[vals[i][j]] = false;
+                                            Control.commands.active[vals[i][j]] = false;
                                             Control.commandsCounter[vals[i][j]] = 0;
                                         }
                                     }
@@ -185,7 +185,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                             vals = Array.from(Control.keyMapping.values());
                             for (i = 0; i < vals.length; i++) {
                                 for (j = 0; j < vals[i].length; j++) {
-                                    Control.commands.commands[vals[i][j]] = false;
+                                    Control.commands.active[vals[i][j]] = false;
                                     Control.commandsCounter[vals[i][j]] = 0;
                                 }
                             }
@@ -246,7 +246,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                 for (var i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                     var currentCommand = Control.keyMapping.get(event.keyCode)[i];
                     Control.commandsCounter[currentCommand]++;
-                    Control.commands.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                    Control.commands.active[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 }
             }
             Control._keys[event.keyCode] = true;
@@ -262,7 +262,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
                 for (var i = 0; i < Control.keyMapping.get(event.keyCode).length; i++) {
                     var currentCommand = Control.keyMapping.get(event.keyCode)[i];
                     Control.commandsCounter[currentCommand]--;
-                    Control.commands.commands[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
+                    Control.commands.active[currentCommand] = (Control.commandsCounter[currentCommand] != 0);
                 }
             }
             Control._keys[event.keyCode] = false;
@@ -830,36 +830,36 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Game", "E
             this.Path = [];
         }
         AI.prototype.stop = function () {
-            this.commands.commands["MoveRight"] = false;
-            this.commands.commands["MoveLeft"] = false;
-            this.commands.commands["MoveDown"] = false;
-            this.commands.commands["MoveUp"] = false;
+            this.commands.active["MoveRight"] = false;
+            this.commands.active["MoveLeft"] = false;
+            this.commands.active["MoveDown"] = false;
+            this.commands.active["MoveUp"] = false;
         };
         AI.prototype.go = function (point) {
             var eps = 0.01;
             if (this.body.center.x < point.x + eps) {
-                this.commands.commands["MoveRight"] = true;
+                this.commands.active["MoveRight"] = true;
             }
             else {
-                this.commands.commands["MoveRight"] = false;
+                this.commands.active["MoveRight"] = false;
             }
             if (this.body.center.x > point.x - eps) {
-                this.commands.commands["MoveLeft"] = true;
+                this.commands.active["MoveLeft"] = true;
             }
             else {
-                this.commands.commands["MoveLeft"] = false;
+                this.commands.active["MoveLeft"] = false;
             }
             if (this.body.center.y < point.y + eps) {
-                this.commands.commands["MoveDown"] = true;
+                this.commands.active["MoveDown"] = true;
             }
             else {
-                this.commands.commands["MoveDown"] = false;
+                this.commands.active["MoveDown"] = false;
             }
             if (this.body.center.y > point.y - eps) {
-                this.commands.commands["MoveUp"] = true;
+                this.commands.active["MoveUp"] = true;
             }
             else {
-                this.commands.commands["MoveUp"] = false;
+                this.commands.active["MoveUp"] = false;
             }
         };
         AI.prototype.getPointCoordinate = function (place) {
@@ -1176,10 +1176,10 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                 this.mode = PersonMode.Fine;
         };
         Person.prototype.stop = function () {
-            this.myAI.commands.commands["MoveUp"] = false;
-            this.myAI.commands.commands["MoveDown"] = false;
-            this.myAI.commands.commands["MoveLeft"] = false;
-            this.myAI.commands.commands["MoveRight"] = false;
+            this.myAI.commands.active["MoveUp"] = false;
+            this.myAI.commands.active["MoveDown"] = false;
+            this.myAI.commands.active["MoveLeft"] = false;
+            this.myAI.commands.active["MoveRight"] = false;
             console.log("stop");
         };
         Person.prototype.step = function () {
@@ -1188,19 +1188,19 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             var vel = this.body.velocity;
             if (!this.commands)
                 return;
-            if (this.commands.commands["MoveUp"]) {
+            if (this.commands.active["MoveUp"]) {
                 y++;
                 this.body.move(new geom.Vector(0, -vel));
             }
-            if (this.commands.commands["MoveDown"]) {
+            if (this.commands.active["MoveDown"]) {
                 y--;
                 this.body.move(new geom.Vector(0, vel));
             }
-            if (this.commands.commands["MoveRight"]) {
+            if (this.commands.active["MoveRight"]) {
                 x++;
                 this.body.move(new geom.Vector(vel, 0));
             }
-            if (this.commands.commands["MoveLeft"]) {
+            if (this.commands.active["MoveLeft"]) {
                 x--;
                 this.body.move(new geom.Vector(-vel, 0));
             }
@@ -1418,7 +1418,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.takeControl(biomass);
         };
         Mimic.prototype.step = function () {
-            Control_1.Control.commands.commands["shoot"] = Control_1.Control.isMouseRightPressed();
+            Control_1.Control.commands.active["shoot"] = Control_1.Control.isMouseRightPressed();
             Control_1.Control.commands.pointer = this.game.draw.transformBack(Control_1.Control.mousePos()).sub(this.controlledEntity.body.center);
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_2.Person) && !(this.controlledEntity instanceof Monster_1.Monster)) {
@@ -1669,18 +1669,18 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
             return _this;
         }
         Soldier.prototype.step = function () {
-            this.myAI.commands.commands["shoot"] = false;
+            this.myAI.commands.active["shoot"] = false;
             for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
                 var entity = _a[_i];
                 if (entity instanceof Monster_2.Monster) {
                     if (geom.dist(entity.body.center, this.body.center) < this.weapon.range / 2)
                         this.stop();
                     if (geom.dist(entity.body.center, this.body.center) < this.weapon.range)
-                        this.myAI.commands.commands["shoot"] = true;
+                        this.myAI.commands.active["shoot"] = true;
                     this.myAI.commands.pointer = entity.body.center.sub(this.body.center);
                 }
             }
-            if (this.commands.commands["shoot"]) {
+            if (this.commands.active["shoot"]) {
                 this.weapon.shoot(this.commands.pointer);
             }
             this.weapon.step();
