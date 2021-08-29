@@ -1447,7 +1447,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.Entities = [];
             this.tileSize = 1;
             this.lightSources = [];
-            this.showLighting = true;
+            this.showLighting = false;
             this.Grid = [];
             for (var x = 0; x < size.x; x++) {
                 this.Grid.push([]);
@@ -2083,9 +2083,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var prototype = JSON.parse(result, _this.reviver);
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
-                                level.makeLightSource(new geom.Vector(5, 5), 10);
-                                level.makeLightSource(new geom.Vector(9, 9), 10);
-                                level.generateLighting();
                                 Game.currentGame.levels[name] = level;
                             })];
                         case 1:
