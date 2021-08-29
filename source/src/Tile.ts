@@ -14,6 +14,7 @@ export class Tile {
     public colision = CollisionType.Empty;
     public image : HTMLImageElement;
     public sub_image : HTMLImageElement;
+    public light = 0;
     
     constructor(colision : CollisionType = 0, image : HTMLImageElement = null, sub_image : HTMLImageElement = null) {
         this.colision = colision;

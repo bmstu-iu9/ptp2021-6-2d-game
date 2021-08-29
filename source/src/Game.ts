@@ -345,6 +345,10 @@ export class Game {
         // Мимик
         this.mimic.display(this.draw);
 
+        // Освещение
+        if (this.currentLevel.showLighting)
+            this.currentLevel.displayLighting(this.draw);
+        
         // Анимации
         this.draw.step();
         // Отрисовка графического дебага

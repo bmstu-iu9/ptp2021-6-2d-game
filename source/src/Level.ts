@@ -10,6 +10,8 @@ import { StationaryObject } from "./Entities/StationaryObject";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { sign } from "crypto";
 import * as aux from "./AuxLib";
+import { Queue } from "./Queue";
+import { Random } from "./Random";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
@@ -101,6 +103,16 @@ export class LevelJSON {
     PathMatrix? : Map<any, any>;
 }
 
+// Источник света
+export class LightSource {
+    pos : geom.Vector;
+    power : number;
+    constructor(pos : geom.Vector, power : number) {
+        this.pos = pos;
+        this.power = power;
+    }
+};
+
 // Класс Level хранит в себе всю исходную информацию об уровне: 
 // карту, расстановку объектов и т.д.
 export class Level {
@@ -109,6 +121,8 @@ export class Level {
     public PathMatrix : Map<any, any>;
     public Entities : Entity[] = [];
     public tileSize = 1;
+    public lightSources : LightSource[] = [];
+    public showLighting = false;
 
     constructor(size = new geom.Vector(0, 0)) {
         this.Grid = [];
@@ -141,6 +155,24 @@ export class Level {
             pos.y > 0 &&
             pos.x < this.Grid.length * this.tileSize &&
             pos.y < this.Grid[0].length * this.tileSize;
+    }
+
+    // Проверяет, находится ли клетка в пределах карты
+    public isCellInBounds(pos : geom.Vector) : boolean {
+        return pos.x >= 0 &&
+            pos.y >= 0 &&
+            pos.x < this.Grid.length &&
+            pos.y < this.Grid[0].length;
+    }
+
+    // Возвращает тайл по координатам
+    public getTile(pos : geom.Vector) : Tile {
+        return this.Grid[pos.x][pos.y];
+    }
+
+    // Добавляет источник освещения
+    public makeLightSource(pos : geom.Vector, power : number) {
+        this.lightSources.push(new LightSource(pos, power));
     }
 
     // Заворачивает в json
@@ -195,11 +227,64 @@ export class Level {
             }
         }
     }
-    public displayColisionGrid(draw:Draw){
+    public displayColisionGrid(draw : Draw){
         for(let i = 0; i < this.Grid.length; i++){
             for (let j = 0; j < this.Grid[i].length; j++)
             if (this.Grid[i][j].colision == CollisionType.Full) {
                 draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5*Math.sin(aux.getMilliCount()*0.005) + 0.5));
+            }
+        }
+    }
+
+    public displayLighting(draw : Draw) {
+        for(let i = 0; i < this.Grid.length; i++){
+            for (let j = 0; j < this.Grid[i].length; j++)
+                draw.fillRect(
+                    new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), 
+                    new geom.Vector(1*this.tileSize, 1*this.tileSize), 
+                    // Эти рандомные числа создают красивое мерцание
+                    new Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 -j * 3098 + aux.getMilliCount()))));
+        }
+    }
+
+    // Построение освещения 
+    public generateLighting() {
+        // Очищаем освещение
+        for(let i = 0; i < this.Grid.length; i++)
+            for (let j = 0; j < this.Grid[i].length; j++)
+                this.Grid[i][j].light = 0;
+        // Очередь для bfs
+        let queue = new Queue();
+        // Стороны, в которые распространяется свет
+        let dirs = [
+            new geom.Vector(0, 1),
+            new geom.Vector(0, -1),
+            new geom.Vector(1, 0),
+            new geom.Vector(-1, 0),
+        ];
+        // Инициализация стартовых точек
+        for (let source of this.lightSources) {
+            queue.push(source.pos);
+            this.getTile(source.pos).light = source.power;
+        }
+        // Насколько свет уменьшается при прохождении одной клетки
+        let decay = 1;
+        // bfs
+        while (queue.length()) {
+            // Достаём из очереди позицию
+            let pos = queue.pop() as geom.Vector;
+            // Смотрим соседние направления
+            for (let dir of dirs) {
+                // Позиция, в которую идём
+                let posNext = pos.add(dir);
+                if (!this.isCellInBounds(posNext) || // За пределами карты
+                    this.getTile(pos).colision && !this.getTile(posNext).colision || // Из стены в проход
+                    this.getTile(posNext).light > this.getTile(pos).light - decay) // Мы не осветим больше, чем оно есть
+                    continue;
+                // Освещаем
+                this.getTile(posNext).light = this.getTile(pos).light - decay;
+                // Добавляем в очередь
+                queue.push(posNext);
             }
         }
     }
