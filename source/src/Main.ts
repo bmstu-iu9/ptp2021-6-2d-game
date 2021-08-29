@@ -2,7 +2,7 @@ import * as geom from "./Geom";
 import * as aux from "./AuxLib";
 import {Draw} from "./Draw";
 import { Game } from "./Game";
-import { Level } from "./Level";
+import { Level, LightSource } from "./Level";
 import { Editor } from "./Editor";
 import { Instruction } from "./BehaviorModel";
 import { Person } from "./Entities/Person";

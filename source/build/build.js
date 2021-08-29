@@ -333,6 +333,7 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
             if (image === void 0) { image = null; }
             if (sub_image === void 0) { sub_image = null; }
             this.colision = CollisionType.Empty;
+            this.light = 0;
             this.colision = colision;
             if (colision == 0) {
                 this.image = Draw_1.Draw.loadImage("textures/tiles/Empty.png");
@@ -1065,25 +1066,35 @@ define("Random", ["require", "exports", "Geom"], function (require, exports, geo
         }
         Random.randomInt = function (a, b) {
             var _a;
-            if (a < b)
+            if (a > b) {
                 _a = [b, a], a = _a[0], b = _a[1];
-            a = Math.floor(a);
+            }
+            a = Math.ceil(a);
             b = Math.floor(b);
             return Math.floor(Math.random() * (b - a + 1)) + a;
         };
         Random.randomFloat = function (a, b) {
             var _a;
-            if (a < b)
+            if (a > b) {
                 _a = [b, a], a = _a[0], b = _a[1];
+            }
             return Math.random() * (b - a) + a;
         };
         Random.randomVector = function (a, b) {
-            return new geom.Vector(Random.randomFloat(a.x, b.x), Random.randomFloat(a.y, b.y));
+            var x = 0;
+            var y = 0;
+            x = Random.randomFloat(a.x, b.x);
+            y = Random.randomFloat(a.y, b.y);
+            return new geom.Vector(x, y);
         };
         Random.randomSector = function (alpha, beta, lenMin, lenMax) {
-            var gamma = Random.randomFloat(alpha, beta);
-            var len = Math.abs(Random.randomFloat(lenMin, lenMax));
-            return geom.vectorFromAngle(gamma).mul(len);
+            var gamma = 0;
+            var y = 0;
+            gamma = Random.randomFloat(alpha, beta);
+            y = Math.abs(Random.randomFloat(lenMin, lenMax));
+            var e = geom.vectorFromAngle(gamma);
+            e = e.mul(y);
+            return e;
         };
         return Random;
     }());
@@ -1310,10 +1321,33 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities
     }(Person_3.Person));
     exports.Scientist = Scientist;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib"], function (require, exports, Tile_3, geom, Draw_8, PathGenerator_1, Soldier_1, Scientist_1, Monster_2, StationaryObject_2, BehaviorModel_2, aux) {
+define("Queue", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Level = exports.LevelJSON = void 0;
+    exports.Queue = void 0;
+    var Queue = (function () {
+        function Queue() {
+            this.data = [];
+            this.pos = 0;
+        }
+        Queue.prototype.push = function (elem) {
+            this.data.push(elem);
+        };
+        Queue.prototype.pop = function () {
+            this.pos++;
+            return this.data[this.pos - 1];
+        };
+        Queue.prototype.length = function () {
+            return this.data.length - this.pos;
+        };
+        return Queue;
+    }());
+    exports.Queue = Queue;
+});
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue"], function (require, exports, Tile_3, geom, Draw_8, PathGenerator_1, Soldier_1, Scientist_1, Monster_2, StationaryObject_2, BehaviorModel_2, aux, Queue_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Level = exports.LightSource = exports.LevelJSON = void 0;
     function replacer(key, value) {
         if (value instanceof Map) {
             var val = void 0;
@@ -1398,11 +1432,22 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         return LevelJSON;
     }());
     exports.LevelJSON = LevelJSON;
+    var LightSource = (function () {
+        function LightSource(pos, power) {
+            this.pos = pos;
+            this.power = power;
+        }
+        return LightSource;
+    }());
+    exports.LightSource = LightSource;
+    ;
     var Level = (function () {
         function Level(size) {
             if (size === void 0) { size = new geom.Vector(0, 0); }
             this.Entities = [];
             this.tileSize = 1;
+            this.lightSources = [];
+            this.showLighting = false;
             this.Grid = [];
             for (var x = 0; x < size.x; x++) {
                 this.Grid.push([]);
@@ -1428,6 +1473,18 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 pos.y > 0 &&
                 pos.x < this.Grid.length * this.tileSize &&
                 pos.y < this.Grid[0].length * this.tileSize;
+        };
+        Level.prototype.isCellInBounds = function (pos) {
+            return pos.x >= 0 &&
+                pos.y >= 0 &&
+                pos.x < this.Grid.length &&
+                pos.y < this.Grid[0].length;
+        };
+        Level.prototype.getTile = function (pos) {
+            return this.Grid[pos.x][pos.y];
+        };
+        Level.prototype.makeLightSource = function (pos, power) {
+            this.lightSources.push(new LightSource(pos, power));
         };
         Level.prototype.serialize = function () {
             var newLevel;
@@ -1471,6 +1528,43 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
                         draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
                     }
+            }
+        };
+        Level.prototype.displayLighting = function (draw) {
+            for (var i = 0; i < this.Grid.length; i++) {
+                for (var j = 0; j < this.Grid[i].length; j++)
+                    draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 - j * 3098 + aux.getMilliCount()))));
+            }
+        };
+        Level.prototype.generateLighting = function () {
+            for (var i = 0; i < this.Grid.length; i++)
+                for (var j = 0; j < this.Grid[i].length; j++)
+                    this.Grid[i][j].light = 0;
+            var queue = new Queue_1.Queue();
+            var dirs = [
+                new geom.Vector(0, 1),
+                new geom.Vector(0, -1),
+                new geom.Vector(1, 0),
+                new geom.Vector(-1, 0),
+            ];
+            for (var _i = 0, _a = this.lightSources; _i < _a.length; _i++) {
+                var source = _a[_i];
+                queue.push(source.pos);
+                this.getTile(source.pos).light = source.power;
+            }
+            var decay = 1;
+            while (queue.length()) {
+                var pos = queue.pop();
+                for (var _b = 0, dirs_1 = dirs; _b < dirs_1.length; _b++) {
+                    var dir = dirs_1[_b];
+                    var posNext = pos.add(dir);
+                    if (!this.isCellInBounds(posNext) ||
+                        this.getTile(pos).colision && !this.getTile(posNext).colision ||
+                        this.getTile(posNext).light > this.getTile(pos).light - decay)
+                        continue;
+                    this.getTile(posNext).light = this.getTile(pos).light - decay;
+                    queue.push(posNext);
+                }
             }
         };
         return Level;
@@ -1989,6 +2083,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var prototype = JSON.parse(result, _this.reviver);
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
+                                level.showLighting = true;
+                                level.makeLightSource(new geom.Vector(5, 5), 10);
+                                level.makeLightSource(new geom.Vector(0, 0), 10);
+                                level.generateLighting();
                                 Game.currentGame.levels[name] = level;
                             })];
                         case 1:
@@ -2110,6 +2208,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
             this.draw.getimage();
             this.mimic.display(this.draw);
+            if (this.currentLevel.showLighting)
+                this.currentLevel.displayLighting(this.draw);
             this.draw.step();
             Debug_3.Debug.clear();
         };
