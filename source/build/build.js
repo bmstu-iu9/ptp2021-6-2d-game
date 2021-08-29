@@ -2869,11 +2869,23 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             this.mode = mode;
             switch (mode) {
                 case Mode.Eraser: {
-                    document.getElementById("gameCanvas")["style"].cursor = "move";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png), auto";
+                    break;
+                }
+                case Mode.Entity: {
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.ico), auto";
+                    break;
+                }
+                case Mode.Wall: {
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.ico), auto";
+                    break;
+                }
+                case Mode.PosPicking: {
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png), auto";
                     break;
                 }
                 case Mode.Selector: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/file.png), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "default";
                     break;
                 }
             }
