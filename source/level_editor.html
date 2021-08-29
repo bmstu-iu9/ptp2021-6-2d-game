@@ -1,62 +1,107 @@
 <html>
 <style>
-    .canvass, .layer, .layer2, .layer3, .layer4, .layer5, .layer6, .window6,
-     .normalButton, .up_menu, .panicButton, .listOfPads, .overed_text, .palettes_text {position: absolute}
+    .canvass,
+    .layer,
+    .layer2,
+    .layer3,
+    .layer4,
+    .layer5,
+    .layer6,
+    .window6,
+    .normalButton,
+    .up_menu,
+    .panicButton,
+    .listOfPads,
+    .overed_text,
+    .palettes_text {
+        position: absolute
+    }
+
     .tileButton {
         width: 50px;
         height: auto;
         margin: 1px;
     }
+
     .tileButton:hover {
         box-shadow: 0 0 7px red;
     }
+
     .behaviorPad {
         height: 50px;
         width: 230px;
         border-radius: 5px;
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-content: center;
         /*border: solid 1px black;*/
         text-align: center;
+
         cursor: move;
         margin: 4px;
         background-color: rgb(172, 197, 243);
     }
+
     .behaviorPad_icon {
-        display: inline-block;
+        display: inline-flex;
         width: 50px;
         height: auto;
-        vertical-align: middle;
     }
+
     .behaviorPad_label {
-        display: inline-block;
-        vertical-align: middle;
-        
+        width: auto;
+        align-self: center;
+        justify-self: center;
+        margin-left: auto;
     }
+
+    .behaviorPad_center_label {
+        width: auto;
+        align-self: center;
+        justify-self: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     .behaviorPad_additionalElement {
-        display: inline-block;
-        vertical-align: middle;
+        margin-right: auto;
+        align-self: center;
+        justify-self: center;
+        /*max-width: 100px;*/
+        white-space: nowrap;
+        overflow:hidden;
+        max-inline-size: 100px;
     }
+
     .behaviorPad_exitButton {
         width: 32px;
-        height: auto;
-        display: inline-block;
-        vertical-align: middle;
+        height: 32px;
+        margin-top: auto;
+        margin-bottom: auto;
     }
+
     .entityButton {
         width: 50px;
         height: auto;
         margin: 1px;
     }
+
     .entityButton:hover {
         box-shadow: 0 0 7px red;
     }
+
     .toolButton {
         width: 50px;
         height: auto;
         margin: 1px;
     }
+
     .toolButton:hover {
         box-shadow: 0 0 7px red;
     }
+
     .normalButton {
         width: 70px;
         right: 690px;
@@ -68,6 +113,7 @@
         color: #fff;
         padding: 8px 16px;
     }
+
     .panicButton {
         width: 60px;
         height: auto;
@@ -75,12 +121,15 @@
         right: 690px;
 
     }
+
     .posPickingButton {
         initial-value: "0, 0";
     }
+
     .time {
         initial-value: "1000";
     }
+
     .layer {
         background: url(textures/Editor/metal_blue.png) center repeat;
         overflow-y: scroll;
@@ -89,26 +138,37 @@
         border: solid 1px black;
         right: 0px;
         border-radius: 4px;
-   }
-   .layer2 {
+    }
+
+    .layer2 {
         background: url(textures/Editor/metal_blue.png) center repeat;
-        overflow-y: scroll; /* Добавляем полосы прокрутки */
-        width: 300px; /* Ширина блока */
-        padding: 5px; /* Поля вокруг текста */
-        border: solid 1px black; /* Параметры рамки */
+        overflow-y: scroll;
+        /* Добавляем полосы прокрутки */
+        width: 300px;
+        /* Ширина блока */
+        padding: 5px;
+        /* Поля вокруг текста */
+        border: solid 1px black;
+        /* Параметры рамки */
         right: 0px;
         border-radius: 4px;
-   }
-   .layer3 {
+    }
+
+    .layer3 {
         background: url(textures/Editor/metal_blue.png) center repeat;
-        overflow-y: scroll; /* Добавляем полосы прокрутки */
-        width: 300px; /* Ширина блока */
-        padding: 5px; /* Поля вокруг текста */
-        border: solid 1px black; /* Параметры рамки */
+        overflow-y: scroll;
+        /* Добавляем полосы прокрутки */
+        width: 300px;
+        /* Ширина блока */
+        padding: 5px;
+        /* Поля вокруг текста */
+        border: solid 1px black;
+        /* Параметры рамки */
         right: 0px;
         border-radius: 4px;
-   }
-   .layer4 {
+    }
+
+    .layer4 {
         /*overflow-y: scroll; */
         background: url(textures/Editor/metal_dark.png) center repeat;
         width: 54px;
@@ -116,7 +176,8 @@
         /*border: solid 1px black;*/
         right: 320px;
         border-radius: 4px;
-   }
+    }
+
     .layer5 {
         background: url(textures/Editor/metal_dark.png) center repeat;
         width: 54px;
@@ -124,39 +185,45 @@
         /*border: solid 1px black;*/
         right: 320px;
         border-radius: 4px;
-   }
+    }
+
     .layer6 {
         background: url(textures/Editor/metal_dark.png) left repeat;
         width: 260px;
         right: 410px;
         /*display: flex;*/
         overflow-y: auto;
-        padding: 2px; /* Поля вокруг текста */
+        padding: 2px;
+        /* Поля вокруг текста */
         /*border: solid 1px black;*/
         border-radius: 4px;
         height: 95%;
-   }
+    }
+
     .window6 {
-        background-color:rgb(236, 247, 134);
+        background-color: rgb(236, 247, 134);
         border: solid 2px black;
         border-radius: 4px;
         width: 260px;
         right: 410px;
-   }
-   .canvass {
-       background: ghostwhite;
-       left: 0px;
-       top: 0px;
-       border: 3px solid black;
-       border-radius: 5px;
-   }
-   .prevCanvass {
+    }
+
+    .canvass {
+        background: ghostwhite;
+        left: 0px;
+        top: 0px;
+        border: 3px solid black;
+        border-radius: 5px;
+    }
+
+    .prevCanvass {
         border: 2px solid greenyellow;
         vertical-align: top;
         height: 50px;
         width: 50px;
-   }
-   .buttonGen {
+    }
+
+    .buttonGen {
         appearance: none;
         border: 0;
         border-radius: 5px;
@@ -164,23 +231,28 @@
         color: #fff;
         padding: 8px 16px;
         height: 54px;
-   }
-   .buttonGen:hover {
+    }
+
+    .buttonGen:hover {
         background: #fff;
         color: black;
-   }
-   .progress.is-large {
+    }
+
+    .progress.is-large {
         height: 40px;
     }
+
     .listOfPads {
         /*border: 1px solid blue;*/
         top: -7;
         left: -35;
         list-style: none;
     }
+
     .selected {
         opacity: 0.6;
     }
+
     .showing_col {
         display: flex;
         align-items: center;
@@ -188,6 +260,7 @@
         border-radius: 4px;
         height: 40px;
     }
+
     .hiding_grid {
         align-items: center;
         display: flex;
@@ -195,63 +268,76 @@
         border-radius: 4px;
         height: 40px;
     }
+
     .up_menu {
-        top : 0px;
+        top: 0px;
         background-color: darkgray;
         border-radius: 4px;
         border: 2px solid black;
     }
+
     .standart_text {
         text-align: center;
     }
+
     .overed_text {
         text-align: center;
-        background-color:rgb(236, 247, 134);
+        background-color: rgb(236, 247, 134);
         border: solid 2px black;
         border-radius: 4px;
         width: 58px;
         right: 319px;
     }
+
     .palettes_text {
         text-align: center;
-        background-color:rgb(236, 247, 134);
+        background-color: rgb(236, 247, 134);
         border: solid 2px black;
         border-radius: 4px;
         width: 310px;
         right: 0px;
     }
+
     .layer::-webkit-scrollbar {
         width: 10px;
         background-color: #8a8a8a;
     }
+
     .layer::-webkit-scrollbar-thumb {
         background-color: #223c50;
     }
+
     .layer2::-webkit-scrollbar {
         width: 10px;
         background-color: #8a8a8a;
     }
+
     .layer2::-webkit-scrollbar-thumb {
         background-color: #223c50;
     }
+
     .layer3::-webkit-scrollbar {
         width: 10px;
         background-color: #8a8a8a;
     }
+
     .layer3::-webkit-scrollbar-thumb {
         background-color: #223c50;
     }
+
     .layer6::-webkit-scrollbar {
         width: 15px;
         background-color: #8a8a8a;
         border-bottom-right-radius: 4px;
         border-top-right-radius: 4px;
     }
+
     .layer6::-webkit-scrollbar-thumb {
         background-color: #223c50;
         border-bottom-right-radius: 4px;
         border-top-right-radius: 4px;
     }
+
     .layer6::-webkit-scrollbar-track {
         border-bottom-right-radius: 4px;
         border-top-right-radius: 4px;
@@ -263,75 +349,82 @@
 
 <!-- Не менять размер канваса, а то шквах -->
 <div style="position: absolute; background: rgb(126, 123, 123); width: 100%; height: 100%; top: 0px; left: 0px;">
-<canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
+    <canvas id="gameCanvas" class="canvass" width=640px height=640px></canvas>
 
-<div id="prev_menu" class="up_menu">
-    <div class="standart_text">
-        Preview:
-    </div>
-    <div id="button_col" class="showing_col">
-        <input type="checkbox" id="showcolision" name="showcolision">
-        <label for="showcolision">Show collision</label>
-    </div>
-
-    <div id="button_grid" class="hiding_grid">
-        <input type="checkbox" id="hidegrid" name="hidegrid">
-        <label for="hidegrid">Hide grid</label>
-    </div>
-
-    <canvas id="preview" class="prevCanvass"></canvas>
-
-    <button id="generate" class = "buttonGen"> Generate </button>
-</div>
-
-<!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
-<div>
-    <div id="w1" class="palettes_text">
-        <b>Ceilings:</b>
-    </div>
-    <div id="palette" class="layer"> <!-- Палитра краев стен -->
-
-    </div>
-    <div id="w2" class="palettes_text">
-        <b>Walls:</b>
-    </div>
-    <div id="palette2" class="layer2"> <!-- Палитра стен -->
-
-    </div>
-    <div id="w3" class="palettes_text">
-        <b>Floors:</b>
-    </div>
-    <div id="palette3" class="layer3"> <!-- Палитра полов -->
-
-    </div>
-    <div id="w4" class="overed_text">
-        <b>Entities:</b>
-    </div>
-    <div id="palette4" class="layer4"> <!-- Палитра существ -->
-
-    </div>
-    <div id="w5" class="overed_text">
-        <b>Func's:</b>
-    </div>
-    <div id="palette5" class="layer5"> <!-- Палитра инструментов -->
-
-    </div>
-    <div id="w6" class="window6">
-        <!-- <p class="standart_text">Behavior Pads:</p> -->
+    <div id="prev_menu" class="up_menu">
         <div class="standart_text">
-            <b>Behavior Pads:</b>
+            Preview:
         </div>
+        <div id="button_col" class="showing_col">
+            <input type="checkbox" id="showcolision" name="showcolision">
+            <label for="showcolision">Show collision</label>
+        </div>
+
+        <div id="button_grid" class="hiding_grid">
+            <input type="checkbox" id="hidegrid" name="hidegrid">
+            <label for="hidegrid">Hide grid</label>
+        </div>
+
+        <canvas id="preview" class="prevCanvass"></canvas>
+
+        <button id="generate" class="buttonGen"> Generate </button>
     </div>
-    <div id="palette6" class="layer6"> <!-- Палитра команд -->
-        <ul id = "mainListPads" class = "listOfPads"></ul>
+
+    <!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
+    <div>
+        <div id="w1" class="palettes_text">
+            <b>Ceilings:</b>
+        </div>
+        <div id="palette" class="layer">
+            <!-- Палитра краев стен -->
+
+        </div>
+        <div id="w2" class="palettes_text">
+            <b>Walls:</b>
+        </div>
+        <div id="palette2" class="layer2">
+            <!-- Палитра стен -->
+
+        </div>
+        <div id="w3" class="palettes_text">
+            <b>Floors:</b>
+        </div>
+        <div id="palette3" class="layer3">
+            <!-- Палитра полов -->
+
+        </div>
+        <div id="w4" class="overed_text">
+            <b>Entities:</b>
+        </div>
+        <div id="palette4" class="layer4">
+            <!-- Палитра существ -->
+
+        </div>
+        <div id="w5" class="overed_text">
+            <b>Func's:</b>
+        </div>
+        <div id="palette5" class="layer5">
+            <!-- Палитра инструментов -->
+
+        </div>
+        <div id="w6" class="window6">
+            <!-- <p class="standart_text">Behavior Pads:</p> -->
+            <div class="standart_text">
+                <b>Behavior Pads:</b>
+            </div>
+        </div>
+        <div id="palette6" class="layer6">
+            <!-- Палитра команд -->
+            <ul id="mainListPads" class="listOfPads"></ul>
+        </div>
+        <button id="normalMode" class="normalButton">Normal</button>
+        <button id="panicMode" class="normalButton">Panic</button>
     </div>
-    <button id="normalMode" class="normalButton">Normal</button>
-    <button id="panicMode" class="normalButton">Panic</button>
-</div>
 </div>
 <script src="./require.js"></script>
 <script src="build/build.js"></script>
 <script>
     require(['Main']);
 </script>
+
 </html>

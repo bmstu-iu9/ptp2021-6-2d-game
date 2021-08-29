@@ -2530,7 +2530,12 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             var exitButton = document.createElement("img");
             icon.className = "behaviorPad_icon";
             icon.src = src;
-            label.className = "behaviorPad_label";
+            if (tool != Cursor_1.ToolType.Pursuit) {
+                label.className = "behaviorPad_label";
+            }
+            else {
+                label.className = "behaviorPad_center_label";
+            }
             pad.id = "pad_" + this.amountOfPads;
             label.id = "padLabel_" + this.amountOfPads;
             additionalElement.className = "behaviorPad_additionalElement";

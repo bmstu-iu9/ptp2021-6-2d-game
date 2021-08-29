@@ -99,7 +99,11 @@ export class ListOfPads {
 
         icon.className = "behaviorPad_icon";
         icon.src = src;
-        label.className = "behaviorPad_label";
+        if (tool != ToolType.Pursuit) {
+            label.className = "behaviorPad_label";
+        } else {
+            label.className = "behaviorPad_center_label";
+        }
 
         pad.id = "pad_" + this.amountOfPads;
         label.id = "padLabel_" + this.amountOfPads;
