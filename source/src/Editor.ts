@@ -247,7 +247,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         }
         document.getElementById("hidegrid").onclick = hidegrid;
         // Создание кнопок для тайлов
-        for (let i = 0; i < 47; i++)
+        for (let i = 0; i < 69; i++)
             this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
         for (let i = 0; i < 64; i++)
             this.createTileButton("textures/tiles/walls/wall" + i + ".png", CollisionType.Full, "2");
@@ -320,9 +320,9 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                 ListOfPads.compileBehaviorModel(this.cursor.selectedEntity.behaviorModel);
             }
             let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
-            normalButton.classList.add('selected');
+            normalButton.classList.remove('selected');
             let panicButton = document.getElementById("panicMode") as HTMLObjectElement;
-            panicButton.classList.remove("selected");
+            panicButton.classList.add("selected");
             ListOfPads.updateInstructionCopy();
         };
 
@@ -338,9 +338,9 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                 ListOfPads.compileBehaviorModel(this.cursor.selectedEntity.behaviorModel);
             }
             let panicButton = document.getElementById("panicMode") as HTMLObjectElement;
-            panicButton.classList.add('selected');
+            panicButton.classList.remove('selected');
             let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
-            normalButton.classList.remove("selected");
+            normalButton.classList.add("selected");
             ListOfPads.updateInstructionCopy();            
         };
 

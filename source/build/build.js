@@ -3029,7 +3029,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 }
             };
             document.getElementById("hidegrid").onclick = hidegrid;
-            for (var i = 0; i < 47; i++)
+            for (var i = 0; i < 69; i++)
                 this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", Tile_6.CollisionType.Full, "");
             for (var i = 0; i < 64; i++)
                 this.createTileButton("textures/tiles/walls/wall" + i + ".png", Tile_6.CollisionType.Full, "2");
@@ -3074,9 +3074,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                     ListOfPads_2.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
                 }
                 var normalButton = document.getElementById("normalMode");
-                normalButton.classList.add('selected');
+                normalButton.classList.remove('selected');
                 var panicButton = document.getElementById("panicMode");
-                panicButton.classList.remove("selected");
+                panicButton.classList.add("selected");
                 ListOfPads_2.ListOfPads.updateInstructionCopy();
             };
             document.getElementById("normalMode").onclick = normal;
@@ -3090,9 +3090,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                     ListOfPads_2.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
                 }
                 var panicButton = document.getElementById("panicMode");
-                panicButton.classList.add('selected');
+                panicButton.classList.remove('selected');
                 var normalButton = document.getElementById("normalMode");
-                normalButton.classList.remove("selected");
+                normalButton.classList.add("selected");
                 ListOfPads_2.ListOfPads.updateInstructionCopy();
             };
             document.getElementById("panicMode").onclick = panic;
