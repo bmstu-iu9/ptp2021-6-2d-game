@@ -75,7 +75,7 @@ export class Draw {
         }
         this.ctx = canvas.getContext("2d");
         this.cam.scale = 1;
-        this.cam.pos = size.mul(1 / 2);
+        this.cam.pos = new geom.Vector();
         this.cam.center = size.mul(1 / 2);
     }
     public static loadImage(src: string): HTMLImageElement {
@@ -103,8 +103,19 @@ export class Draw {
         posNew = posNew.add(this.cam.pos);
         return posNew;
     }
+    // Изменение 
+    public resize(size : geom.Vector) {
+        this.cam.center = size.mul(1/ 2);
+        this.canvas.width = size.x;
+        this.canvas.height = size.y;
+    }
+    // Натягивание на канвас
+    public attachToCanvas() {
+        this.cam.pos = this.cam.center;
+        this.cam.scale = 1;
+    }
     // Функция для отрисовки изображения
-    private drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
+    public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale * 1.01);
         posNew = posNew.sub(boxNew.mul(1 / 2));
@@ -223,6 +234,17 @@ export class Draw {
         }
         this.ctx.fillStyle = color.toString(); // цвет заливки
         this.ctx.fill();
+    }
+    public line(begin : geom.Vector, end : geom.Vector, color : Color, lineWidth : number) {
+        begin = this.transform(begin);
+        end = this.transform(end);
+        this.ctx.beginPath();
+        this.ctx.moveTo(begin.x, begin.y);
+        this.ctx.lineTo(end.x, end.y);
+        this.ctx.closePath();
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.strokeStyle = color.toString();
+        this.ctx.stroke();
     }
     // Контур многоугольника
     public strokePolygon(vertices: Array<geom.Vector>, color: Color, lineWidth: number) { 

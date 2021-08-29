@@ -32,7 +32,7 @@ export class AI {
     }
 
     private go(point : geom.Vector) { // функция движения в направлении к точке
-        let eps = 0.01;
+        let eps = 0.05;
         if (this.body.center.x < point.x + eps) {
             this.commands.active["MoveRight"] = true;
         }
@@ -66,8 +66,8 @@ export class AI {
 
     // находит ближайшую точку коллизионной сетки
     private chooseMeshPoint(currentPoint : geom.Vector) : geom.Vector {
-        let CollisionMesh = Game.levels[this.game.currentLevelName].CollisionMesh;
-        let Grid = Game.levels[this.game.currentLevelName].Grid;
+        let CollisionMesh = this.game.levels[this.game.currentLevelName].CollisionMesh;
+        let Grid = this.game.levels[this.game.currentLevelName].Grid;
         let posRound = new geom.Vector(
             Math.floor(currentPoint.x / this.game.currentLevel.tileSize), 
             Math.floor(currentPoint.y / this.game.currentLevel.tileSize)
@@ -95,10 +95,10 @@ export class AI {
 
     // рекурсивная функция создающая путь по точкам коллизионной сетки
     private makePath(start : geom.Vector, finish : geom.Vector) : geom.Vector[] { 
-        let pathMatrix = Game.levels[this.game.currentLevelName].PathMatrix;
+        let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
 
         // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
-        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
+        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)) == undefined || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
             return [];
         }
 

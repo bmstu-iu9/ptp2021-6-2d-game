@@ -61,8 +61,10 @@ export class Control {
             Control._keys[i] = false;
         }
         let canvas = document.getElementById("gameCanvas");
-        window.addEventListener("keydown", Control.onKeyDown);
-        window.addEventListener("keyup", Control.onKeyUp);
+        if (!aux.editorMode) {
+            window.addEventListener("keydown", Control.onKeyDown);
+            window.addEventListener("keyup", Control.onKeyUp);
+        }
         canvas.addEventListener("click", Control.onClick);
         window.addEventListener("wheel", Control.onWheel);
         window.addEventListener("mousemove", Control.onMouseMove);
@@ -96,6 +98,10 @@ export class Control {
         let delta = this.mouseWheelDelta;
         this.mouseWheelDelta = 0;
         return delta;
+    }
+
+    public static clearWheelDelta() {
+        this.mouseWheelDelta = 0;
     }
 
     public static mousePos() : geom.Vector {

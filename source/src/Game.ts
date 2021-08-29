@@ -15,11 +15,13 @@ import { Soldier } from "./Entities/Soldier";
 import { Monster } from "./Entities/Monster";
 import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
+import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { Biomass } from "./Entities/Projectiles/Biomass";
 
 export class Game {
-    public static levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
+    public levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
     public static dt = 0.02;
+    public static currentGame: Game;
 
     public draw: Draw;
     private bodies: Body[] = []; // массив всех тел
@@ -28,22 +30,159 @@ export class Game {
     public currentLevelName = "map";  // название текущего уровня
     public currentLevel = new Level(); // текущий уровень (возможно имеет смылс заменить на метод getCurrentLevel)
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
-    public mimic : Mimic; // объект мимик, за который играет игрок
-    public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+    public mimic: Mimic; // объект мимик, за который играет игрок
+    public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
         return text;
     }
 
+    public static replacer(key, value) { // функция замены классов для преобразования в JSON
+        if (value instanceof Map) { // упаковка Map
+            let val: any;
+            if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
+
+                let keys = value.get("JSONkeys");
+                console.log("JSONkeys", keys);
+                let remapping = new Map();
+                for (let i = 0; i < keys.length; i++) {
+                    remapping.set(keys[i], value[keys[i]]);
+                }
+                val = Array.from(remapping.entries());
+            } else {
+                val = Array.from(value.entries());
+            }
+            console.log(val);
+
+            return {
+                dataType: 'Map',
+                value: val, // or with spread: value: [...value]
+            };
+        }
+        if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
+            // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
+            let name = value.src;
+            let nameSplit = name.split("/");
+            let lastSplit = nameSplit[nameSplit.length - 1];
+
+            return {
+                dataType: 'HTMLImageElement',
+                value: lastSplit
+            };
+        }
+        if (value instanceof geom.Vector) { // упаковка Vector
+            return {
+                dataType: 'Vector',
+                x: value.x,
+                y: value.y
+            };
+        }
+        if (value instanceof Soldier) {
+            return {
+                dataType: 'Soldier',
+                center: value.body.center,
+                behaviorModel: value.behaviorModel
+            }
+        }
+        if (value instanceof Scientist) {
+            return {
+                dataType: 'Scientist',
+                center: value.body.center,
+                behaviorModel: value.behaviorModel
+            }
+        }
+        if (value instanceof Monster) {
+            return {
+                dataType: 'Monster',
+                center: value.body.center
+            }
+        }
+        if (value instanceof StationaryObject) {
+            return {
+                dataType: 'StationaryObject',
+                center: value.body.center,
+            }
+        }
+        if (value instanceof BehaviorModel) {
+            return {
+                dataType: 'BehaviorModel',
+                instructions: value.instructions
+            }
+        }
+        if (value instanceof Instruction) {
+            return {
+                dataType: 'Instruction',
+                operations: value.operations,
+                operationsData: value.operationsData
+            }
+        }
+        return value;
+    }
+
+    public static reviver(key, value) { // функция обратной замены классов для преобразования из JSON
+
+        if (typeof value === 'object' && value !== null) {
+            if (value.dataType === 'Map') { // распаковка Map
+                return new Map(value.value);
+            }
+            if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
+                return Draw.loadImage("./textures/tiles/" + value.value);
+            }
+            if (value.dataType === 'Vector') { // распаковка Vector
+                return new geom.Vector(value.x, value.y);
+            }
+            if (value.dataType == 'Soldier') {
+                let soldier = Game.currentGame.makeSoldier(value.center) as Soldier;
+                soldier.behaviorModel = new BehaviorModel(soldier.myAI);
+                soldier.behaviorModel = value.behaviorModel.instructions;
+                return soldier;
+            }
+            if (value.dataType == 'Scientist') {
+                console.log("loading scientist");
+                let scientist = Game.currentGame.makeScientist(value.center) as Scientist;
+                scientist.behaviorModel = new BehaviorModel(scientist.myAI);
+                scientist.behaviorModel = value.behaviorModel;
+                scientist.behaviorModel.myAI = scientist.myAI;
+                return scientist;
+            }
+            if (value.dataType == "Monster") {
+                let monster = Game.currentGame.makeMonster(value.center) as Monster;
+                return monster;
+            }
+            if (value.dataType == 'StationaryObject') {
+                let stationaryObject = new StationaryObject(this.currentGame, new Body(value.center, 1), "fine");
+                return stationaryObject;
+            }
+            if (value.dataType == 'BehaviorModel') {
+                console.log("beh mod");
+                
+                let behaviorModel = new BehaviorModel(null);
+                behaviorModel.instructions = value.instructions;
+                return behaviorModel;
+            }
+            if (value.dataType == 'Instruction') {
+                let instruction = new Instruction();
+                instruction.operations = value.operations;
+                instruction.operationsData = value.operationsData;
+                //console.log("Instruction", value);
+                return instruction;
+            }
+        }
+        return value;
+    }
+
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
                 console.log(result);
-                let prototype = JSON.parse(result, aux.reviver);
+                console.log(this.currentGame);
+
+                let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
                 level.createFromPrototype(prototype);
-                this.levels[name] = level;
+                Game.currentGame.levels[name] = level;
             });
     }
 
@@ -134,8 +273,10 @@ export class Game {
 
     public step() {
         // Ксотыль
-        if (Game.levels[this.currentLevelName])
-            this.currentLevel = Game.levels[this.currentLevelName];
+        if (this.levels[this.currentLevelName]) {
+            this.currentLevel = this.levels[this.currentLevelName];
+            //this.entities = this.currentLevel.Entities;
+        }
 
         this.mimic.step();
         this.attachCamToMimic();
@@ -211,79 +352,7 @@ export class Game {
         Debug.clear();
     }
 
-    public replacer(key, value) { // функция замены классов для преобразования в JSON
-        if (value instanceof Map) { // упаковка Map
-            return {
-                dataType: 'Map',
-                value: Array.from(value.entries()), // or with spread: value: [...value]
-            };
-        }
-        if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
-            // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
-            let name = value.src;
-            let nameSplit = name.split("/");
-            let lastSplit = nameSplit[nameSplit.length - 1];
-
-            return {
-                dataType: 'HTMLImageElement',
-                value: lastSplit
-            };
-        }
-        if (value instanceof geom.Vector) { // упаковка Vector
-            return {
-                dataType: 'Vector',
-                x: value.x,
-                y: value.y
-            };
-        }
-        if (value instanceof Soldier) {
-            return {
-                dataType: 'Soldier',
-                place: value.body.center,
-                behaviorModel: value.behaviorModel
-            }
-        }
-        if (value instanceof Scientist) {
-            return {
-                dataType: 'Scientist',
-                place: value.body.center,
-                behaviorModel: value.behaviorModel
-            }
-        }
-        if (value instanceof StationaryObject) {
-            return {
-                dataType: 'StationaryObject',
-                place: value.body.center,
-            }
-        }
-        return value;
-    }
-
-    public reviver(key, value) { // функция обратной замены классов для преобразования из JSON
-        if (typeof value === 'object' && value !== null) {
-            if (value.dataType === 'Map') { // распаковка Map
-                return new Map(value.value);
-            }
-            if (value.dataType === 'HTMLImageElement') { // распаковка HTMLImageElement
-                return Draw.loadImage("./textures/tiles/" + value.value);
-            }
-            if (value.dataType === 'Vector') { // распаковка Vector
-                return JSON.stringify(new geom.Vector(value.x, value.y));
-            }
-            if (value.dataType == 'Soldier') {
-                let soldier = this.makeSoldier(value.place) as Soldier;
-                soldier.behaviorModel = value.behaviorModel;
-                return soldier;
-            }
-            if (value.dataType == 'Scientist') {
-                let scientist = this.makeScientist(value.place) as Scientist;
-                scientist.behaviorModel = value.behaviorModel;
-                return scientist;
-            }
-            if (value.dataType == 'StationaryObject') {
-                let stationaryObject = new StationaryObject(this, new Body(value.place, 1), "fine");
-            }
-        }
-        return value;
-    }
+    //public drawCollisionCheck(pos, box, color){
+    //  this.draw.fillRect(pos, box,color)
+    //}
 }
