@@ -152,7 +152,6 @@ export class Person extends Entity {
         let y = 0;
         let vel = this.body.velocity;
         
-        console.log(this.commands);
         // перемещение согласно commands
         if (!this.commands)
             return;

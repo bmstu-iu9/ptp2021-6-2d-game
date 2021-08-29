@@ -1186,7 +1186,6 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             var x = 0;
             var y = 0;
             var vel = this.body.velocity;
-            console.log(this.commands);
             if (!this.commands)
                 return;
             if (this.commands.commands["MoveUp"]) {
