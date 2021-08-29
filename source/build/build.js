@@ -2873,11 +2873,11 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                     break;
                 }
                 case Mode.Entity: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.ico), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
                     break;
                 }
                 case Mode.Wall: {
-                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.ico), auto";
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
                     break;
                 }
                 case Mode.PosPicking: {
@@ -2919,7 +2919,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                     case Mode.PosPicking: {
                         var fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(), new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                         ListOfPads_1.ListOfPads.choosePoint(fixedPos);
-                        this.mode = Mode.Selector;
+                        this.changeMode(Mode.Selector);
                     }
                 }
             }

@@ -82,11 +82,11 @@ export class Cursor {
                 break;
             }
             case Mode.Entity: {
-                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.ico), auto";
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
                 break;
             }
             case Mode.Wall: {
-                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.ico), auto";
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png), auto";
                 break;
             }
             case Mode.PosPicking: {
