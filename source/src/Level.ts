@@ -172,7 +172,7 @@ export class Level {
 
     // Добавляет источник освещения
     public makeLightSource(pos : geom.Vector, power : number) {
-        this.lightSources.push(new LightSource(pos, power));
+        this.lightSources.push(new LightSource(pos.clone(), power));
     }
 
     // Заворачивает в json
@@ -237,6 +237,9 @@ export class Level {
     }
 
     public displayLighting(draw : Draw) {
+        if (!this.showLighting) {
+            return;
+        }
         for(let i = 0; i < this.Grid.length; i++){
             for (let j = 0; j < this.Grid[i].length; j++)
                 draw.fillRect(

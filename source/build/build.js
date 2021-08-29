@@ -1484,7 +1484,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             return this.Grid[pos.x][pos.y];
         };
         Level.prototype.makeLightSource = function (pos, power) {
-            this.lightSources.push(new LightSource(pos, power));
+            this.lightSources.push(new LightSource(pos.clone(), power));
         };
         Level.prototype.serialize = function () {
             var newLevel;
@@ -1531,6 +1531,9 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
         };
         Level.prototype.displayLighting = function (draw) {
+            if (!this.showLighting) {
+                return;
+            }
             for (var i = 0; i < this.Grid.length; i++) {
                 for (var j = 0; j < this.Grid[i].length; j++)
                     draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 - j * 3098 + aux.getMilliCount()))));
@@ -2208,8 +2211,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
             this.draw.getimage();
             this.mimic.display(this.draw);
-            if (this.currentLevel.showLighting)
-                this.currentLevel.displayLighting(this.draw);
+            this.currentLevel.displayLighting(this.draw);
             this.draw.step();
             Debug_3.Debug.clear();
         };
@@ -2942,7 +2944,9 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
         }
         Cursor.prototype.setBlock = function () {
             console.log(this.tile);
+            var tileLight = this.level.Grid[this.gridPos.x][this.gridPos.y].light;
             this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+            this.level.Grid[this.gridPos.x][this.gridPos.y].light = tileLight;
             console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
         };
         Cursor.prototype.setEntity = function () {
@@ -2963,6 +2967,10 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                 var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
                 this.level.Entities[currentLocation] = new Monster_5.Monster(null, new Body_3.Body(pos, 1));
             }
+        };
+        Cursor.prototype.setLight = function () {
+            this.level.makeLightSource(this.gridPos, 10);
+            this.level.generateLighting();
         };
         Cursor.prototype.changeMode = function (mode) {
             this.mode = mode;
@@ -2989,6 +2997,9 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                 case Mode.Selector: {
                     document.getElementById("gameCanvas")["style"].cursor = "default";
                     break;
+                }
+                case Mode.Light: {
+                    this.selectedEntity = null;
                 }
             }
         };
@@ -3035,6 +3046,9 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                         var fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(), new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                         ListOfPads_1.ListOfPads.choosePoint(fixedPos);
                         this.changeMode(Mode.Selector);
+                    }
+                    case Mode.Light: {
+                        this.setLight();
                     }
                 }
             }
@@ -3309,7 +3323,19 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                     b["style"].backgroundColor = "red";
                 }
             };
-            document.getElementById("hidegrid").onclick = hidegrid;
+            document.getElementById("button_grid").onclick = hidegrid;
+            var showlight = function () {
+                _this.level.showLighting = !_this.level.showLighting;
+                _this.level.generateLighting();
+                var b = document.getElementById("button_shadows");
+                if (b["style"].backgroundColor == "red") {
+                    b["style"].backgroundColor = "lime";
+                }
+                else {
+                    b["style"].backgroundColor = "red";
+                }
+            };
+            document.getElementById("button_shadows").onclick = showlight;
             for (var i = 0; i < 69; i++)
                 this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", Tile_6.CollisionType.Full, "");
             for (var i = 0; i < 64; i++)
@@ -3440,6 +3466,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             if (this.showCollisionGrid == true) {
                 this.level.displayColisionGrid(this.draw);
             }
+            this.level.displayLighting(this.draw);
             this.cursor.display();
             for (var i = 0; i < this.level.Entities.length; i++) {
                 this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);

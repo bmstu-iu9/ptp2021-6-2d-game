@@ -265,7 +265,18 @@ export class Editor {
                 b["style"].backgroundColor = "red";
             }
         }
-        document.getElementById("hidegrid").onclick = hidegrid;
+        document.getElementById("button_grid").onclick = hidegrid;
+        let showlight = () => {
+            this.level.showLighting = !this.level.showLighting;
+            this.level.generateLighting();
+            let b = document.getElementById("button_shadows");
+            if (b["style"].backgroundColor == "red") {
+                b["style"].backgroundColor = "lime";
+            } else {
+                b["style"].backgroundColor = "red";
+            }
+        }
+        document.getElementById("button_shadows").onclick = showlight;
         // Создание кнопок для тайлов
         for (let i = 0; i < 69; i++)
             this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
@@ -444,6 +455,7 @@ export class Editor {
         if (this.showCollisionGrid == true) {
             this.level.displayColisionGrid(this.draw);
         }
+        this.level.displayLighting(this.draw);
         this.cursor.display();
         for (let i = 0; i < this.level.Entities.length; i++) {
             this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),

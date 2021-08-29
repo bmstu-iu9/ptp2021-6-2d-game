@@ -51,7 +51,9 @@ export class Cursor {
 
     private setBlock() {
         console.log(this.tile);
+        let tileLight = this.level.Grid[this.gridPos.x][this.gridPos.y].light;
         this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+        this.level.Grid[this.gridPos.x][this.gridPos.y].light = tileLight;
         console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
     }
 
@@ -73,6 +75,11 @@ export class Cursor {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
             this.level.Entities[currentLocation] = new Monster(null, new Body(pos, 1));
         }
+    }
+
+    public setLight() {
+        this.level.makeLightSource(this.gridPos, 10);
+        this.level.generateLighting();
     }
 
     public changeMode(mode : Mode) {
@@ -100,6 +107,9 @@ export class Cursor {
             case Mode.Selector: {
                 document.getElementById("gameCanvas")["style"].cursor = "default";
                 break;
+            }
+            case Mode.Light: {
+                this.selectedEntity = null;
             }
         }
     }
@@ -148,6 +158,9 @@ export class Cursor {
                     new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                     ListOfPads.choosePoint(fixedPos);
                     this.changeMode(Mode.Selector);
+                }
+                case Mode.Light: {
+                    this.setLight();
                 }
             }
         }
