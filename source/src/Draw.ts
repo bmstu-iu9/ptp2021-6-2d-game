@@ -75,7 +75,7 @@ export class Draw {
         }
         this.ctx = canvas.getContext("2d");
         this.cam.scale = 1;
-        this.cam.pos = size.mul(1 / 2);
+        this.cam.pos = new geom.Vector();
         this.cam.center = size.mul(1 / 2);
     }
     public static loadImage(src: string): HTMLImageElement {
@@ -103,8 +103,19 @@ export class Draw {
         posNew = posNew.add(this.cam.pos);
         return posNew;
     }
+    // Изменение 
+    public resize(size : geom.Vector) {
+        this.cam.center = size.mul(1/ 2);
+        this.canvas.width = size.x;
+        this.canvas.height = size.y;
+    }
+    // Натягивание на канвас
+    public attachToCanvas() {
+        this.cam.pos = this.cam.center;
+        this.cam.scale = 1;
+    }
     // Функция для отрисовки изображения
-    private drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
+    public drawimage(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
         let posNew = this.transform(pos);
         let boxNew = box.mul(this.cam.scale * 1.01);
         posNew = posNew.sub(boxNew.mul(1 / 2));
@@ -167,17 +178,17 @@ export class Draw {
             // hp бар
             let bar = box.clone();
             bar.x *= percentage;
-            this.fillRect(pos, box,frontColor);
+            this.fillRect(pos, box,backColor);
             let posNew = pos.clone();
             posNew.x -= (box.x - bar.x) / 2;
-            this.fillRect(posNew, bar, backColor);
+            this.fillRect(posNew, bar, frontColor);
             // Деления
             bar.x = 2 / this.cam.scale;
             pos.x -= box.x / 2;
             for (var i = 0; i < marks.length ; i++){
                 posNew = pos.clone();
                 posNew.x += box.x * marks[i];
-                this.fillRect(posNew, bar, frontColor);
+                this.fillRect(posNew, bar, backColor);
             }
         }
     }
@@ -223,6 +234,17 @@ export class Draw {
         }
         this.ctx.fillStyle = color.toString(); // цвет заливки
         this.ctx.fill();
+    }
+    public line(begin : geom.Vector, end : geom.Vector, color : Color, lineWidth : number) {
+        begin = this.transform(begin);
+        end = this.transform(end);
+        this.ctx.beginPath();
+        this.ctx.moveTo(begin.x, begin.y);
+        this.ctx.lineTo(end.x, end.y);
+        this.ctx.closePath();
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.strokeStyle = color.toString();
+        this.ctx.stroke();
     }
     // Контур многоугольника
     public strokePolygon(vertices: Array<geom.Vector>, color: Color, lineWidth: number) { 
@@ -288,7 +310,7 @@ export class Draw {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
     // hp бар 
-    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, frontColor : Color, backColor : Color, marks: number[]){
+    public bar(pos: geom.Vector, box: geom.Vector, percentage : number, backColor : Color, frontColor : Color, marks: number[]){
         let queue : bar_queue = {pos,box,percentage,frontColor,backColor,marks};
         this.hpqueue.push(queue); // Добавляем в очередь на отрисовку
 
