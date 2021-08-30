@@ -38,6 +38,7 @@ export class Game {
     public mimic: Mimic; // объект мимик, за который играет игрок
     public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
     private state = State.Waiting;
+    private static levelPaths = new Map<string, string>(); // Пары уровень-путь
 
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
@@ -180,10 +181,10 @@ export class Game {
     }
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
+        Game.levelPaths[name] = path;
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
-                console.log(result);
-                console.log(this.currentGame);
+                console.log("Map loaded");
 
                 let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
@@ -280,7 +281,14 @@ export class Game {
     public startGame() {
         this.state = State.Game;
         this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+        this.bodies = [];
+        this.entities = [];
+        this.triggers= []; 
+        this.mimic = new Mimic(this);
+        this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0)); 
         // TODO: перезапуск уровня
+        Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
+        
     }
 
     public step() {
@@ -289,6 +297,11 @@ export class Game {
             if (Control.isMouseClicked())
                 this.startGame();
             return;
+        }
+
+        // Смерть
+        if (this.mimic.isDead()) {
+            this.state = State.Waiting;
         }
 
         // Ксотыль

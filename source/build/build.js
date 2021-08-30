@@ -817,7 +817,6 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.changeCurrentInstruction(this.currentInstruction);
         };
         BehaviorModel.prototype.step = function () {
-            console.log("here?");
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
                 console.log(this.currentInstruction, "in progress");
                 this.operationNum++;
@@ -1501,6 +1500,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             window.open(url);
         };
         Level.prototype.createFromPrototype = function (prototype) {
+            this.Entities = [];
             this.Grid = prototype.Grid;
             this.CollisionMesh = prototype.CollisionMesh;
             this.PathMatrix = prototype.PathMatrix;
@@ -1837,6 +1837,9 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             biomass.baseEntity = this.controlledEntity;
             this.takeControl(biomass);
         };
+        Mimic.prototype.isDead = function () {
+            return this.controlledEntity instanceof Monster_3.Monster && !this.controlledEntity.alive;
+        };
         Mimic.prototype.step = function () {
             Control_1.Control.commands.active["shoot"] = Control_1.Control.isMouseRightPressed();
             Control_1.Control.commands.pointer = this.game.draw.transformBack(Control_1.Control.mousePos()).sub(this.controlledEntity.body.center);
@@ -2083,15 +2086,16 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, this.readTextFile(aux.environment + path)
-                                .then(function (result) {
-                                console.log(result);
-                                console.log(_this.currentGame);
-                                var prototype = JSON.parse(result, _this.reviver);
-                                var level = new Level_1.Level();
-                                level.createFromPrototype(prototype);
-                                Game.currentGame.levels[name] = level;
-                            })];
+                        case 0:
+                            Game.levelPaths[name] = path;
+                            return [4, this.readTextFile(aux.environment + path)
+                                    .then(function (result) {
+                                    console.log("Map loaded");
+                                    var prototype = JSON.parse(result, _this.reviver);
+                                    var level = new Level_1.Level();
+                                    level.createFromPrototype(prototype);
+                                    Game.currentGame.levels[name] = level;
+                                })];
                         case 1:
                             result = _a.sent();
                             return [2];
@@ -2167,12 +2171,21 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.startGame = function () {
             this.state = State.Game;
             this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+            this.bodies = [];
+            this.entities = [];
+            this.triggers = [];
+            this.mimic = new Mimic_1.Mimic(this);
+            this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
+            Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
         };
         Game.prototype.step = function () {
             if (this.state == State.Waiting) {
                 if (Control_2.Control.isMouseClicked())
                     this.startGame();
                 return;
+            }
+            if (this.mimic.isDead()) {
+                this.state = State.Waiting;
             }
             if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
@@ -2232,6 +2245,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             Debug_3.Debug.clear();
         };
         Game.dt = 0.02;
+        Game.levelPaths = new Map();
         return Game;
     }());
     exports.Game = Game;
@@ -3404,7 +3418,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     game.levels = new Map();
     Game_8.Game.currentGame = game;
     Game_8.Game.loadMap("map.json", "map");
-    game.makeScientist(new geom.Vector(1, 1));
+    game.makeSoldier(new geom.Vector(1, 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;

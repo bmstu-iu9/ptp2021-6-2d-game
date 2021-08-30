@@ -89,6 +89,10 @@ export class Mimic {
         this.takeControl(biomass);
     }
 
+    public isDead() : boolean {
+        return this.controlledEntity instanceof Monster && !this.controlledEntity.alive;
+    }
+
     public step() {
         // Подменяем комманды дя Entity, если мы не делаем это каждый ход, команды восстанавливаются сами (см Entity.step)
         Control.commands.active["shoot"] = Control.isMouseRightPressed();
