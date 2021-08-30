@@ -1531,10 +1531,21 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
         };
         Level.prototype.displayLighting = function (draw) {
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++)
-                    draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 - j * 3098 + aux.getMilliCount()))));
+            var cellSize = 1;
+            var buffer = document.createElement('canvas');
+            buffer.width = this.Grid.length * cellSize;
+            buffer.height = this.Grid[0].length * cellSize;
+            var imgCtx = buffer.getContext('2d');
+            for (var x = 0; x < this.Grid.length; x++) {
+                for (var y = 0; y < this.Grid[x].length; y++) {
+                    var alpha = 1 - this.Grid[x][y].light / 10;
+                    imgCtx.fillStyle = new Draw_8.Color(0, 0, 0, alpha).toString();
+                    imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
             }
+            draw.ctx.imageSmoothingEnabled = true;
+            var box = new geom.Vector(this.Grid.length, this.Grid[0].length);
+            draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
         };
         Level.prototype.generateLighting = function () {
             for (var i = 0; i < this.Grid.length; i++)
@@ -2083,6 +2094,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var prototype = JSON.parse(result, _this.reviver);
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
+                                level.showLighting = true;
+                                level.makeLightSource(new geom.Vector(0, 0), 10);
+                                level.makeLightSource(new geom.Vector(5, 5), 10);
+                                level.generateLighting();
                                 Game.currentGame.levels[name] = level;
                             })];
                         case 1:
@@ -2383,6 +2398,28 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 var curqueue = { image: image, pos: pos, box: box, angle: angle, layer: layer, transparency: transparency };
                 this.imagequeue.push(curqueue);
             }
+        };
+        Draw.prototype.displayBuffer = function (image, pos, box, angle, transparency) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale * 1.01);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            if (angle % (2 * Math.PI) == 0) {
+                this.ctx.globalAlpha = transparency;
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            }
+            else {
+                var buffer = document.createElement('canvas');
+                buffer.width = boxNew.x * 2;
+                buffer.height = boxNew.y * 2;
+                var bctx = buffer.getContext('2d');
+                bctx.imageSmoothingEnabled = false;
+                bctx.translate(boxNew.x, boxNew.y);
+                bctx.rotate(angle);
+                bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+                this.ctx.globalAlpha = transparency;
+                this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
+            }
+            this.ctx.globalAlpha = 1;
         };
         Draw.prototype.getimage = function () {
             if (this.imagequeue.length > 0) {
@@ -3370,7 +3407,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_8, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("http://127.0.0.1:4500/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');

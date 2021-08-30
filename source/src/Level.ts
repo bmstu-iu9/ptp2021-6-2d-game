@@ -237,14 +237,26 @@ export class Level {
     }
 
     public displayLighting(draw : Draw) {
-        for(let i = 0; i < this.Grid.length; i++){
-            for (let j = 0; j < this.Grid[i].length; j++)
-                draw.fillRect(
-                    new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), 
-                    new geom.Vector(1*this.tileSize, 1*this.tileSize), 
-                    // Эти рандомные числа создают красивое мерцание
-                    new Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 -j * 3098 + aux.getMilliCount()))));
+        // Натуральное число, размер одной световой клетки
+        let cellSize = 1; // Чем больше размер, тем меньше рамзытие
+        // Создаём картинку на которой будем рендерить освещение
+        let buffer = document.createElement('canvas');
+        buffer.width = this.Grid.length * cellSize;
+        buffer.height = this.Grid[0].length * cellSize;
+        // Получаем контекст
+        let imgCtx = buffer.getContext('2d');
+        // Расставляем точки
+        for(let x = 0; x < this.Grid.length; x++) {
+            for (let y = 0; y < this.Grid[x].length; y++) {
+                let alpha = 1 - this.Grid[x][y].light / 10;
+                imgCtx.fillStyle = new Color(0, 0, 0, alpha).toString();
+                imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
         }
+        // Рисуем
+        draw.ctx.imageSmoothingEnabled = true; // Это позволяет создать размытие освещения
+        let box = new geom.Vector(this.Grid.length, this.Grid[0].length);
+        draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
     }
 
     // Построение освещения 

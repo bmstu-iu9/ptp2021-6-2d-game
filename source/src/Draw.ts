@@ -148,6 +148,30 @@ export class Draw {
             
         }
     }
+    // Отрисовка HTMLCanvasElement
+    public displayBuffer(image: HTMLCanvasElement, pos: geom.Vector, box: geom.Vector, angle : number, transparency : number){ 
+        let posNew = this.transform(pos);
+        let boxNew = box.mul(this.cam.scale * 1.01);
+        posNew = posNew.sub(boxNew.mul(1 / 2));
+        //this.ctx.imageSmoothingEnabled = false;
+        if (angle%(2*Math.PI) == 0){
+            this.ctx.globalAlpha = transparency;
+            this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y); // Без поворота (Много ресурсов на поворот уходит(даже на 0))
+        } else {
+            let buffer = document.createElement('canvas'); // Поворот
+            buffer.width = boxNew.x*2;
+            buffer.height = boxNew.y*2;
+            let bctx = buffer.getContext('2d');
+            bctx.imageSmoothingEnabled = false;
+            bctx.translate(boxNew.x, boxNew.y);
+            bctx.rotate(angle);
+            bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+            this.ctx.globalAlpha = transparency;
+            this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
+        }
+        // Восстанавливаем прозрачность
+        this.ctx.globalAlpha = 1;
+    }
     // Обработка слоев изображения
     public getimage(){
         if (this.imagequeue.length > 0){ // Отрисовка изображений
