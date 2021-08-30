@@ -4,7 +4,7 @@ import { Body } from "./Entities/EntityAttributes/Body";
 import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
 import { Control, Keys } from "./Control";
-import { Draw, Color } from "./Draw";
+import { Draw, Color, Layer } from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
 import { Level } from "./Level";
@@ -17,6 +17,11 @@ import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { Biomass } from "./Entities/Projectiles/Biomass";
+
+export enum State {
+    Waiting,
+    Game
+};
 
 export class Game {
     public levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
@@ -32,6 +37,7 @@ export class Game {
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
     public mimic: Mimic; // объект мимик, за который играет игрок
     public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+    private state = State.Waiting;
 
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
@@ -271,7 +277,20 @@ export class Game {
         }
     }
 
+    public startGame() {
+        this.state = State.Game;
+        this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+        // TODO: перезапуск уровня
+    }
+
     public step() {
+        // Экран загрузки
+        if (this.state == State.Waiting) { // Если в режиме ожидания
+            if (Control.isMouseClicked())
+                this.startGame();
+            return;
+        }
+
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
             this.currentLevel = this.levels[this.currentLevelName];
@@ -330,6 +349,19 @@ export class Game {
     }
 
     public display() {
+        // Экран загрузки
+        if (this.state == State.Waiting) { // Если в режиме ожидания
+            this.draw.attachToCanvas();
+            this.draw.image(
+                Draw.loadImage("textures/Screens/Start.png"),
+                this.draw.cam.center,
+                this.draw.cam.center.mul(2),
+                0, Layer.HudLayer
+            );
+            this.draw.getimage();
+            return;
+        }
+
         // Настройка камеры
         this.configureCamScale();
         

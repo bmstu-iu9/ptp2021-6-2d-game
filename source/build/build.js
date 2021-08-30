@@ -1912,7 +1912,13 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
 define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Game = void 0;
+    exports.Game = exports.State = void 0;
+    var State;
+    (function (State) {
+        State[State["Waiting"] = 0] = "Waiting";
+        State[State["Game"] = 1] = "Game";
+    })(State = exports.State || (exports.State = {}));
+    ;
     var Game = (function () {
         function Game(draw) {
             this.bodies = [];
@@ -1922,6 +1928,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             this.ghost = new geom.Vector(0, 0);
+            this.state = State.Waiting;
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
@@ -2157,7 +2164,16 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
             }
         };
+        Game.prototype.startGame = function () {
+            this.state = State.Game;
+            this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+        };
         Game.prototype.step = function () {
+            if (this.state == State.Waiting) {
+                if (Control_2.Control.isMouseClicked())
+                    this.startGame();
+                return;
+            }
             if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
             }
@@ -2196,6 +2212,12 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
         };
         Game.prototype.display = function () {
+            if (this.state == State.Waiting) {
+                this.draw.attachToCanvas();
+                this.draw.image(Draw_11.Draw.loadImage("textures/Screens/Start.png"), this.draw.cam.center, this.draw.cam.center.mul(2), 0, Draw_11.Layer.HudLayer);
+                this.draw.getimage();
+                return;
+            }
             this.configureCamScale();
             this.currentLevel.display(this.draw);
             for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
