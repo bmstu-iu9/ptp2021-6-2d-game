@@ -182,6 +182,11 @@ export class Game {
                 let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
                 level.createFromPrototype(prototype);
+                // Light testing
+                level.showLighting = true;
+                level.makeLightSource(new geom.Vector(0, 0), 10);
+                level.makeLightSource(new geom.Vector(5, 5), 10);
+                level.generateLighting();
                 Game.currentGame.levels[name] = level;
             });
     }
@@ -286,6 +291,7 @@ export class Game {
         this.triggers.forEach(trigger => trigger.step());
         this.processEntities();
         this.processTriggers();
+        this.currentLevel.processLighting();
     }
 
     public attachCamToMimic() {
