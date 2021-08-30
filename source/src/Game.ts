@@ -294,7 +294,7 @@ export class Game {
     public step() {
         // Экран загрузки
         if (this.state == State.Waiting) { // Если в режиме ожидания
-            if (Control.isMouseClicked())
+            if (Control.isMouseLeftPressed() || Control.isMouseRightPressed())
                 this.startGame();
             return;
         }

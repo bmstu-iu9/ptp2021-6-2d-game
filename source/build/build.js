@@ -2180,7 +2180,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         };
         Game.prototype.step = function () {
             if (this.state == State.Waiting) {
-                if (Control_2.Control.isMouseClicked())
+                if (Control_2.Control.isMouseLeftPressed() || Control_2.Control.isMouseRightPressed())
                     this.startGame();
                 return;
             }
