@@ -12,6 +12,7 @@ import { sign } from "crypto";
 import * as aux from "./AuxLib";
 import { Queue } from "./Queue";
 import { Random } from "./Random";
+import { Game } from "./Game";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
@@ -105,11 +106,46 @@ export class LevelJSON {
 
 // Источник света
 export class LightSource {
-    pos : geom.Vector;
-    power : number;
+    public pos : geom.Vector;
+    public power : number;
+    public enableFlickering = true;
+    // Характеристики периодической изменения яркости
+    private time = 0; // Местное время
+    private amplitude = 0.1; // Амплитуда мерцания
+    private frequency = 1; // Частота
+    private basePower : number; // Базовая сила, остаётся неизменной
+    // Характеристики мигания
+    private offPeriod = 5; // Раз примерно в сколько секунд происходит мигание
+    private offTiming = 0.04; // На какое времяя отключается
+    private timeOff = 0; // Сколько ещё в выключенном состоянии
+    private offCount = 0; // Сколько ещё раз мигать
     constructor(pos : geom.Vector, power : number) {
         this.pos = pos;
-        this.power = power;
+        this.basePower = this.power = power;
+        this.frequency = Random.randomFloat(1, 2);
+    }
+    public step() {
+        this.time += Game.dt;
+        this.timeOff -= Game.dt;
+        if (!this.enableFlickering) {
+            this.power = this.basePower;
+            return;
+        }
+        this.power = this.basePower + Math.sin(this.time * Math.PI * this.frequency) * this.amplitude;
+        // Должны ли мы включить мигание
+        if (Random.randomFloat(0, this.offPeriod) < Game.dt) {
+            this.timeOff = this.offTiming;
+            this.offCount = Random.randomInt(1, 5);
+            // TODO: вставить сюда звук лампочки
+        }
+        // Должны ли мы выключить
+        if (this.timeOff > 0 && this.offCount)
+            this.power = this.power * 0.9;
+        // Должны ли мы включить
+        if (this.timeOff < -this.offTiming && this.offCount) {
+            this.offCount--;
+            this.timeOff = this.offTiming;
+        }
     }
 };
 
@@ -299,5 +335,11 @@ export class Level {
                 queue.push(posNext);
             }
         }
+    }
+
+    // Обработка источников освещения, перерасчёт
+    public processLighting() {
+        this.lightSources.forEach(lightSource => lightSource.step());
+        this.generateLighting();
     }
 }

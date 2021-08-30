@@ -1344,7 +1344,7 @@ define("Queue", ["require", "exports"], function (require, exports) {
     }());
     exports.Queue = Queue;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue"], function (require, exports, Tile_3, geom, Draw_8, PathGenerator_1, Soldier_1, Scientist_1, Monster_2, StationaryObject_2, BehaviorModel_2, aux, Queue_1) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue", "Random", "Game"], function (require, exports, Tile_3, geom, Draw_8, PathGenerator_1, Soldier_1, Scientist_1, Monster_2, StationaryObject_2, BehaviorModel_2, aux, Queue_1, Random_2, Game_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LightSource = exports.LevelJSON = void 0;
@@ -1434,9 +1434,37 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
     exports.LevelJSON = LevelJSON;
     var LightSource = (function () {
         function LightSource(pos, power) {
+            this.enableFlickering = true;
+            this.time = 0;
+            this.amplitude = 0.1;
+            this.frequency = 1;
+            this.offPeriod = 5;
+            this.offTiming = 0.04;
+            this.timeOff = 0;
+            this.offCount = 0;
             this.pos = pos;
-            this.power = power;
+            this.basePower = this.power = power;
+            this.frequency = Random_2.Random.randomFloat(1, 2);
         }
+        LightSource.prototype.step = function () {
+            this.time += Game_5.Game.dt;
+            this.timeOff -= Game_5.Game.dt;
+            if (!this.enableFlickering) {
+                this.power = this.basePower;
+                return;
+            }
+            this.power = this.basePower + Math.sin(this.time * Math.PI * this.frequency) * this.amplitude;
+            if (Random_2.Random.randomFloat(0, this.offPeriod) < Game_5.Game.dt) {
+                this.timeOff = this.offTiming;
+                this.offCount = Random_2.Random.randomInt(1, 5);
+            }
+            if (this.timeOff > 0 && this.offCount)
+                this.power = this.power * 0.9;
+            if (this.timeOff < -this.offTiming && this.offCount) {
+                this.offCount--;
+                this.timeOff = this.offTiming;
+            }
+        };
         return LightSource;
     }());
     exports.LightSource = LightSource;
@@ -1577,6 +1605,10 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     queue.push(posNext);
                 }
             }
+        };
+        Level.prototype.processLighting = function () {
+            this.lightSources.forEach(function (lightSource) { return lightSource.step(); });
+            this.generateLighting();
         };
         return Level;
     }());
@@ -1784,7 +1816,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
     }(Projectile_2.Projectile));
     exports.Biomass = Biomass;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass"], function (require, exports, Game_5, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
@@ -1801,7 +1833,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.dir = coords.sub(this.mimic.controlledEntity.body.center).norm();
             if (Control_1.Control.isMouseLeftPressed()) {
                 if (this.charge < this.chargeMax) {
-                    this.charge += Game_5.Game.dt * this.chargeMax / this.chargingTime;
+                    this.charge += Game_6.Game.dt * this.chargeMax / this.chargingTime;
                 }
             }
             else
@@ -1854,7 +1886,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_4.Person) && !(this.controlledEntity instanceof Monster_3.Monster)) {
                 var person = this.controlledEntity;
-                person.hp -= Game_5.Game.dt;
+                person.hp -= Game_6.Game.dt;
                 if (person.hp < 0) {
                     this.escape();
                 }
@@ -1890,7 +1922,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
     }());
     exports.Mimic = Mimic;
 });
-define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_6) {
+define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Trigger = void 0;
@@ -1903,7 +1935,7 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
             this.triggeredEntities = new Map();
         }
         Trigger.prototype.step = function () {
-            this.timeLeft -= Game_6.Game.dt;
+            this.timeLeft -= Game_7.Game.dt;
             if (this.timeLeft <= 0 || !this.boundEntity.alive)
                 this.active = false;
         };
@@ -2183,6 +2215,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.triggers.forEach(function (trigger) { return trigger.step(); });
             this.processEntities();
             this.processTriggers();
+            this.currentLevel.processLighting();
         };
         Game.prototype.attachCamToMimic = function () {
             this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
@@ -2229,7 +2262,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     }());
     exports.Game = Game;
 });
-define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_12, Game_7) {
+define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_12, Game_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpriteAnimation = exports.AnimationState = void 0;
@@ -2264,7 +2297,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
             return this.frames[frameNumber];
         };
         SpriteAnimation.prototype.step = function () {
-            this.time += Game_7.Game.dt;
+            this.time += Game_8.Game.dt;
         };
         SpriteAnimation.prototype.isOver = function () {
             return this.time > this.duration;
@@ -3404,7 +3437,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_8, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_9, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     aux.setEnvironment("http://127.0.0.1:4500/");
@@ -3415,10 +3448,10 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     canvas.height = window.innerHeight;
     var draw = new Draw_17.Draw(canvas);
     draw.cam.scale = 10;
-    var game = new Game_8.Game(draw);
+    var game = new Game_9.Game(draw);
     game.levels = new Map();
-    Game_8.Game.currentGame = game;
-    Game_8.Game.loadMap("map.json", "map");
+    Game_9.Game.currentGame = game;
+    Game_9.Game.loadMap("map.json", "map");
     game.makeScientist(new geom.Vector(1, 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
@@ -3453,6 +3486,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         setInterval(editorStep, 20);
     }
     else
-        setInterval(step, Game_8.Game.dt * 1000);
+        setInterval(step, Game_9.Game.dt * 1000);
 });
 //# sourceMappingURL=build.js.map
