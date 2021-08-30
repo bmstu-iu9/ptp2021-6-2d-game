@@ -816,173 +816,6 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
         BehaviorModel.prototype.refreshInstruction = function () {
             this.changeCurrentInstruction(this.currentInstruction);
         };
-<<<<<<< HEAD
-        AI.prototype.step = function () {
-            if (this.activationTime > aux.getMilliCount()) {
-                return;
-            }
-            if (this.Path.length != 0) {
-                this.go(this.Path[0]);
-                if (this.body.center.sub(this.Path[0]).abs() < 0.2) {
-                    this.Path.shift();
-                }
-            }
-            else {
-                this.stop();
-            }
-            var CollisionMesh = this.game.currentLevel.CollisionMesh;
-            for (var i = 0; i < CollisionMesh.length; i++) {
-                for (var j = 0; j < CollisionMesh[i].length; j++) {
-                    var coordinate = this.getPointCoordinate(new geom.Vector(i, j));
-                    var color = new Draw_4.Color(0, 255, 0);
-                    if (CollisionMesh[i][j] == true) {
-                        color = new Draw_4.Color(255, 0, 0);
-                    }
-                    Debug_1.Debug.addPoint(coordinate, color);
-                }
-            }
-            Debug_1.Debug.addPoint(this.destination, new Draw_4.Color(0, 0, 255));
-        };
-        return AI;
-    }());
-    exports.AI = AI;
-});
-define("Sounds", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Sounds = void 0;
-    var Sounds = (function () {
-        function Sounds(volume) {
-            this.currentstate = false;
-            this.current_sound = new Audio('./sounds/alarm.mp3');
-            this.current_sound.volume = volume;
-        }
-        Sounds.prototype.changestatus = function (track, volume) {
-            if (volume === void 0) { volume = 1; }
-            console.log(this.currentstate);
-            if (this.currentstate == false) {
-                this.currentstate = true;
-                this.playcontinuously(track, volume);
-            }
-            else {
-                this.currentstate = false;
-                this.stop();
-            }
-        };
-        Sounds.prototype.stop = function () {
-            this.current_sound.pause();
-        };
-        Sounds.prototype.playcontinuously = function (track, volume) {
-            if (volume === void 0) { volume = 1; }
-            this.current_sound = new Audio('./sounds/' + track + '.mp3');
-            this.current_sound.volume = volume;
-            this.current_sound.play();
-            this.current_sound.addEventListener("ended", function () {
-                this.play();
-            });
-        };
-        Sounds.prototype.play = function (track, volume) {
-            if (volume === void 0) { volume = 1; }
-            this.current_sound = new Audio('./sounds/' + track + '.mp3');
-            this.current_sound.volume = volume;
-            this.current_sound.play();
-        };
-        return Sounds;
-    }());
-    exports.Sounds = Sounds;
-});
-define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI", "Sounds"], function (require, exports, geom, Animation_1, AI_1, Sounds_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Entity = void 0;
-    var Entity = (function () {
-        function Entity(game, body) {
-            this.commands = null;
-            this.alive = true;
-            this.hpMax = 15;
-            this.hp = this.hpMax;
-            this.game = game;
-            this.body = body;
-            this.myAI = new AI_1.AI(game, body);
-            this.animation = new Animation_1.Animation("Scientist", 8);
-            this.commands = this.myAI.commands;
-            this.sounds = new Sounds_1.Sounds(1);
-        }
-        Entity.prototype.die = function () {
-            this.hp = 0;
-            this.alive = false;
-            this.sounds.play("alarm");
-        };
-        Entity.prototype.step = function () {
-            if (this.hp <= 0)
-                this.die();
-            if (!this.commands)
-                return;
-            this.myAI.step();
-            this.commands = this.myAI.commands;
-        };
-        Entity.prototype.display = function (draw) {
-            draw.image(this.animation.current_state, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, 1);
-        };
-        return Entity;
-    }());
-    exports.Entity = Entity;
-});
-define("BehaviorModel", ["require", "exports", "Geom"], function (require, exports, Geom_4) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BehaviorModel = exports.Instruction = void 0;
-    var Operations;
-    (function (Operations) {
-        Operations[Operations["goToPoint"] = 0] = "goToPoint";
-        Operations[Operations["wait"] = 1] = "wait";
-        Operations[Operations["pursuit"] = 2] = "pursuit";
-    })(Operations || (Operations = {}));
-    var Instruction = (function () {
-        function Instruction() {
-            this.operations = [];
-            this.operationsData = [];
-        }
-        Instruction.prototype.addGoingToPoint = function (point) {
-            var place = this.operations.length;
-            this.operations[place] = Operations.goToPoint;
-            this.operationsData[place] = point;
-        };
-        Instruction.prototype.addWaiting = function (milliseconds) {
-            var place = this.operations.length;
-            this.operations[place] = Operations.wait;
-            this.operationsData[place] = milliseconds;
-        };
-        Instruction.prototype.addPursuit = function () {
-            var place = this.operations.length;
-            this.operations[place] = Operations.pursuit;
-        };
-        return Instruction;
-    }());
-    exports.Instruction = Instruction;
-    var BehaviorModel = (function () {
-        function BehaviorModel(myAI) {
-            this.operationNum = 0;
-            this.instructions = new Map();
-            this.myAI = myAI;
-            this.instructions = new Map;
-        }
-        BehaviorModel.prototype.changeCurrentInstruction = function (newInstruction) {
-            this.operationNum = 0;
-            this.myAI.Path = [];
-            this.myAI.wait(0);
-            this.currentInstruction = newInstruction;
-        };
-        BehaviorModel.prototype.refreshInstruction = function () {
-            this.changeCurrentInstruction(this.currentInstruction);
-        };
-        BehaviorModel.prototype.step = function () {
-            if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions[this.currentInstruction]) {
-                this.operationNum++;
-                this.operationNum %= this.instructions[this.currentInstruction].operations.length;
-                var operation = this.instructions[this.currentInstruction].operations[this.operationNum];
-                var data = this.instructions[this.currentInstruction].operationsData[this.operationNum];
-=======
         BehaviorModel.prototype.step = function () {
             console.log("here?");
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
@@ -991,7 +824,6 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
                 this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
                 var operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];
                 var data = this.instructions.get(this.currentInstruction).operationsData[this.operationNum];
->>>>>>> master
                 switch (operation) {
                     case Operations.goToPoint: {
                         this.myAI.goToPoint(data);
@@ -1876,7 +1708,51 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
     }());
     exports.AI = AI;
 });
-define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_4, AI_1) {
+define("Sounds", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Sounds = void 0;
+    var Sounds = (function () {
+        function Sounds(volume) {
+            this.currentstate = false;
+            this.current_sound = new Audio('./sounds/alarm.mp3');
+            this.current_sound.volume = volume;
+        }
+        Sounds.prototype.changestatus = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            console.log(this.currentstate);
+            if (this.currentstate == false) {
+                this.currentstate = true;
+                this.playcontinuously(track, volume);
+            }
+            else {
+                this.currentstate = false;
+                this.stop();
+            }
+        };
+        Sounds.prototype.stop = function () {
+            this.current_sound.pause();
+        };
+        Sounds.prototype.playcontinuously = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+            this.current_sound.addEventListener("ended", function () {
+                this.play();
+            });
+        };
+        Sounds.prototype.play = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+        };
+        return Sounds;
+    }());
+    exports.Sounds = Sounds;
+});
+define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI", "Sounds"], function (require, exports, geom, Animation_4, AI_1, Sounds_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Entity = void 0;
@@ -1891,10 +1767,12 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
             this.myAI = new AI_1.AI(game, body);
             this.animation = new Animation_4.Animation("Scientist", 8);
             this.commands = this.myAI.commands;
+            this.sounds = new Sounds_1.Sounds(1);
         }
         Entity.prototype.die = function () {
             this.hp = 0;
             this.alive = false;
+            this.sounds.play("alarm");
         };
         Entity.prototype.step = function () {
             if (this.hp <= 0)
@@ -2077,202 +1955,7 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
     }());
     exports.Trigger = Trigger;
 });
-<<<<<<< HEAD
-define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation"], function (require, exports, Person_3, Animation_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Scientist = void 0;
-    var Scientist = (function (_super) {
-        __extends(Scientist, _super);
-        function Scientist(game, body, mode) {
-            var _this = _super.call(this, game, body, mode) || this;
-            _this.animation = new Animation_3.Animation("Scientist", 8);
-            _this.type = "Scientist";
-            return _this;
-        }
-        return Scientist;
-    }(Person_3.Person));
-    exports.Scientist = Scientist;
-});
-define("Random", ["require", "exports", "Geom"], function (require, exports, geom) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Random = void 0;
-    var Random = (function () {
-        function Random() {
-        }
-        Random.randomInt = function (a, b) {
-            var _a;
-            if (a < b)
-                _a = [b, a], a = _a[0], b = _a[1];
-            a = Math.floor(a);
-            b = Math.floor(b);
-            return Math.floor(Math.random() * (b - a + 1)) + a;
-        };
-        Random.randomFloat = function (a, b) {
-            var _a;
-            if (a < b)
-                _a = [b, a], a = _a[0], b = _a[1];
-            return Math.random() * (b - a) + a;
-        };
-        Random.randomVector = function (a, b) {
-            return new geom.Vector(Random.randomFloat(a.x, b.x), Random.randomFloat(a.y, b.y));
-        };
-        Random.randomSector = function (alpha, beta, lenMin, lenMax) {
-            var gamma = Random.randomFloat(alpha, beta);
-            var len = Math.abs(Random.randomFloat(lenMin, lenMax));
-            return geom.vectorFromAngle(gamma).mul(len);
-        };
-        return Random;
-    }());
-    exports.Random = Random;
-});
-define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "Entities/Projectiles/Projectile", "Geom", "Draw"], function (require, exports, Game_4, Projectile_2, geom, Draw_9) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.CombatProjectile = void 0;
-    var CombatProjectile = (function (_super) {
-        __extends(CombatProjectile, _super);
-        function CombatProjectile(game, body, vel) {
-            var _this = _super.call(this, game, body, vel) || this;
-            _this.damage = 0.1;
-            _this.remainingTime = 0;
-            _this.lifetime = 0;
-            _this.loadSpriteAnimation("Flame", 3);
-            return _this;
-        }
-        CombatProjectile.prototype.setLifetime = function (lifetime) {
-            this.lifetime = this.remainingTime = lifetime;
-        };
-        CombatProjectile.prototype.step = function () {
-            this.remainingTime -= Game_4.Game.dt;
-            if (this.remainingTime <= 0 ||
-                this.shouldBeKilledByWall && this.body.getCollisionsNumber())
-                this.alive = false;
-            for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
-                var entity = _a[_i];
-                if (entity instanceof Projectile_2.Projectile ||
-                    entity == this.baseEntity ||
-                    geom.dist(this.body.center, entity.body.center) > this.body.radius)
-                    continue;
-                entity.hp -= this.damage;
-                this.alive = false;
-            }
-            _super.prototype.step.call(this);
-        };
-        CombatProjectile.prototype.display = function (draw) {
-            draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(this.body.radius, this.body.radius), 0, Draw_9.Layer.EntityLayer, 0.5 * this.remainingTime / this.lifetime);
-        };
-        return CombatProjectile;
-    }(Projectile_2.Projectile));
-    exports.CombatProjectile = CombatProjectile;
-});
-define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Random", "Entities/Projectiles/CombatProjectile", "Draw"], function (require, exports, Game_5, Body_1, geom, Random_1, CombatProjectile_1, Draw_10) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Weapon = void 0;
-    var Weapon = (function () {
-        function Weapon(owner) {
-            this.magazineCapacity = 50;
-            this.magazineCooldown = 2;
-            this.projectilesInMagazine = this.magazineCapacity;
-            this.cooldown = 0.02;
-            this.timeToCooldown = 0;
-            this.scatter = 0.2;
-            this.projectilesInOneShot = 5;
-            this.projectileVel = 5;
-            this.projectileAnimationName = "Flame";
-            this.projectileAnimationFrames = 3;
-            this.range = 3;
-            this.isMagazineRecharging = false;
-            this.owner = owner;
-        }
-        Weapon.prototype.rechargeClip = function () {
-            this.timeToCooldown = this.magazineCooldown;
-            this.isMagazineRecharging = true;
-        };
-        Weapon.prototype.createProjectile = function (dir) {
-            dir = dir.norm();
-            dir = geom.vectorFromAngle(dir.angle() + Random_1.Random.randomFloat(-this.scatter, this.scatter));
-            var body = new Body_1.Body(this.owner.body.center, 0.4);
-            body.game = this.owner.game;
-            var projectile = new CombatProjectile_1.CombatProjectile(this.owner.game, body, dir.norm().mul(this.projectileVel));
-            projectile.entityID = this.owner.game.entities.length;
-            projectile.loadSpriteAnimation(this.projectileAnimationName, this.projectileAnimationFrames);
-            projectile.shouldBeKilledByWall = true;
-            projectile.setLifetime(this.range / this.projectileVel);
-            projectile.baseEntity = this.owner;
-            this.owner.game.entities.push(projectile);
-        };
-        Weapon.prototype.shoot = function (dir) {
-            if (this.isMagazineRecharging)
-                return;
-            if (this.projectilesInMagazine <= 0) {
-                this.rechargeClip();
-                return;
-            }
-            if (this.timeToCooldown > 0)
-                return;
-            for (var i = 0; i < this.projectilesInOneShot; i++)
-                this.createProjectile(dir);
-            this.projectilesInMagazine--;
-            this.timeToCooldown = this.cooldown;
-            if (this.projectilesInMagazine <= 0)
-                this.rechargeClip();
-        };
-        Weapon.prototype.step = function () {
-            this.timeToCooldown -= Game_5.Game.dt;
-            if (this.timeToCooldown <= 0 && this.isMagazineRecharging) {
-                console.log("a");
-                this.isMagazineRecharging = false;
-                this.projectilesInMagazine = this.magazineCapacity;
-            }
-        };
-        Weapon.prototype.display = function (draw) {
-            var color = new Draw_10.Color(255, 50, 50);
-            if (this.projectilesInMagazine <= 0) {
-                draw.bar(this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), new geom.Vector(1, 0.1), 1 - this.timeToCooldown / this.magazineCooldown, new Draw_10.Color(25, 25, 25), color.setAlpha(0.5), []);
-            }
-            else {
-                draw.bar(this.owner.body.center.clone().add(new geom.Vector(0, -1.1)), new geom.Vector(1, 0.1), this.projectilesInMagazine / this.magazineCapacity, new Draw_10.Color(25, 25, 25), color, []);
-            }
-        };
-        return Weapon;
-    }());
-    exports.Weapon = Weapon;
-});
-define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon"], function (require, exports, Person_4, Animation_4, Weapon_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Soldier = void 0;
-    var Soldier = (function (_super) {
-        __extends(Soldier, _super);
-        function Soldier(game, body, mode) {
-            var _this = _super.call(this, game, body, mode) || this;
-            _this.weapon = new Weapon_1.Weapon(_this);
-            _this.animation = new Animation_4.Animation("Soldier", 8);
-            _this.type = "Soldier";
-            return _this;
-        }
-        Soldier.prototype.step = function () {
-            if (this.commands.commands["shoot"]) {
-                this.weapon.shoot(this.commands.pointer);
-            }
-            this.weapon.step();
-            _super.prototype.step.call(this);
-        };
-        Soldier.prototype.display = function (draw) {
-            _super.prototype.display.call(this, draw);
-            this.weapon.display(draw);
-        };
-        return Soldier;
-    }(Person_4.Person));
-    exports.Soldier = Soldier;
-});
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Scientist_1, Soldier_1, Monster_2, Corpse_2, StationaryObject_2, Biomass_2, Sounds_2) {
-=======
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2) {
->>>>>>> master
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
