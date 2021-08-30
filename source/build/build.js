@@ -1488,7 +1488,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         };
         Level.prototype.serialize = function () {
             var newLevel;
-            newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
+            newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map(), Lights: this.lightSources };
             console.log(newLevel.Grid);
             PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
@@ -1504,6 +1504,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.Grid = prototype.Grid;
             this.CollisionMesh = prototype.CollisionMesh;
             this.PathMatrix = prototype.PathMatrix;
+            this.lightSources = prototype.Lights;
         };
         Level.prototype.display = function (draw, advanced) {
             if (advanced === void 0) { advanced = false; }
@@ -1673,6 +1674,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             this.Path[this.Path.length] = point;
         };
         AI.prototype.wait = function (milliseconds) {
+            this.stop();
             this.activationTime = aux.getMilliCount() + milliseconds;
         };
         AI.prototype.pursuit = function () {
@@ -2059,7 +2061,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return stationaryObject;
                 }
                 if (value.dataType == 'BehaviorModel') {
-                    console.log("beh mod");
                     var behaviorModel = new BehaviorModel_3.BehaviorModel(null);
                     behaviorModel.instructions = value.instructions;
                     return behaviorModel;
@@ -2087,8 +2088,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
                                 level.showLighting = true;
-                                level.makeLightSource(new geom.Vector(5, 5), 10);
-                                level.makeLightSource(new geom.Vector(0, 0), 10);
                                 level.generateLighting();
                                 Game.currentGame.levels[name] = level;
                             })];
@@ -3481,7 +3480,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_8, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LeverEditorCursor/source/env/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');

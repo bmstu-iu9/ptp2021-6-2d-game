@@ -110,6 +110,7 @@ export class Cursor {
             }
             case Mode.Light: {
                 this.selectedEntity = null;
+                break;
             }
         }
     }
@@ -158,9 +159,11 @@ export class Cursor {
                     new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                     ListOfPads.choosePoint(fixedPos);
                     this.changeMode(Mode.Selector);
+                    break;
                 }
                 case Mode.Light: {
                     this.setLight();
+                    break;
                 }
             }
         }

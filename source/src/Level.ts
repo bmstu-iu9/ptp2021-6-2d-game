@@ -101,6 +101,7 @@ export class LevelJSON {
     Entities? : Entity[];
     CollisionMesh? : boolean[][];
     PathMatrix? : Map<any, any>;
+    Lights?: LightSource[];
 }
 
 // Источник света
@@ -178,7 +179,7 @@ export class Level {
     // Заворачивает в json
     public serialize() {
         let newLevel : LevelJSON;
-        newLevel = {Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
+        newLevel = {Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map(), Lights: this.lightSources};
 
         console.log(newLevel.Grid);
         
@@ -203,6 +204,7 @@ export class Level {
         this.Grid = prototype.Grid;
         this.CollisionMesh = prototype.CollisionMesh;
         this.PathMatrix = prototype.PathMatrix;
+        this.lightSources = prototype.Lights;
     }
 
     // Отрисовка
