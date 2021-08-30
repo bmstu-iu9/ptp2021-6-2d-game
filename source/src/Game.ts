@@ -290,6 +290,7 @@ export class Game {
         this.triggers.forEach(trigger => trigger.step());
         this.processEntities();
         this.processTriggers();
+        this.currentLevel.processLighting();
     }
 
     public attachCamToMimic() {
