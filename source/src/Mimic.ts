@@ -8,6 +8,7 @@ import { Corpse } from "./Entities/Corpse";
 import { Draw, Layer } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
 import { Biomass } from "./Entities/Projectiles/Biomass";
+import {Sounds} from "./Sounds"
 
 export class Aim {
     public vel = 0;
@@ -33,6 +34,8 @@ export class Aim {
 }
 
 export class Mimic {
+    
+    public sounds : Sounds;
     public controlledEntity : Entity = null;
     public infectionRadius = 100;
     public game : Game;
@@ -41,10 +44,12 @@ export class Mimic {
     constructor(game : Game) {
         this.game = game;
         this.aim.mimic = this;
+        this.sounds=new Sounds(1)
     }
 
     public takeControl(entity : Entity) {
         if (this.controlledEntity) {
+            this.sounds.playimposition("alarm")
             this.game.draw.spriteAnimation(
                 "MimicTransfer", 3,
                 new AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0),

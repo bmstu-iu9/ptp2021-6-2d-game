@@ -1,9 +1,11 @@
 export class Sounds {
     public current_sound : HTMLAudioElement;
     public currentstate : boolean = false;
+    private time :  Number;
     constructor(volume : number){
         this.current_sound=new Audio('./sounds/alarm.mp3'); // Трек по умолчанию (нужен для уровня громкости)
         this.current_sound.volume=volume;
+        this.time = 0;
 
     }
     public changestatus(track : String,volume = 1){ // Вспомогательное для чекбокса
@@ -28,6 +30,13 @@ export class Sounds {
             })
     }
     public  play(track : String,volume = 1) { // Воспроизведение (до окончания трека)
+        if (this.time == this.current_sound.currentTime)
+        this.current_sound=new Audio('./sounds/'+track+'.mp3');
+        this.current_sound.volume=volume;
+        this.current_sound.play();
+        this.time = this.current_sound.currentTime
+    }
+    public  playimposition(track : String,volume = 1) { // Воспроизведение (до окончания трека)
         this.current_sound=new Audio('./sounds/'+track+'.mp3');
         this.current_sound.volume=volume;
         this.current_sound.play();

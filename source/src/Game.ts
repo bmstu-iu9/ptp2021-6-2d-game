@@ -194,7 +194,7 @@ export class Game {
         this.currentLevel.Grid = [];
         this.mimic = new Mimic(this);
         let backgroundsound = () => { // Чекбокс для воспроизведения фоновой мелодии (спасибо хрому блин https://developer.chrome.com/blog/autoplay/)
-            this.sounds.changestatus("game",0.02);
+            this.sounds.changestatus("game",0.2);
         }
         document.getElementById("backgroundsound").onclick = backgroundsound;
 
