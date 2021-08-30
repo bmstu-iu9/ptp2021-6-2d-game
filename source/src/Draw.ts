@@ -124,10 +124,10 @@ export class Draw {
             this.ctx.globalAlpha = transparency;
             this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y); // Без поворота (Много ресурсов на поворот уходит(даже на 0))
         } else {
-            var buffer = document.createElement('canvas'); // Поворот
+            let buffer = document.createElement('canvas'); // Поворот
             buffer.width = boxNew.x*2;
             buffer.height = boxNew.y*2;
-            var bctx = buffer.getContext('2d');
+            let bctx = buffer.getContext('2d');
             bctx.imageSmoothingEnabled = false;
             bctx.translate(boxNew.x, boxNew.y);
             bctx.rotate(angle);
@@ -185,7 +185,7 @@ export class Draw {
             // Деления
             bar.x = 2 / this.cam.scale;
             pos.x -= box.x / 2;
-            for (var i = 0; i < marks.length ; i++){
+            for (let i = 0; i < marks.length ; i++){
                 posNew = pos.clone();
                 posNew.x += box.x * marks[i];
                 this.fillRect(posNew, bar, backColor);
