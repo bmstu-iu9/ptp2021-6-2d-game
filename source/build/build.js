@@ -1449,36 +1449,44 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.lightSources = [];
             this.showLighting = false;
             this.Grid = [];
-            for (var x = 0; x < size.x; x++) {
+            for (var x = 0; x < 50; x++) {
                 this.Grid.push([]);
-                for (var y = 0; y < size.y; y++) {
+                for (var y = 0; y < 50; y++) {
                     this.Grid[x].push(new Tile_3.Tile());
                 }
             }
+            this.draw_x = size.x;
+            this.draw_y = size.y;
         }
+        Level.prototype.setNewDrawX = function (new_x) {
+            this.draw_x = new_x;
+        };
+        Level.prototype.setNewDrawY = function (new_y) {
+            this.draw_y = new_y;
+        };
         Level.prototype.gridCoordinates = function (pos) {
             pos = new geom.Vector(Math.floor(pos.x / this.tileSize), Math.floor(pos.y / this.tileSize));
             if (pos.x < 0)
                 pos.x = 0;
             if (pos.y < 0)
                 pos.y = 0;
-            if (pos.x >= this.Grid.length)
-                pos.x = this.Grid.length - 1;
-            if (pos.y >= this.Grid[0].length)
-                pos.y = this.Grid[0].length - 1;
+            if (pos.x >= this.draw_x)
+                pos.x = this.draw_x - 1;
+            if (pos.y >= this.draw_y)
+                pos.y = this.draw_y - 1;
             return pos;
         };
         Level.prototype.isInBounds = function (pos) {
             return pos.x > 0 &&
                 pos.y > 0 &&
-                pos.x < this.Grid.length * this.tileSize &&
-                pos.y < this.Grid[0].length * this.tileSize;
+                pos.x < this.draw_x * this.tileSize &&
+                pos.y < this.draw_y * this.tileSize;
         };
         Level.prototype.isCellInBounds = function (pos) {
             return pos.x >= 0 &&
                 pos.y >= 0 &&
-                pos.x < this.Grid.length &&
-                pos.y < this.Grid[0].length;
+                pos.x < this.draw_x &&
+                pos.y < this.draw_y;
         };
         Level.prototype.getTile = function (pos) {
             return this.Grid[pos.x][pos.y];
@@ -1488,7 +1496,14 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         };
         Level.prototype.serialize = function () {
             var newLevel;
-            newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
+            var newGrid = [];
+            for (var x = 0; x < this.draw_x; x++) {
+                newGrid.push([]);
+                for (var y = 0; y < this.draw_y; y++) {
+                    newGrid[x].push(this.Grid[y]);
+                }
+            }
+            newLevel = { Grid: newGrid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
             console.log(newLevel.Grid);
             PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
@@ -1507,8 +1522,8 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         };
         Level.prototype.display = function (draw, advanced) {
             if (advanced === void 0) { advanced = false; }
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++) {
+            for (var i = 0; i < this.draw_x; i++) {
+                for (var j = 0; j < this.draw_y; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
@@ -1523,8 +1538,8 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
         };
         Level.prototype.displayColisionGrid = function (draw) {
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++)
+            for (var i = 0; i < this.draw_x; i++) {
+                for (var j = 0; j < this.draw_y; j++)
                     if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
                         draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
                     }
@@ -1534,14 +1549,14 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             if (!this.showLighting) {
                 return;
             }
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++)
+            for (var i = 0; i < this.draw_x; i++) {
+                for (var j = 0; j < this.draw_y; j++)
                     draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 - j * 3098 + aux.getMilliCount()))));
             }
         };
         Level.prototype.generateLighting = function () {
-            for (var i = 0; i < this.Grid.length; i++)
-                for (var j = 0; j < this.Grid[i].length; j++)
+            for (var i = 0; i < this.draw_x; i++)
+                for (var j = 0; j < this.draw_y; j++)
                     this.Grid[i][j].light = 0;
             var queue = new Queue_1.Queue();
             var dirs = [
@@ -2087,8 +2102,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
                                 level.showLighting = true;
-                                level.makeLightSource(new geom.Vector(5, 5), 10);
-                                level.makeLightSource(new geom.Vector(0, 0), 10);
                                 level.generateLighting();
                                 Game.currentGame.levels[name] = level;
                             })];
@@ -3303,7 +3316,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
             var showcollision = function () {
-                _this.showCollisionGrid = !_this.showCollisionGrid;
+                var chboxxx = document.getElementById("showcolision");
+                _this.showCollisionGrid = chboxxx.checked;
                 var b = document.getElementById("button_col");
                 if (b["style"].backgroundColor == "lime") {
                     b["style"].backgroundColor = "red";
@@ -3314,7 +3328,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             };
             document.getElementById("showcolision").onclick = showcollision;
             var hidegrid = function () {
-                _this.hideGrid = !_this.hideGrid;
+                var chboxxx = document.getElementById("hidegrid");
+                _this.hideGrid = chboxxx.checked;
                 var b = document.getElementById("button_grid");
                 if (b["style"].backgroundColor == "red") {
                     b["style"].backgroundColor = "lime";
@@ -3323,19 +3338,20 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                     b["style"].backgroundColor = "red";
                 }
             };
-            document.getElementById("button_grid").onclick = hidegrid;
+            document.getElementById("hidegrid").onclick = hidegrid;
             var showlight = function () {
-                _this.level.showLighting = !_this.level.showLighting;
+                var chboxxx = document.getElementById("showShadows");
+                _this.level.showLighting = chboxxx.checked;
                 _this.level.generateLighting();
                 var b = document.getElementById("button_shadows");
-                if (b["style"].backgroundColor == "red") {
-                    b["style"].backgroundColor = "lime";
-                }
-                else {
+                if (b["style"].backgroundColor == "lime") {
                     b["style"].backgroundColor = "red";
                 }
+                else {
+                    b["style"].backgroundColor = "lime";
+                }
             };
-            document.getElementById("button_shadows").onclick = showlight;
+            document.getElementById("showShadows").onclick = showlight;
             for (var i = 0; i < 69; i++)
                 this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", Tile_6.CollisionType.Full, "");
             for (var i = 0; i < 64; i++)
@@ -3439,6 +3455,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.cursor.draw = this.draw;
         };
         Editor.prototype.step = function () {
+            var _this = this;
             if (this.cursor.selectedEntity == null) {
                 document.getElementById("palette6")["style"].display = "none";
                 document.getElementById("palette6")["style"].animationPlayState = "pause";
@@ -3453,6 +3470,14 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 document.getElementById("normalMode")["style"].display = "block";
                 document.getElementById("panicMode")["style"].display = "block";
             }
+            var range_x = document.getElementById("range_menu_x");
+            var range_y = document.getElementById("range_menu_y");
+            range_x.oninput = function () {
+                _this.level.setNewDrawX(range_x.valueAsNumber);
+            };
+            range_y.oninput = function () {
+                _this.level.setNewDrawY(range_y.valueAsNumber);
+            };
             this.moveCamera();
             this.cursor.step();
         };

@@ -123,15 +123,27 @@ export class Level {
     public tileSize = 1;
     public lightSources : LightSource[] = [];
     public showLighting = false;
+    public draw_x : number;
+    public draw_y : number;
 
     constructor(size = new geom.Vector(0, 0)) {
         this.Grid = [];
-        for (let x = 0; x < size.x; x++) {
+        for (let x = 0; x < 50; x++) {
             this.Grid.push([]);
-            for (let y = 0; y < size.y; y++) {
+            for (let y = 0; y < 50; y++) {
                 this.Grid[x].push(new Tile())
             }
         }
+        this.draw_x = size.x;
+        this.draw_y = size.y;
+    }
+
+    public setNewDrawX(new_x : number) {
+        this.draw_x = new_x;
+    }
+
+    public setNewDrawY(new_y : number) {
+        this.draw_y = new_y;
     }
 
 
@@ -144,8 +156,8 @@ export class Level {
         // Проверка на границы
         if (pos.x < 0) pos.x = 0;
         if (pos.y < 0) pos.y = 0;
-        if (pos.x >= this.Grid.length) pos.x = this.Grid.length - 1;
-        if (pos.y >= this.Grid[0].length) pos.y = this.Grid[0].length - 1;
+        if (pos.x >= this.draw_x) pos.x = this.draw_x - 1;
+        if (pos.y >= this.draw_y) pos.y = this.draw_y - 1;
         return pos;
     }
 
@@ -153,16 +165,16 @@ export class Level {
     public isInBounds(pos : geom.Vector) : boolean {
         return pos.x > 0 &&
             pos.y > 0 &&
-            pos.x < this.Grid.length * this.tileSize &&
-            pos.y < this.Grid[0].length * this.tileSize;
+            pos.x < this.draw_x * this.tileSize &&
+            pos.y < this.draw_y * this.tileSize;
     }
 
     // Проверяет, находится ли клетка в пределах карты
     public isCellInBounds(pos : geom.Vector) : boolean {
         return pos.x >= 0 &&
             pos.y >= 0 &&
-            pos.x < this.Grid.length &&
-            pos.y < this.Grid[0].length;
+            pos.x < this.draw_x &&
+            pos.y < this.draw_y;
     }
 
     // Возвращает тайл по координатам
@@ -178,7 +190,16 @@ export class Level {
     // Заворачивает в json
     public serialize() {
         let newLevel : LevelJSON;
-        newLevel = {Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
+
+        let newGrid = [];
+        for (let x = 0; x < this.draw_x; x++) {
+            newGrid.push([]);
+            for (let y = 0; y < this.draw_y; y++) {
+                newGrid[x].push(this.Grid[y]);
+            }
+        }
+
+        newLevel = {Grid: newGrid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
 
         console.log(newLevel.Grid);
         
@@ -207,10 +228,9 @@ export class Level {
 
     // Отрисовка
     public display(draw : Draw, advanced = false) {
-        for (let i = 0; i < this.Grid.length; i++) {
-            for (let j = 0; j < this.Grid[i].length; j++) {
+        for (let i = 0; i < this.draw_x; i++) {
+            for (let j = 0; j < this.draw_y; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
-                /**console.log(this.Grid)*/
                 draw.image(this.Grid[i][j].image, 
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
                     .add(size.mul(1 / 2)), size,0,0);
@@ -228,8 +248,8 @@ export class Level {
         }
     }
     public displayColisionGrid(draw : Draw){
-        for(let i = 0; i < this.Grid.length; i++){
-            for (let j = 0; j < this.Grid[i].length; j++)
+        for(let i = 0; i < this.draw_x; i++){
+            for (let j = 0; j < this.draw_y; j++)
             if (this.Grid[i][j].colision == CollisionType.Full) {
                 draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5*Math.sin(aux.getMilliCount()*0.005) + 0.5));
             }
@@ -240,8 +260,8 @@ export class Level {
         if (!this.showLighting) {
             return;
         }
-        for(let i = 0; i < this.Grid.length; i++){
-            for (let j = 0; j < this.Grid[i].length; j++)
+        for(let i = 0; i < this.draw_x; i++){
+            for (let j = 0; j < this.draw_y; j++)
                 draw.fillRect(
                     new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), 
                     new geom.Vector(1*this.tileSize, 1*this.tileSize), 
@@ -253,8 +273,8 @@ export class Level {
     // Построение освещения 
     public generateLighting() {
         // Очищаем освещение
-        for(let i = 0; i < this.Grid.length; i++)
-            for (let j = 0; j < this.Grid[i].length; j++)
+        for(let i = 0; i < this.draw_x; i++)
+            for (let j = 0; j < this.draw_y; j++)
                 this.Grid[i][j].light = 0;
         // Очередь для bfs
         let queue = new Queue();

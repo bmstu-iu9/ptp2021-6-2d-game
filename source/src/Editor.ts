@@ -247,7 +247,8 @@ export class Editor {
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
         let showcollision = () => {
-            this.showCollisionGrid = !this.showCollisionGrid;
+            let chboxxx = <HTMLInputElement> document.getElementById("showcolision");
+            this.showCollisionGrid = chboxxx.checked;
             let b = document.getElementById("button_col");
             if (b["style"].backgroundColor == "lime") {
                 b["style"].backgroundColor = "red";
@@ -257,7 +258,8 @@ export class Editor {
         }
         document.getElementById("showcolision").onclick = showcollision;
         let hidegrid = () => {
-            this.hideGrid = !this.hideGrid;
+            let chboxxx = <HTMLInputElement> document.getElementById("hidegrid");
+            this.hideGrid = chboxxx.checked;
             let b = document.getElementById("button_grid");
             if (b["style"].backgroundColor == "red") {
                 b["style"].backgroundColor = "lime";
@@ -265,18 +267,19 @@ export class Editor {
                 b["style"].backgroundColor = "red";
             }
         }
-        document.getElementById("button_grid").onclick = hidegrid;
+        document.getElementById("hidegrid").onclick = hidegrid;
         let showlight = () => {
-            this.level.showLighting = !this.level.showLighting;
+            let chboxxx = <HTMLInputElement> document.getElementById("showShadows");
+            this.level.showLighting = chboxxx.checked;
             this.level.generateLighting();
             let b = document.getElementById("button_shadows");
-            if (b["style"].backgroundColor == "red") {
-                b["style"].backgroundColor = "lime";
-            } else {
+            if (b["style"].backgroundColor == "lime") {
                 b["style"].backgroundColor = "red";
+            } else {
+                b["style"].backgroundColor = "lime";
             }
         }
-        document.getElementById("button_shadows").onclick = showlight;
+        document.getElementById("showShadows").onclick = showlight;
         // Создание кнопок для тайлов
         for (let i = 0; i < 69; i++)
             this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
@@ -440,6 +443,15 @@ export class Editor {
             document.getElementById("w6")["style"].display = "block";
             document.getElementById("normalMode")["style"].display = "block";
             document.getElementById("panicMode")["style"].display = "block";
+        }
+
+        let range_x = <HTMLInputElement> document.getElementById("range_menu_x");
+        let range_y = <HTMLInputElement> document.getElementById("range_menu_y");
+        range_x.oninput = () => {
+            this.level.setNewDrawX(range_x.valueAsNumber);
+        }
+        range_y.oninput = () => {
+            this.level.setNewDrawY(range_y.valueAsNumber);
         }
 
         this.moveCamera();

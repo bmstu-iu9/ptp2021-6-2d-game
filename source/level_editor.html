@@ -15,6 +15,7 @@
     .panicButton,
     .listOfPads,
     .overed_text,
+    .range_menu,
     .palettes_text {
         position: absolute
     }
@@ -312,6 +313,15 @@
         border: 2px solid black;
     }
 
+    .range_menu {
+        top: 0px;
+        right: 410px;
+        background-color: darkgray;
+        border-radius: 4px;
+        border: 2px solid black;
+        width: 135px;
+    }
+
     .standart_text {
         text-align: center;
     }
@@ -428,6 +438,26 @@
         <canvas id="preview" class="prevCanvass"></canvas>
 
         <button id="generate" class="buttonGen"> Generate </button>
+    </div>
+
+    <div class="range_menu">
+        <div class="standart_text">
+            Columns:
+        </div>
+        <input id="range_menu_x" type="range" min=10 max=50 step=1 value=10 list="tickmarks">
+        <div class="standart_text">
+            Rows:
+        </div>
+        <input id="range_menu_y" type="range" min=10 max=50 step=1 value=10 list="tickmarks">
+
+        <datalist id="tickmarks">
+          <option value="10">
+          <option value="20">
+          <option value="30">
+          <option value="40">
+          <option value="50">
+        </datalist>
+
     </div>
 
     <!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
