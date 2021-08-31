@@ -7,7 +7,7 @@ import { Control, Keys } from "./Control";
 import { Draw, Color } from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
-import { Level } from "./Level";
+import { Level, LightSource } from "./Level";
 import { Trigger } from "./Trigger";
 import { Debug } from "./Debug";
 import { Scientist } from "./Entities/Scientist";
@@ -39,87 +39,87 @@ export class Game {
         return text;
     }
 
-    public static replacer(key, value) { // функция замены классов для преобразования в JSON
-        if (value instanceof Map) { // упаковка Map
-            let val: any;
-            if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
+    // public static replacer(key, value) { // функция замены классов для преобразования в JSON
+    //     if (value instanceof Map) { // упаковка Map
+    //         let val: any;
+    //         if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
 
-                let keys = value.get("JSONkeys");
-                console.log("JSONkeys", keys);
-                let remapping = new Map();
-                for (let i = 0; i < keys.length; i++) {
-                    remapping.set(keys[i], value[keys[i]]);
-                }
-                val = Array.from(remapping.entries());
-            } else {
-                val = Array.from(value.entries());
-            }
-            console.log(val);
+    //             let keys = value.get("JSONkeys");
+    //             console.log("JSONkeys", keys);
+    //             let remapping = new Map();
+    //             for (let i = 0; i < keys.length; i++) {
+    //                 remapping.set(keys[i], value[keys[i]]);
+    //             }
+    //             val = Array.from(remapping.entries());
+    //         } else {
+    //             val = Array.from(value.entries());
+    //         }
+    //         console.log(val);
 
-            return {
-                dataType: 'Map',
-                value: val, // or with spread: value: [...value]
-            };
-        }
-        if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
-            // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
-            let name = value.src;
-            let nameSplit = name.split("/");
-            let lastSplit = nameSplit[nameSplit.length - 1];
+    //         return {
+    //             dataType: 'Map',
+    //             value: val, // or with spread: value: [...value]
+    //         };
+    //     }
+    //     if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
+    //         // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
+    //         let name = value.src;
+    //         let nameSplit = name.split("/");
+    //         let lastSplit = nameSplit[nameSplit.length - 1];
 
-            return {
-                dataType: 'HTMLImageElement',
-                value: lastSplit
-            };
-        }
-        if (value instanceof geom.Vector) { // упаковка Vector
-            return {
-                dataType: 'Vector',
-                x: value.x,
-                y: value.y
-            };
-        }
-        if (value instanceof Soldier) {
-            return {
-                dataType: 'Soldier',
-                center: value.body.center,
-                behaviorModel: value.behaviorModel
-            }
-        }
-        if (value instanceof Scientist) {
-            return {
-                dataType: 'Scientist',
-                center: value.body.center,
-                behaviorModel: value.behaviorModel
-            }
-        }
-        if (value instanceof Monster) {
-            return {
-                dataType: 'Monster',
-                center: value.body.center
-            }
-        }
-        if (value instanceof StationaryObject) {
-            return {
-                dataType: 'StationaryObject',
-                center: value.body.center,
-            }
-        }
-        if (value instanceof BehaviorModel) {
-            return {
-                dataType: 'BehaviorModel',
-                instructions: value.instructions
-            }
-        }
-        if (value instanceof Instruction) {
-            return {
-                dataType: 'Instruction',
-                operations: value.operations,
-                operationsData: value.operationsData
-            }
-        }
-        return value;
-    }
+    //         return {
+    //             dataType: 'HTMLImageElement',
+    //             value: lastSplit
+    //         };
+    //     }
+    //     if (value instanceof geom.Vector) { // упаковка Vector
+    //         return {
+    //             dataType: 'Vector',
+    //             x: value.x,
+    //             y: value.y
+    //         };
+    //     }
+    //     if (value instanceof Soldier) {
+    //         return {
+    //             dataType: 'Soldier',
+    //             center: value.body.center,
+    //             behaviorModel: value.behaviorModel
+    //         }
+    //     }
+    //     if (value instanceof Scientist) {
+    //         return {
+    //             dataType: 'Scientist',
+    //             center: value.body.center,
+    //             behaviorModel: value.behaviorModel
+    //         }
+    //     }
+    //     if (value instanceof Monster) {
+    //         return {
+    //             dataType: 'Monster',
+    //             center: value.body.center
+    //         }
+    //     }
+    //     if (value instanceof StationaryObject) {
+    //         return {
+    //             dataType: 'StationaryObject',
+    //             center: value.body.center,
+    //         }
+    //     }
+    //     if (value instanceof BehaviorModel) {
+    //         return {
+    //             dataType: 'BehaviorModel',
+    //             instructions: value.instructions
+    //         }
+    //     }
+    //     if (value instanceof Instruction) {
+    //         return {
+    //             dataType: 'Instruction',
+    //             operations: value.operations,
+    //             operationsData: value.operationsData
+    //         }
+    //     }
+    //     return value;
+    // }
 
     public static reviver(key, value) { // функция обратной замены классов для преобразования из JSON
 
@@ -136,7 +136,8 @@ export class Game {
             if (value.dataType == 'Soldier') {
                 let soldier = Game.currentGame.makeSoldier(value.center) as Soldier;
                 soldier.behaviorModel = new BehaviorModel(soldier.myAI);
-                soldier.behaviorModel = value.behaviorModel.instructions;
+                soldier.behaviorModel = value.behaviorModel;
+                soldier.behaviorModel.myAI = soldier.myAI;
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
@@ -169,6 +170,10 @@ export class Game {
                 //console.log("Instruction", value);
                 return instruction;
             }
+            if (value.dataType == 'LightSource') {
+                let light = new LightSource(value.pos, value.power);
+                return;
+            }
         }
         return value;
     }
@@ -185,7 +190,6 @@ export class Game {
                 level.showLighting = true;
                 // level.makeLightSource(new geom.Vector(5, 5), 10);
                 // level.makeLightSource(new geom.Vector(0, 0), 10);
-                level.generateLighting();
                 Game.currentGame.levels[name] = level;
             });
     }
@@ -197,7 +201,6 @@ export class Game {
         this.currentLevel.Grid = [];
         this.mimic = new Mimic(this);
     }
-
 
     public makeBody(coordinates: geom.Vector, radius: number): Body { // создаёт тело и возвращает ссылку
         let body = new Body(coordinates, radius);
@@ -278,10 +281,11 @@ export class Game {
     public step() {
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
-            this.currentLevel = this.levels[this.currentLevelName];
+                this.currentLevel = this.levels[this.currentLevelName];
             //this.entities = this.currentLevel.Entities;
         }
 
+        this.currentLevel.generateLighting();
         this.mimic.step();
         this.attachCamToMimic();
         // Processing entities

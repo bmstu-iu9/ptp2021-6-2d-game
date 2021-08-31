@@ -38,18 +38,18 @@ let t = 0;
 function step() {
     if (game.levels["map"] != undefined) {
         t++;
-        if (x == false) {
-            console.log(game.entities[1]);
+        // if (x == false) {
+        //     console.log(game.entities[1]);
             
-            let person = game.entities[1] as Scientist;
-            person.behaviorModel.changeCurrentInstruction("normal"); 
-            //console.log(Game.levels["map"]);
+        //     let person = game.entities[1] as Scientist;
+        //     person.behaviorModel.changeCurrentInstruction("normal"); 
+        //     //console.log(Game.levels["map"]);
             
-            //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-            //game.makeTrigger(100000000, game.entities[1]);
-            console.log(game.levels["map"].PathMatrix); 
-            x = true;
-        }
+        //     //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
+        //     //game.makeTrigger(100000000, game.entities[1]);
+        //     console.log(game.levels["map"].PathMatrix); 
+        //     x = true;
+        // }
         if (t % 100 == 0) {
             console.log(game.entities);
             //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
