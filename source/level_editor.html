@@ -8,6 +8,8 @@
     .layer5,
     .layer6,
     .layer7,
+    #w8,
+    .layer8,
     .window6,
     .normalButton,
     .changeMode,
@@ -15,6 +17,7 @@
     .panicButton,
     .listOfPads,
     .overed_text,
+    .range_menu,
     .palettes_text {
         position: absolute
     }
@@ -187,6 +190,7 @@
     }
 
     .layer4 {
+        overflow-y: auto;
         /*overflow-y: scroll; */
         background: url(textures/Editor/metal_dark.png) center repeat;
         width: 54px;
@@ -197,6 +201,7 @@
     }
 
     .layer5 {
+        overflow-y: auto;
         background: url(textures/Editor/metal_dark.png) center repeat;
         width: 54px;
         padding: 2px;
@@ -219,12 +224,21 @@
     }
 
     .layer7 {
+        overflow-y: auto;
         background: url(textures/Editor/metal_dark.png) left repeat;
-        width: 260px;
         width: 54px;
         padding: 2px;
         /*border: solid 1px black;*/
         right: 320px;
+        border-radius: 4px;
+    }
+
+    .layer8 {
+        overflow-y: auto;
+        background: url(textures/Editor/metal_dark.png) left repeat;
+        width: 150px;
+        padding: 2px;
+        right: 410px;
         border-radius: 4px;
     }
 
@@ -312,6 +326,44 @@
         border: 2px solid black;
     }
 
+    .range_menu {
+        bottom: 25px;
+        background-color: darkgray;
+        border-radius: 4px;
+        border: 2px solid black;
+        /*width: 135px;*/
+    }
+    
+    .range_state {
+        display: inline-block;
+        width: 20px;
+        height: 150px;
+        padding: 0;
+    }
+
+    .range_state input {
+        width: 150px;
+        height: 20px;
+        margin: 0;
+        transform-origin: 75px 75px;
+        transform: rotate(-90deg);
+    }
+
+    .range_text {
+        display: inline-block;
+        width: 15px;
+        height: 150px;
+        padding: 0;
+    }
+
+    .range_text div {
+        width: 150px;
+        height: 15px;
+        margin: 0;
+        transform-origin: 75px 75px;
+        transform: rotate(-90deg);
+    }
+
     .standart_text {
         text-align: center;
     }
@@ -323,6 +375,15 @@
         border-radius: 4px;
         width: 59px;
         right: 319px;
+    }
+
+    #w8 {
+        text-align: center;
+        background-color: rgb(236, 247, 134);
+        border: solid 2px black;
+        border-radius: 4px;
+        width: 150px;
+        right: 410px;
     }
 
     .palettes_text {
@@ -378,6 +439,61 @@
         border-bottom-right-radius: 4px;
         border-top-right-radius: 4px;
     }
+
+    .layer7::-webkit-scrollbar {
+        width: 5px;
+        background-color: #8a8a8a;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer7::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer7::-webkit-scrollbar-track {
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer5::-webkit-scrollbar {
+        width: 5px;
+        background-color: #8a8a8a;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer5::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer5::-webkit-scrollbar-track {
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer4::-webkit-scrollbar {
+        width: 5px;
+        background-color: #8a8a8a;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer4::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer4::-webkit-scrollbar-track {
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
     .anim_in {
         animation-duration: 1s;
         animation-timing-function: ease-in;
@@ -428,6 +544,34 @@
         <canvas id="preview" class="prevCanvass"></canvas>
 
         <button id="generate" class="buttonGen"> Generate </button>
+    </div>
+
+    <div id="range_menu" class="range_menu">
+        <div class="range_text">
+            <div class="standart_text">
+                Columns:
+            </div>
+        </div>
+        <div class="range_state">
+            <input id="range_menu_x" type="range" min=10 max=50 step=1 value=10 list="tickmarks">
+        </div>
+        <div class="range_text">
+            <div class="standart_text">
+                Rows:
+            </div>
+        </div>
+        <div class="range_state">
+            <input id="range_menu_y" type="range" min=10 max=50 step=1 value=10 list="tickmarks">
+        </div>
+
+        <datalist id="tickmarks">
+          <option value="10">
+          <option value="20">
+          <option value="30">
+          <option value="40">
+          <option value="50">
+        </datalist>
+
     </div>
 
     <!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
@@ -482,6 +626,12 @@
         <div id="palette6" class="layer6 anim_in">
             <!-- Палитра команд -->
             <ul id="mainListPads" class="listOfPads"></ul>
+        </div>
+        <div id="w8">
+            <b>Interior Kits:</b>
+        </div>
+        <div id="palette8" class="layer8">
+            <!-- Палитра курсоров -->
         </div>
         <button id="normalMode" class="normalButton">Normal</button>
         <button id="panicMode" class="normalButton">Panic</button>

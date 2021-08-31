@@ -247,7 +247,8 @@ export class Editor {
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
         let showcollision = () => {
-            this.showCollisionGrid = !this.showCollisionGrid;
+            let chboxxx = <HTMLInputElement> document.getElementById("showcolision");
+            this.showCollisionGrid = chboxxx.checked;
             let b = document.getElementById("button_col");
             if (b["style"].backgroundColor == "lime") {
                 b["style"].backgroundColor = "red";
@@ -257,7 +258,8 @@ export class Editor {
         }
         document.getElementById("showcolision").onclick = showcollision;
         let hidegrid = () => {
-            this.hideGrid = !this.hideGrid;
+            let chboxxx = <HTMLInputElement> document.getElementById("hidegrid");
+            this.hideGrid = chboxxx.checked;
             let b = document.getElementById("button_grid");
             if (b["style"].backgroundColor == "red") {
                 b["style"].backgroundColor = "lime";
@@ -265,18 +267,19 @@ export class Editor {
                 b["style"].backgroundColor = "red";
             }
         }
-        document.getElementById("button_grid").onclick = hidegrid;
+        document.getElementById("hidegrid").onclick = hidegrid;
         let showlight = () => {
-            this.level.showLighting = !this.level.showLighting;
+            let chboxxx = <HTMLInputElement> document.getElementById("showShadows");
+            this.level.showLighting = chboxxx.checked;
             this.level.generateLighting();
             let b = document.getElementById("button_shadows");
-            if (b["style"].backgroundColor == "red") {
-                b["style"].backgroundColor = "lime";
-            } else {
+            if (b["style"].backgroundColor == "lime") {
                 b["style"].backgroundColor = "red";
+            } else {
+                b["style"].backgroundColor = "lime";
             }
         }
-        document.getElementById("button_shadows").onclick = showlight;
+        document.getElementById("showShadows").onclick = showlight;
         // Создание кнопок для тайлов
         for (let i = 0; i < 69; i++)
             this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", CollisionType.Full, "");
@@ -310,6 +313,7 @@ export class Editor {
         document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
         document.getElementById("palette7")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
+        document.getElementById("palette8")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
 
         document.getElementById("palette")["style"].top = "24px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
@@ -318,8 +322,9 @@ export class Editor {
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette7")["style"].top = "24px";
+        document.getElementById("palette8")["style"].top = "24px";
 
-
+        document.getElementById("w8")["style"].top = "0px";
         document.getElementById("w7")["style"].top = "0px";
         document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
@@ -346,6 +351,7 @@ export class Editor {
         document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 15 + "px";*/
 
         document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
+        document.getElementById("range_menu")["style"].left = window.innerHeight - 20 + "px";
 
 
         let normal = () => {
@@ -440,6 +446,15 @@ export class Editor {
             document.getElementById("w6")["style"].display = "block";
             document.getElementById("normalMode")["style"].display = "block";
             document.getElementById("panicMode")["style"].display = "block";
+        }
+
+        let range_x = <HTMLInputElement> document.getElementById("range_menu_x");
+        let range_y = <HTMLInputElement> document.getElementById("range_menu_y");
+        range_x.oninput = () => {
+            this.level.setNewDrawX(range_x.valueAsNumber);
+        }
+        range_y.oninput = () => {
+            this.level.setNewDrawY(range_y.valueAsNumber);
         }
 
         this.moveCamera();
