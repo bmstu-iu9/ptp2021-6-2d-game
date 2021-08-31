@@ -2089,15 +2089,14 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 if (value.dataType == 'Soldier') {
                     var soldier = Game.currentGame.makeSoldier(value.center);
                     soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-                    soldier.behaviorModel = value.behaviorModel.instructions;
+                    soldier.behaviorModel.instructions = value.behaviorModel.instructions;
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
                     console.log("loading scientist");
                     var scientist = Game.currentGame.makeScientist(value.center);
                     scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
-                    scientist.behaviorModel = value.behaviorModel;
-                    scientist.behaviorModel.myAI = scientist.myAI;
+                    scientist.behaviorModel.instructions = value.behaviorModel.instructions;
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
