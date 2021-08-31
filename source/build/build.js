@@ -2046,7 +2046,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
                 if (value.dataType == 'LightSource') {
                     var light = new Level_1.LightSource(value.pos, value.power);
-                    return;
+                    return light;
                 }
             }
             return value;

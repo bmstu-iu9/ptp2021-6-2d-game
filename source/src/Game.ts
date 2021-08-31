@@ -172,7 +172,7 @@ export class Game {
             }
             if (value.dataType == 'LightSource') {
                 let light = new LightSource(value.pos, value.power);
-                return;
+                return light;
             }
         }
         return value;
