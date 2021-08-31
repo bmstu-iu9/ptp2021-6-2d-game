@@ -13,6 +13,7 @@ import * as aux from "./AuxLib";
 import { Queue } from "./Queue";
 import { Random } from "./Random";
 import { Game } from "./Game";
+import { Person } from "./Entities/Person";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
@@ -93,6 +94,13 @@ function replacer(key, value) { // функция замены классов д
             operationsData: value.operationsData
         }
     }
+    if (value instanceof LightSource) {
+        return {
+            dataType: 'LightSource',
+            pos: value.pos,
+            power: value.power
+        }
+    } 
     return value;
 }
 

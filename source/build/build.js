@@ -1424,6 +1424,13 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 operationsData: value.operationsData
             };
         }
+        if (value instanceof LightSource) {
+            return {
+                dataType: 'LightSource',
+                pos: value.pos,
+                power: value.power
+            };
+        }
         return value;
     }
     var LevelJSON = (function () {
@@ -1992,84 +1999,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 });
             });
         };
-        Game.replacer = function (key, value) {
-            if (value instanceof Map) {
-                var val = void 0;
-                if (value.get("JSONkeys") != undefined) {
-                    var keys = value.get("JSONkeys");
-                    console.log("JSONkeys", keys);
-                    var remapping = new Map();
-                    for (var i = 0; i < keys.length; i++) {
-                        remapping.set(keys[i], value[keys[i]]);
-                    }
-                    val = Array.from(remapping.entries());
-                }
-                else {
-                    val = Array.from(value.entries());
-                }
-                console.log(val);
-                return {
-                    dataType: 'Map',
-                    value: val,
-                };
-            }
-            if (value instanceof HTMLImageElement) {
-                var name_2 = value.src;
-                var nameSplit = name_2.split("/");
-                var lastSplit = nameSplit[nameSplit.length - 1];
-                return {
-                    dataType: 'HTMLImageElement',
-                    value: lastSplit
-                };
-            }
-            if (value instanceof geom.Vector) {
-                return {
-                    dataType: 'Vector',
-                    x: value.x,
-                    y: value.y
-                };
-            }
-            if (value instanceof Soldier_2.Soldier) {
-                return {
-                    dataType: 'Soldier',
-                    center: value.body.center,
-                    behaviorModel: value.behaviorModel
-                };
-            }
-            if (value instanceof Scientist_2.Scientist) {
-                return {
-                    dataType: 'Scientist',
-                    center: value.body.center,
-                    behaviorModel: value.behaviorModel
-                };
-            }
-            if (value instanceof Monster_4.Monster) {
-                return {
-                    dataType: 'Monster',
-                    center: value.body.center
-                };
-            }
-            if (value instanceof StationaryObject_3.StationaryObject) {
-                return {
-                    dataType: 'StationaryObject',
-                    center: value.body.center,
-                };
-            }
-            if (value instanceof BehaviorModel_3.BehaviorModel) {
-                return {
-                    dataType: 'BehaviorModel',
-                    instructions: value.instructions
-                };
-            }
-            if (value instanceof BehaviorModel_3.Instruction) {
-                return {
-                    dataType: 'Instruction',
-                    operations: value.operations,
-                    operationsData: value.operationsData
-                };
-            }
-            return value;
-        };
         Game.reviver = function (key, value) {
             if (typeof value === 'object' && value !== null) {
                 if (value.dataType === 'Map') {
@@ -2084,7 +2013,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 if (value.dataType == 'Soldier') {
                     var soldier = Game.currentGame.makeSoldier(value.center);
                     soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-                    soldier.behaviorModel = value.behaviorModel.instructions;
+                    soldier.behaviorModel = value.behaviorModel;
+                    soldier.behaviorModel.myAI = soldier.myAI;
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
@@ -2114,6 +2044,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     instruction.operationsData = value.operationsData;
                     return instruction;
                 }
+                if (value.dataType == 'LightSource') {
+                    var light = new Level_1.LightSource(value.pos, value.power);
+                    return;
+                }
             }
             return value;
         };
@@ -2131,7 +2065,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
                                 level.showLighting = true;
-                                level.generateLighting();
                                 Game.currentGame.levels[name] = level;
                             })];
                         case 1:
@@ -2210,6 +2143,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
             }
+            this.currentLevel.generateLighting();
             this.mimic.step();
             this.attachCamToMimic();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
@@ -2640,8 +2574,8 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
             };
         }
         if (value instanceof HTMLImageElement) {
-            var name_3 = value.src;
-            var nameSplit = name_3.split("/");
+            var name_2 = value.src;
+            var nameSplit = name_2.split("/");
             var lastSplit = nameSplit[nameSplit.length - 1];
             return {
                 dataType: 'HTMLImageElement',
@@ -3568,13 +3502,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     function step() {
         if (game.levels["map"] != undefined) {
             t++;
-            if (x == false) {
-                console.log(game.entities[1]);
-                var person = game.entities[1];
-                person.behaviorModel.changeCurrentInstruction("normal");
-                console.log(game.levels["map"].PathMatrix);
-                x = true;
-            }
             if (t % 100 == 0) {
                 console.log(game.entities);
             }
