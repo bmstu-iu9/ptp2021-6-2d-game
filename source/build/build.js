@@ -1343,7 +1343,7 @@ define("Queue", ["require", "exports"], function (require, exports) {
     }());
     exports.Queue = Queue;
 });
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue"], function (require, exports, Tile_3, geom, Draw_8, PathGenerator_1, Soldier_1, Scientist_1, Monster_2, StationaryObject_2, BehaviorModel_2, aux, Queue_1) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue", "Random", "Game"], function (require, exports, Tile_3, geom, Draw_8, PathGenerator_1, Soldier_1, Scientist_1, Monster_2, StationaryObject_2, BehaviorModel_2, aux, Queue_1, Random_2, Game_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LightSource = exports.LevelJSON = void 0;
@@ -1433,9 +1433,37 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
     exports.LevelJSON = LevelJSON;
     var LightSource = (function () {
         function LightSource(pos, power) {
+            this.enableFlickering = true;
+            this.time = 0;
+            this.amplitude = 0.1;
+            this.frequency = 1;
+            this.offPeriod = 5;
+            this.offTiming = 0.04;
+            this.timeOff = 0;
+            this.offCount = 0;
             this.pos = pos;
-            this.power = power;
+            this.basePower = this.power = power;
+            this.frequency = Random_2.Random.randomFloat(1, 2);
         }
+        LightSource.prototype.step = function () {
+            this.time += Game_5.Game.dt;
+            this.timeOff -= Game_5.Game.dt;
+            if (!this.enableFlickering) {
+                this.power = this.basePower;
+                return;
+            }
+            this.power = this.basePower + Math.sin(this.time * Math.PI * this.frequency) * this.amplitude;
+            if (Random_2.Random.randomFloat(0, this.offPeriod) < Game_5.Game.dt) {
+                this.timeOff = this.offTiming;
+                this.offCount = Random_2.Random.randomInt(1, 5);
+            }
+            if (this.timeOff > 0 && this.offCount)
+                this.power = this.power * 0.9;
+            if (this.timeOff < -this.offTiming && this.offCount) {
+                this.offCount--;
+                this.timeOff = this.offTiming;
+            }
+        };
         return LightSource;
     }());
     exports.LightSource = LightSource;
@@ -1531,10 +1559,21 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
         };
         Level.prototype.displayLighting = function (draw) {
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++)
-                    draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 0, 0, 1 - this.Grid[i][j].light / 10 + 0.02 * Math.sin(0.003 * (i * 6067 - j * 3098 + aux.getMilliCount()))));
+            var cellSize = 1;
+            var buffer = document.createElement('canvas');
+            buffer.width = this.Grid.length * cellSize;
+            buffer.height = this.Grid[0].length * cellSize;
+            var imgCtx = buffer.getContext('2d');
+            for (var x = 0; x < this.Grid.length; x++) {
+                for (var y = 0; y < this.Grid[x].length; y++) {
+                    var alpha = 1 - this.Grid[x][y].light / 10;
+                    imgCtx.fillStyle = new Draw_8.Color(0, 0, 0, alpha).toString();
+                    imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
             }
+            draw.ctx.imageSmoothingEnabled = true;
+            var box = new geom.Vector(this.Grid.length, this.Grid[0].length);
+            draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
         };
         Level.prototype.generateLighting = function () {
             for (var i = 0; i < this.Grid.length; i++)
@@ -1566,6 +1605,10 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     queue.push(posNext);
                 }
             }
+        };
+        Level.prototype.processLighting = function () {
+            this.lightSources.forEach(function (lightSource) { return lightSource.step(); });
+            this.generateLighting();
         };
         return Level;
     }());
@@ -1773,7 +1816,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
     }(Projectile_2.Projectile));
     exports.Biomass = Biomass;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass"], function (require, exports, Game_5, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
@@ -1790,7 +1833,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.dir = coords.sub(this.mimic.controlledEntity.body.center).norm();
             if (Control_1.Control.isMouseLeftPressed()) {
                 if (this.charge < this.chargeMax) {
-                    this.charge += Game_5.Game.dt * this.chargeMax / this.chargingTime;
+                    this.charge += Game_6.Game.dt * this.chargeMax / this.chargingTime;
                 }
             }
             else
@@ -1846,7 +1889,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.controlledEntity.commands = Control_1.Control.commands;
             if ((this.controlledEntity instanceof Person_4.Person) && !(this.controlledEntity instanceof Monster_3.Monster)) {
                 var person = this.controlledEntity;
-                person.hp -= Game_5.Game.dt;
+                person.hp -= Game_6.Game.dt;
                 if (person.hp < 0) {
                     this.escape();
                 }
@@ -1882,7 +1925,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
     }());
     exports.Mimic = Mimic;
 });
-define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_6) {
+define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Trigger = void 0;
@@ -1895,7 +1938,7 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
             this.triggeredEntities = new Map();
         }
         Trigger.prototype.step = function () {
-            this.timeLeft -= Game_6.Game.dt;
+            this.timeLeft -= Game_7.Game.dt;
             if (this.timeLeft <= 0 || !this.boundEntity.alive)
                 this.active = false;
         };
@@ -2094,6 +2137,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                     var prototype = JSON.parse(result, _this.reviver);
                                     var level = new Level_1.Level();
                                     level.createFromPrototype(prototype);
+                                    level.showLighting = true;
+                                    level.makeLightSource(new geom.Vector(0, 0), 10);
+                                    level.makeLightSource(new geom.Vector(5, 5), 10);
+                                    level.generateLighting();
                                     Game.currentGame.levels[name] = level;
                                 })];
                         case 1:
@@ -2197,6 +2244,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.triggers.forEach(function (trigger) { return trigger.step(); });
             this.processEntities();
             this.processTriggers();
+            this.currentLevel.processLighting();
         };
         Game.prototype.attachCamToMimic = function () {
             this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
@@ -2250,7 +2298,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     }());
     exports.Game = Game;
 });
-define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_12, Game_7) {
+define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_12, Game_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpriteAnimation = exports.AnimationState = void 0;
@@ -2285,7 +2333,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
             return this.frames[frameNumber];
         };
         SpriteAnimation.prototype.step = function () {
-            this.time += Game_7.Game.dt;
+            this.time += Game_8.Game.dt;
         };
         SpriteAnimation.prototype.isOver = function () {
             return this.time > this.duration;
@@ -2419,6 +2467,28 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
                 var curqueue = { image: image, pos: pos, box: box, angle: angle, layer: layer, transparency: transparency };
                 this.imagequeue.push(curqueue);
             }
+        };
+        Draw.prototype.displayBuffer = function (image, pos, box, angle, transparency) {
+            var posNew = this.transform(pos);
+            var boxNew = box.mul(this.cam.scale * 1.01);
+            posNew = posNew.sub(boxNew.mul(1 / 2));
+            if (angle % (2 * Math.PI) == 0) {
+                this.ctx.globalAlpha = transparency;
+                this.ctx.drawImage(image, posNew.x, posNew.y, boxNew.x, boxNew.y);
+            }
+            else {
+                var buffer = document.createElement('canvas');
+                buffer.width = boxNew.x * 2;
+                buffer.height = boxNew.y * 2;
+                var bctx = buffer.getContext('2d');
+                bctx.imageSmoothingEnabled = false;
+                bctx.translate(boxNew.x, boxNew.y);
+                bctx.rotate(angle);
+                bctx.drawImage(image, -boxNew.x / 2, -boxNew.y / 2, boxNew.x, boxNew.y);
+                this.ctx.globalAlpha = transparency;
+                this.ctx.drawImage(buffer, posNew.x - boxNew.x / 2, posNew.y - boxNew.y / 2);
+            }
+            this.ctx.globalAlpha = 1;
         };
         Draw.prototype.getimage = function () {
             if (this.imagequeue.length > 0) {
@@ -3403,10 +3473,10 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_8, Editor_1) {
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_9, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("http://127.0.0.1:4500/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
@@ -3414,10 +3484,10 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     canvas.height = window.innerHeight;
     var draw = new Draw_17.Draw(canvas);
     draw.cam.scale = 10;
-    var game = new Game_8.Game(draw);
+    var game = new Game_9.Game(draw);
     game.levels = new Map();
-    Game_8.Game.currentGame = game;
-    Game_8.Game.loadMap("map.json", "map");
+    Game_9.Game.currentGame = game;
+    Game_9.Game.loadMap("map.json", "map");
     game.makeSoldier(new geom.Vector(1, 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
@@ -3452,6 +3522,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         setInterval(editorStep, 20);
     }
     else
-        setInterval(step, Game_8.Game.dt * 1000);
+        setInterval(step, Game_9.Game.dt * 1000);
 });
 //# sourceMappingURL=build.js.map
