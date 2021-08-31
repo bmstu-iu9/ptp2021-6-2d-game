@@ -223,7 +223,7 @@ export class Level {
     // Заворачивает в json
     public serialize() {
         let newLevel: LevelJSON;
-        newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map(), Lights: this.lightSources };
+        newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], Lights: this.lightSources, PathMatrix: new Map() };
 
         console.log(newLevel.Grid);
 
