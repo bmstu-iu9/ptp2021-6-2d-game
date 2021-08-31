@@ -156,7 +156,7 @@ export class Game {
                 return stationaryObject;
             }
             if (value.dataType == 'BehaviorModel') {
-                console.log("beh mod");
+                //console.log("beh mod");
                 
                 let behaviorModel = new BehaviorModel(null);
                 behaviorModel.instructions = value.instructions;
@@ -290,6 +290,7 @@ export class Game {
         this.triggers.forEach(trigger => trigger.step());
         this.processEntities();
         this.processTriggers();
+        this.currentLevel.processLighting();
     }
 
     public attachCamToMimic() {

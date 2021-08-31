@@ -136,6 +136,7 @@ export class AI {
 
     // функция, определяющая когда активируется персонаж(чтобы сбросить время ожидания вызвать wait(0))
     public wait(milliseconds : number) {
+        this.stop();
         this.activationTime = aux.getMilliCount() + milliseconds;
     }
 
