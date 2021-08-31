@@ -2255,6 +2255,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             if (this.currentLevel.showLighting)
                 this.currentLevel.displayLighting(this.draw);
             this.draw.step();
+            Debug_3.Debug.drawPoints(this);
             Debug_3.Debug.clear();
         };
         Game.dt = 0.02;
@@ -3437,16 +3438,99 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_9, Editor_1) {
+define("RayCasting", ["require", "exports", "Debug", "Draw", "Geom"], function (require, exports, Debug_4, Draw_17, Geom_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:4500/");
+    exports.Ray = void 0;
+    var Ray = (function () {
+        function Ray() {
+        }
+        Ray.isBetween = function (begin, middle, end) {
+            return ((begin + Geom_6.eps > middle && middle + Geom_6.eps > end) ||
+                (begin - Geom_6.eps < middle && middle - Geom_6.eps < end));
+        };
+        Ray.pointGenerator = function (begin, end) {
+            var angle = end.sub(begin).getAngle(new Geom_6.Vector(1, 0));
+            var stepVec = new Geom_6.Vector(Math.cos(angle), Math.sin(angle));
+            var xPoints = [];
+            xPoints[0] = begin.clone();
+            if (!this.isBetween(-Geom_6.eps, stepVec.x, Geom_6.eps)) {
+                if (stepVec.x < 0) {
+                    xPoints[1] = new Geom_6.Vector(Math.floor(begin.x), 0);
+                    xPoints[1] = stepVec.mul((xPoints[1].x - begin.x) / stepVec.x);
+                }
+                else {
+                    xPoints[1] = new Geom_6.Vector(Math.ceil(begin.x), 0);
+                    xPoints[1] = stepVec.mul((xPoints[1].x - begin.x) / stepVec.x);
+                }
+            }
+            else {
+                xPoints[1] = end.clone();
+            }
+            var yPoints = [];
+            yPoints[0] = begin.clone();
+            if (!this.isBetween(-Geom_6.eps, stepVec.y, Geom_6.eps)) {
+                if (stepVec.y < 0) {
+                    yPoints[1] = new Geom_6.Vector(0, Math.floor(begin.y));
+                    yPoints[1] = stepVec.mul((yPoints[1].y - begin.y) / stepVec.y);
+                }
+                else {
+                    yPoints[1] = new Geom_6.Vector(0, Math.ceil(begin.y));
+                    yPoints[1] = stepVec.mul((yPoints[1].y - begin.y) / stepVec.y);
+                }
+            }
+            else {
+                yPoints[1] = end.clone();
+            }
+            for (var i = 1; this.isBetween(begin.x, xPoints[i].x, end.x); i++) {
+                if (this.isBetween(-Geom_6.eps, stepVec.x, Geom_6.eps)) {
+                    break;
+                }
+                if (stepVec.x < 0) {
+                    xPoints[i + 1] = xPoints[i].add(new Geom_6.Vector(-1, 0));
+                    xPoints[i + 1] = stepVec.mul((xPoints[i + 1].x - begin.x) / stepVec.x);
+                }
+                else {
+                    xPoints[i + 1] = xPoints[i].add(new Geom_6.Vector(1, 0));
+                    xPoints[i + 1] = stepVec.mul((xPoints[i + 1].x - begin.x) / stepVec.x);
+                }
+            }
+            xPoints[xPoints.length - 1] = end.clone();
+            for (var i = 1; this.isBetween(begin.y, yPoints[i].y, end.y); i++) {
+                if (this.isBetween(-Geom_6.eps, stepVec.y, Geom_6.eps)) {
+                    continue;
+                }
+                if (stepVec.y < 0) {
+                    yPoints[i + 1] = yPoints[i].add(new Geom_6.Vector(0, -1));
+                    yPoints[i + 1] = stepVec.mul((yPoints[i + 1].y - begin.y) / stepVec.y);
+                }
+                else {
+                    yPoints[i + 1] = yPoints[i].add(new Geom_6.Vector(0, 1));
+                    yPoints[i + 1] = stepVec.mul((yPoints[i + 1].y - begin.y) / stepVec.y);
+                }
+            }
+            yPoints[yPoints.length - 1] = end.clone();
+            for (var i = 0; i < xPoints.length; i++) {
+                Debug_4.Debug.addPoint(xPoints[i], new Draw_17.Color(256, 0, 0));
+            }
+            for (var i = 0; i < yPoints.length; i++) {
+                Debug_4.Debug.addPoint(yPoints[i], new Draw_17.Color(0, 0, 256));
+            }
+        };
+        return Ray;
+    }());
+    exports.Ray = Ray;
+});
+define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "RayCasting"], function (require, exports, geom, aux, Draw_18, Game_9, Editor_1, RayCasting_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    var draw = new Draw_17.Draw(canvas);
+    var draw = new Draw_18.Draw(canvas);
     draw.cam.scale = 10;
     var game = new Game_9.Game(draw);
     game.levels = new Map();
@@ -3464,6 +3548,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
                 var person = game.entities[1];
                 person.behaviorModel.changeCurrentInstruction("normal");
                 console.log(game.levels["map"].PathMatrix);
+                RayCasting_1.Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
                 x = true;
             }
             if (t % 100 == 0) {

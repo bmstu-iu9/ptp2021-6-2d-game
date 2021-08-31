@@ -358,7 +358,7 @@ export class Game {
         // Анимации
         this.draw.step();
         // Отрисовка графического дебага
-        //Debug.drawPoints(this);
+        Debug.drawPoints(this);
         Debug.clear();
     }
 

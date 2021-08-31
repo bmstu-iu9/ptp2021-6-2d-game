@@ -8,9 +8,11 @@ import { Instruction } from "./BehaviorModel";
 import { Person } from "./Entities/Person";
 import { Scientist } from "./Entities/Scientist";
 import { Behavior } from "./Entities/Person";
+import { Ray } from "./RayCasting";
+import { Verify } from "crypto";
 
-//aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
-aux.setEnvironment("http://127.0.0.1:4500/"); // Если локальный сервер
+aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
+//aux.setEnvironment("http://127.0.0.1:4500/"); // Если локальный сервер
 
 // Флаг режима редактора уровней
 let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
@@ -47,7 +49,9 @@ function step() {
             
             //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
             //game.makeTrigger(100000000, game.entities[1]);
+            
             console.log(game.levels["map"].PathMatrix); 
+            Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
             x = true;
         }
         if (t % 100 == 0) {
