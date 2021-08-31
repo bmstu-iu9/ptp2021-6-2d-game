@@ -281,7 +281,6 @@ export class Level {
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
                 if (this.Grid[i][j].sub_image) {
-                    //console.log("nigga" + i + "_" + j)
                     draw.image(this.Grid[i][j].sub_image,
                         (new geom.Vector(this.tileSize * i, this.tileSize * j))
                             .add(size.mul(1 / 2)), size, 0, 0);

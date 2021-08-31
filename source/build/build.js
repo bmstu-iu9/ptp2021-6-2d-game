@@ -3380,6 +3380,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
             document.getElementById("palette7")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
+            document.getElementById("palette8")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
             document.getElementById("palette")["style"].top = "24px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
@@ -3387,6 +3388,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette7")["style"].top = "24px";
+            document.getElementById("palette8")["style"].top = "24px";
+            document.getElementById("w8")["style"].top = "0px";
             document.getElementById("w7")["style"].top = "0px";
             document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
@@ -3397,6 +3400,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
             document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
+            document.getElementById("range_menu")["style"].left = window.innerHeight - 20 + "px";
             var normal = function () {
                 if (ListOfPads_2.ListOfPads.instructionType == "normal") {
                     return;
