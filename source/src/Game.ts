@@ -370,8 +370,11 @@ export class Game {
         // Экран загрузки
         if (this.state == State.Waiting) { // Если в режиме ожидания
             this.draw.attachToCanvas();
+            let image = Draw.loadImage("textures/Screens/Start.png");
+            if (this.mimic.isDead())
+                image = Draw.loadImage("textures/Screens/Death.png");
             this.draw.image(
-                Draw.loadImage("textures/Screens/Start.png"),
+                image,
                 this.draw.cam.center,
                 this.draw.cam.center.mul(2),
                 0, Layer.HudLayer

@@ -2274,7 +2274,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.display = function () {
             if (this.state == State.Waiting) {
                 this.draw.attachToCanvas();
-                this.draw.image(Draw_11.Draw.loadImage("textures/Screens/Start.png"), this.draw.cam.center, this.draw.cam.center.mul(2), 0, Draw_11.Layer.HudLayer);
+                var image = Draw_11.Draw.loadImage("textures/Screens/Start.png");
+                if (this.mimic.isDead())
+                    image = Draw_11.Draw.loadImage("textures/Screens/Death.png");
+                this.draw.image(image, this.draw.cam.center, this.draw.cam.center.mul(2), 0, Draw_11.Layer.HudLayer);
                 this.draw.getimage();
                 return;
             }
