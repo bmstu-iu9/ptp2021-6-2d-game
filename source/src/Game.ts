@@ -205,13 +205,6 @@ export class Game {
         this.draw = draw;
         this.currentLevel.Grid = [];
         this.mimic = new Mimic(this);
-        let backgroundsound = () => { // Чекбокс для воспроизведения фоновой мелодии (спасибо хрому блин https://developer.chrome.com/blog/autoplay/)
-            this.sounds.changestatus("game",0.2);
-        }
-        document.getElementById("backgroundsound").onclick = backgroundsound;
-
-        
-       
     }
 
 
@@ -303,6 +296,7 @@ export class Game {
         this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0)); 
         // TODO: перезапуск уровня
         Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
+        this.sounds.playcontinuously("game",0.2);
         
     }
 

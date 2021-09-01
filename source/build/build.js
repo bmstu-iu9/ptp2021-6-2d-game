@@ -2040,7 +2040,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     ;
     var Game = (function () {
         function Game(draw) {
-            var _this = this;
             this.bodies = [];
             this.entities = [];
             this.triggers = [];
@@ -2055,10 +2054,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw = draw;
             this.currentLevel.Grid = [];
             this.mimic = new Mimic_1.Mimic(this);
-            var backgroundsound = function () {
-                _this.sounds.changestatus("game", 0.2);
-            };
-            document.getElementById("backgroundsound").onclick = backgroundsound;
         }
         Game.readTextFile = function (path) {
             return __awaiter(this, void 0, void 0, function () {
@@ -2302,6 +2297,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.mimic = new Mimic_1.Mimic(this);
             this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
             Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
+            this.sounds.playcontinuously("game", 0.2);
         };
         Game.prototype.step = function () {
             if (this.state == State.Waiting) {
