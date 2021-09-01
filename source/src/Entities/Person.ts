@@ -7,6 +7,7 @@ import { Color, Draw } from "../Draw";
 import { BehaviorModel } from "../BehaviorModel";
 import { domainToASCII } from "url";
 import { AnimationState } from "../SpriteAnimation";
+import { Sounds } from "../Sounds";
 
 export enum PersonMode {
     Fine,
@@ -30,6 +31,7 @@ export class Person extends Entity {
     public mode : PersonMode; // маркер состояния (переименовать по необходимости)
     protected type : string = null;
     public behaviorModel : BehaviorModel;
+    public sound : Sounds = new Sounds(0.9);
     
     constructor(game : Game, body : Body, mode : PersonMode) {
         super(game, body)
@@ -39,6 +41,8 @@ export class Person extends Entity {
         this.direction = new geom.Vector(1, 0);
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
+        this.sound.playcontinuously("step",1);
+        this.sound.current_sound.muted = true;
     }
 
     public setModeTimings(fine : number, corrupted : number, dying : number) {
@@ -112,18 +116,23 @@ export class Person extends Entity {
     public changedirection(x : number,y : number){
         if(x==0 && y == 0) {
             this.animation.changedirection("stand", this.modeToString())
+            this.sound.current_sound.muted = true;
         }
         if(x==1) {
             this.animation.changedirection("right", this.modeToString())
+            this.sound.current_sound.muted = false;
         }
         if(x==-1) {
             this.animation.changedirection("left", this.modeToString())
+            this.sound.current_sound.muted = false;
         }
         if(x==0 && y == 1) {
             this.animation.changedirection("top", this.modeToString())
+            this.sound.current_sound.muted = false;
         }
         if(x==0 && y == -1) {
             this.animation.changedirection("down", this.modeToString())
+            this.sound.current_sound.muted = false;
         }
     }
 

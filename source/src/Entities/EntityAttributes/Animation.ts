@@ -3,7 +3,6 @@ import * as aux from "../../AuxLib";
 
 export class Animation {
     public current_state : HTMLImageElement;
-    private stateMachine : HTMLImageElement [] = [];
     private counter : number;
     private name: string; // имя анимации
     private states : number; // кол-во анимаций на 1 состояние
