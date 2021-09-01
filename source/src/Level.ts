@@ -236,6 +236,7 @@ export class Level {
 
     // Создание из прототипа
     public createFromPrototype(prototype : any) {
+        this.Entities = [];
         this.Grid = prototype.Grid;
         this.CollisionMesh = prototype.CollisionMesh;
         this.PathMatrix = prototype.PathMatrix;

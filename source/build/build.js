@@ -816,7 +816,6 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.changeCurrentInstruction(this.currentInstruction);
         };
         BehaviorModel.prototype.step = function () {
-            console.log("here?");
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
                 console.log(this.currentInstruction, "in progress");
                 this.operationNum++;
@@ -1600,6 +1599,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             window.open(url);
         };
         Level.prototype.createFromPrototype = function (prototype) {
+            this.Entities = [];
             this.Grid = prototype.Grid;
             this.CollisionMesh = prototype.CollisionMesh;
             this.PathMatrix = prototype.PathMatrix;
@@ -1953,6 +1953,9 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             biomass.baseEntity = this.controlledEntity;
             this.takeControl(biomass);
         };
+        Mimic.prototype.isDead = function () {
+            return this.controlledEntity instanceof Monster_3.Monster && !this.controlledEntity.alive;
+        };
         Mimic.prototype.step = function () {
             Control_1.Control.commands.active["shoot"] = Control_1.Control.isMouseRightPressed();
             Control_1.Control.commands.pointer = this.game.draw.transformBack(Control_1.Control.mousePos()).sub(this.controlledEntity.body.center);
@@ -2028,7 +2031,13 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
 define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Game = void 0;
+    exports.Game = exports.State = void 0;
+    var State;
+    (function (State) {
+        State[State["Waiting"] = 0] = "Waiting";
+        State[State["Game"] = 1] = "Game";
+    })(State = exports.State || (exports.State = {}));
+    ;
     var Game = (function () {
         function Game(draw) {
             var _this = this;
@@ -2039,7 +2048,11 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             this.ghost = new geom.Vector(0, 0);
+<<<<<<< HEAD
             this.sounds = new Sounds_5.Sounds(0.01);
+=======
+            this.state = State.Waiting;
+>>>>>>> death-and-start-screens
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
@@ -2158,15 +2171,14 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 if (value.dataType == 'Soldier') {
                     var soldier = Game.currentGame.makeSoldier(value.center);
                     soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-                    soldier.behaviorModel = value.behaviorModel.instructions;
+                    soldier.behaviorModel.instructions = value.behaviorModel.instructions;
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
                     console.log("loading scientist");
                     var scientist = Game.currentGame.makeScientist(value.center);
                     scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
-                    scientist.behaviorModel = value.behaviorModel;
-                    scientist.behaviorModel.myAI = scientist.myAI;
+                    scientist.behaviorModel.instructions = value.behaviorModel.instructions;
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
@@ -2198,19 +2210,20 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, this.readTextFile(aux.environment + path)
-                                .then(function (result) {
-                                console.log(result);
-                                console.log(_this.currentGame);
-                                var prototype = JSON.parse(result, _this.reviver);
-                                var level = new Level_1.Level();
-                                level.createFromPrototype(prototype);
-                                level.showLighting = true;
-                                level.makeLightSource(new geom.Vector(0, 0), 10);
-                                level.makeLightSource(new geom.Vector(5, 5), 10);
-                                level.generateLighting();
-                                Game.currentGame.levels[name] = level;
-                            })];
+                        case 0:
+                            Game.levelPaths[name] = path;
+                            return [4, this.readTextFile(aux.environment + path)
+                                    .then(function (result) {
+                                    console.log("Map loaded");
+                                    var prototype = JSON.parse(result, _this.reviver);
+                                    var level = new Level_1.Level();
+                                    level.createFromPrototype(prototype);
+                                    level.showLighting = true;
+                                    level.makeLightSource(new geom.Vector(0, 0), 10);
+                                    level.makeLightSource(new geom.Vector(5, 5), 10);
+                                    level.generateLighting();
+                                    Game.currentGame.levels[name] = level;
+                                })];
                         case 1:
                             result = _a.sent();
                             return [2];
@@ -2283,7 +2296,25 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
             }
         };
+        Game.prototype.startGame = function () {
+            this.state = State.Game;
+            this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+            this.bodies = [];
+            this.entities = [];
+            this.triggers = [];
+            this.mimic = new Mimic_1.Mimic(this);
+            this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
+            Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
+        };
         Game.prototype.step = function () {
+            if (this.state == State.Waiting) {
+                if (Control_2.Control.isMouseLeftPressed() || Control_2.Control.isMouseRightPressed())
+                    this.startGame();
+                return;
+            }
+            if (this.mimic.isDead()) {
+                this.state = State.Waiting;
+            }
             if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
             }
@@ -2323,6 +2354,15 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
         };
         Game.prototype.display = function () {
+            if (this.state == State.Waiting) {
+                this.draw.attachToCanvas();
+                var image = Draw_11.Draw.loadImage("textures/Screens/Start.png");
+                if (this.mimic.isDead())
+                    image = Draw_11.Draw.loadImage("textures/Screens/Death.png");
+                this.draw.image(image, this.draw.cam.center, this.draw.cam.center.mul(2), 0, Draw_11.Layer.HudLayer);
+                this.draw.getimage();
+                return;
+            }
             this.configureCamScale();
             this.currentLevel.display(this.draw);
             for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
@@ -2337,6 +2377,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             Debug_3.Debug.clear();
         };
         Game.dt = 0.02;
+        Game.levelPaths = new Map();
         return Game;
     }());
     exports.Game = Game;
@@ -3531,7 +3572,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     game.levels = new Map();
     Game_9.Game.currentGame = game;
     Game_9.Game.loadMap("map.json", "map");
-    game.makeScientist(new geom.Vector(1, 1));
+    game.makeSoldier(new geom.Vector(1, 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;

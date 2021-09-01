@@ -4,7 +4,7 @@ import { Body } from "./Entities/EntityAttributes/Body";
 import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
 import { Control, Keys } from "./Control";
-import { Draw, Color } from "./Draw";
+import { Draw, Color, Layer } from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
 import { Level } from "./Level";
@@ -19,6 +19,11 @@ import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { Biomass } from "./Entities/Projectiles/Biomass";
 import { Sounds } from "./Sounds";
 
+export enum State {
+    Waiting,
+    Game
+};
+
 export class Game {
     public levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
     public static dt = 0.02;
@@ -31,8 +36,11 @@ export class Game {
     public currentLevelName = "map";  // название текущего уровня
     public currentLevel = new Level(); // текущий уровень (возможно имеет смылс заменить на метод getCurrentLevel)
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
-    public mimic : Mimic; // объект мимик, за который играет игрок
-    public ghost : geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+    public mimic: Mimic; // объект мимик, за который играет игрок
+    public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+    private state = State.Waiting;
+    private static levelPaths = new Map<string, string>(); // Пары уровень-путь
+
     public sounds : Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
@@ -137,15 +145,14 @@ export class Game {
             if (value.dataType == 'Soldier') {
                 let soldier = Game.currentGame.makeSoldier(value.center) as Soldier;
                 soldier.behaviorModel = new BehaviorModel(soldier.myAI);
-                soldier.behaviorModel = value.behaviorModel.instructions;
+                soldier.behaviorModel.instructions = value.behaviorModel.instructions;
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
                 console.log("loading scientist");
                 let scientist = Game.currentGame.makeScientist(value.center) as Scientist;
                 scientist.behaviorModel = new BehaviorModel(scientist.myAI);
-                scientist.behaviorModel = value.behaviorModel;
-                scientist.behaviorModel.myAI = scientist.myAI;
+                scientist.behaviorModel.instructions = value.behaviorModel.instructions;
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -175,10 +182,10 @@ export class Game {
     }
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
+        Game.levelPaths[name] = path;
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
-                console.log(result);
-                console.log(this.currentGame);
+                console.log("Map loaded");
 
                 let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
@@ -286,8 +293,32 @@ export class Game {
         }
     }
 
-    public step() {
+    public startGame() {
+        this.state = State.Game;
+        this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+        this.bodies = [];
+        this.entities = [];
+        this.triggers= []; 
+        this.mimic = new Mimic(this);
+        this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0)); 
+        // TODO: перезапуск уровня
+        Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
         
+    }
+
+    public step() {
+        // Экран загрузки
+        if (this.state == State.Waiting) { // Если в режиме ожидания
+            if (Control.isMouseLeftPressed() || Control.isMouseRightPressed())
+                this.startGame();
+            return;
+        }
+
+        // Смерть
+        if (this.mimic.isDead()) {
+            this.state = State.Waiting;
+        }
+
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
             this.currentLevel = this.levels[this.currentLevelName];
@@ -347,6 +378,22 @@ export class Game {
     }
 
     public display() {
+        // Экран загрузки
+        if (this.state == State.Waiting) { // Если в режиме ожидания
+            this.draw.attachToCanvas();
+            let image = Draw.loadImage("textures/Screens/Start.png");
+            if (this.mimic.isDead())
+                image = Draw.loadImage("textures/Screens/Death.png");
+            this.draw.image(
+                image,
+                this.draw.cam.center,
+                this.draw.cam.center.mul(2),
+                0, Layer.HudLayer
+            );
+            this.draw.getimage();
+            return;
+        }
+
         // Настройка камеры
         this.configureCamScale();
         
