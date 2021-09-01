@@ -7,26 +7,26 @@ import { Draw, Layer } from "../../Draw";
 
 export class Projectile extends Entity {
     public velLimit = 1; // Скорость при которой мы считаем, что остановились
-    public baseEntity : Entity; // Тот, кто выпустил снаряд
+    public baseEntity: Entity; // Тот, кто выпустил снаряд
     public vel = new geom.Vector();
     public viscousFriction = 0;
-    public spriteAnimation : SpriteAnimation;
+    public spriteAnimation: SpriteAnimation;
     public shouldBeKilledByWall = false; // Должен ли убиваться при ударе об стену
     public enableBouncing = false;
-    
-    constructor(game : Game, body : Body, vel : geom.Vector) {
+
+    constructor(game: Game, body: Body, vel: geom.Vector) {
         super(game, body);
         this.vel = vel;
     }
 
-    public loadSpriteAnimation(name : string, frames : number) {
+    public loadSpriteAnimation(name: string, frames: number) {
         this.spriteAnimation = new SpriteAnimation();
         this.spriteAnimation.loadFrames(name, frames);
         this.spriteAnimation.duration = 1000;
         this.spriteAnimation.frameDuration = 0.1;
     }
-    
-    public hasStopped() : boolean {
+
+    public hasStopped(): boolean {
         return this.vel.abs() < this.velLimit;
     }
 
@@ -34,12 +34,12 @@ export class Projectile extends Entity {
         this.body.move(this.vel.mul(Game.dt));
         if (this.body.isWallNear != 0 && this.enableBouncing) {
             if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
-                 (this.body.isWallNear == 3 && this.vel.x < 0)) {
+                (this.body.isWallNear == 3 && this.vel.x < 0)) {
                 this.vel.x = - this.vel.x;
                 console.log("bounce x %d", this.body.isWallNear);
             }
             if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
-                 (this.body.isWallNear == 4 && this.vel.y > 0)) {
+                (this.body.isWallNear == 4 && this.vel.y > 0)) {
                 this.vel.y = - this.vel.y;
                 console.log("bounce y %d", this.body.isWallNear);
             }
@@ -48,7 +48,7 @@ export class Projectile extends Entity {
         this.spriteAnimation.step();
     }
 
-    public display(draw : Draw) {
+    public display(draw: Draw) {
         draw.image(this.spriteAnimation.getCurrentFrame(), this.body.center, new geom.Vector(this.body.radius, this.body.radius), 0, Layer.EntityLayer);
     }
 }

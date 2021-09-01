@@ -21,19 +21,19 @@ export enum Behavior {
 }
 
 export class Person extends Entity {
-    public viewRadius : number = 3; // радиус сектора видимости
-    public viewingAngle : number; // угол сектора видимости
-    public direction : geom.Vector; // направление взгляда
+    public viewRadius: number = 3; // радиус сектора видимости
+    public viewingAngle: number; // угол сектора видимости
+    public direction: geom.Vector; // направление взгляда
     public awareness = 0;
-    public awarenessThreshold = 10;  
+    public awarenessThreshold = 10;
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
-    public mode : PersonMode; // маркер состояния (переименовать по необходимости)
-    protected type : string = null;
-    public behaviorModel : BehaviorModel;
-    public sound : Sounds = new Sounds(0.9);
-    
-    constructor(game : Game, body : Body, mode : PersonMode) {
+    public mode: PersonMode; // маркер состояния (переименовать по необходимости)
+    protected type: string = null;
+    public behaviorModel: BehaviorModel;
+    public sound: Sounds = new Sounds(0.9);
+
+    constructor(game: Game, body: Body, mode: PersonMode) {
         super(game, body)
         this.mode = mode;
         this.viewRadius = 5;
@@ -41,11 +41,11 @@ export class Person extends Entity {
         this.direction = new geom.Vector(1, 0);
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
-        this.sound.playcontinuously("step",1);
+        this.sound.playcontinuously("step", 1);
         this.sound.current_sound.muted = true;
     }
 
-    public setModeTimings(fine : number, corrupted : number, dying : number) {
+    public setModeTimings(fine: number, corrupted: number, dying: number) {
         this.hpThresholdDying = dying;
         this.hpThresholdCorrupted = dying + corrupted;
         this.hpMax = dying + corrupted + fine;
@@ -58,7 +58,7 @@ export class Person extends Entity {
         super.die();
     }
 
-    public isPointVisible(pos : geom.Vector) : boolean {
+    public isPointVisible(pos: geom.Vector): boolean {
         return geom.dist(this.body.center, pos) <= this.viewRadius;
     }
 
@@ -102,7 +102,7 @@ export class Person extends Entity {
     }
 
     // Режим в строковом виде
-    public modeToString() : string {
+    public modeToString(): string {
         switch (this.mode) {
             case PersonMode.Fine:
                 return "fine";
@@ -113,24 +113,24 @@ export class Person extends Entity {
         }
     }
 
-    public changedirection(x : number,y : number){
-        if(x==0 && y == 0) {
+    public changedirection(x: number, y: number) {
+        if (x == 0 && y == 0) {
             this.animation.changedirection("stand", this.modeToString())
             this.sound.current_sound.muted = true;
         }
-        if(x==1) {
+        if (x == 1) {
             this.animation.changedirection("right", this.modeToString())
             this.sound.current_sound.muted = false;
         }
-        if(x==-1) {
+        if (x == -1) {
             this.animation.changedirection("left", this.modeToString())
             this.sound.current_sound.muted = false;
         }
-        if(x==0 && y == 1) {
+        if (x == 0 && y == 1) {
             this.animation.changedirection("top", this.modeToString())
             this.sound.current_sound.muted = false;
         }
-        if(x==0 && y == -1) {
+        if (x == 0 && y == -1) {
             this.animation.changedirection("down", this.modeToString())
             this.sound.current_sound.muted = false;
         }
@@ -142,7 +142,7 @@ export class Person extends Entity {
         }
         else if (this.hp < this.hpThresholdDying)
             this.mode = PersonMode.Dying;
-        else  if (this.hp < this.hpThresholdCorrupted)
+        else if (this.hp < this.hpThresholdCorrupted)
             this.mode = PersonMode.Corrupted;
         else
             this.mode = PersonMode.Fine;
@@ -160,23 +160,23 @@ export class Person extends Entity {
         let x = 0;
         let y = 0;
         let vel = this.body.velocity;
-        
+
         // перемещение согласно commands
         if (!this.commands)
             return;
-        if(this.commands.active["MoveUp"]) {
+        if (this.commands.active["MoveUp"]) {
             y++;
             this.body.move(new geom.Vector(0, -vel));
         }
-        if(this.commands.active["MoveDown"]) {
+        if (this.commands.active["MoveDown"]) {
             y--;
             this.body.move(new geom.Vector(0, vel));
         }
-        if(this.commands.active["MoveRight"]) {
+        if (this.commands.active["MoveRight"]) {
             x++;
             this.body.move(new geom.Vector(vel, 0));
         }
-        if(this.commands.active["MoveLeft"]) {
+        if (this.commands.active["MoveLeft"]) {
             x--;
             this.body.move(new geom.Vector(-vel, 0));
         }
@@ -191,12 +191,12 @@ export class Person extends Entity {
         }
 
         this.updateMode();
-        this.behaviorModel.step();        
+        this.behaviorModel.step();
 
         super.step();
     }
 
-    public displayAwareness(draw : Draw) {
+    public displayAwareness(draw: Draw) {
         draw.bar(
             this.body.center.clone().add(new geom.Vector(0, -0.9)), // Pos
             new geom.Vector(1, 0.1), // Box
@@ -207,7 +207,7 @@ export class Person extends Entity {
         );
     }
 
-    public display(draw : Draw) {    
+    public display(draw: Draw) {
         super.display(draw);
         draw.bar(
             this.body.center.clone().add(new geom.Vector(0, -1)), // Pos
@@ -215,7 +215,7 @@ export class Person extends Entity {
             this.hp / this.hpMax, // Percentage
             new Color(25, 25, 25), // Back color
             new Color(25, 255, 25), // Front color
-            [this.hpThresholdCorrupted / this.hpMax,this.hpThresholdDying / this.hpMax] // Marks
+            [this.hpThresholdCorrupted / this.hpMax, this.hpThresholdDying / this.hpMax] // Marks
         );
     }
 }

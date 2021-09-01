@@ -20,7 +20,7 @@ export class Editor {
     private mousePrev: geom.Vector;
     private level = new Level(new geom.Vector(10, 10));
     private cursor = new Cursor(this.level);
-    public draw : Draw;
+    public draw: Draw;
     private showCollisionGrid = false;
     private hideGrid = false;
     constructor() {
@@ -28,55 +28,55 @@ export class Editor {
         this.initHTML();
     }
 
-    private palette1_bitmap : number[]= [0, 0, 0, 0, 0,
+    private palette1_bitmap: number[] = [0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
-        1, 0, 1, 0, 0, 
-        0, 0, 0, 1, 0, 
-        1, 1, 1, 0, 1, 
-        0, 1, 1, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
+        1, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+        1, 1, 1, 0, 1,
+        0, 1, 1, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
         0, 0];
-private palette2_bitmap : number[]= [0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        1, 1, 1, 1, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        1, 1, 1, 1, 1, 
-        0, 0, 0, 0, 0, 
-        1, 1, 1, 1, 1, 
-        1, 1, 1, 1, 0, 
-        0, 0, 0, 0, 0, 
+    private palette2_bitmap: number[] = [0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0,
         1, 1, 1, 1];
-private palette3_bitmap : number[]= [0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 
-        1, 1, 1, 1, 1, 
-        1, 0, 1, 1, 1, 
-        1, 1, 1, 0, 0, 
+    private palette3_bitmap: number[] = [0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        1, 0, 1, 1, 1,
+        1, 1, 1, 0, 0,
         0];
 
-    private isTileSubImage(idPalette : number) : boolean {
+    private isTileSubImage(idPalette: number): boolean {
         switch (idPalette) {
-            case 1 : {
+            case 1: {
                 return true;
             }
-            case 2 : {
+            case 2: {
                 return true;
             }
-            case 3 : {
+            case 3: {
                 return false;
             }
         }
@@ -91,7 +91,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         palette.appendChild(button);
         let applyTile = () => {
             this.cursor.mode = Mode.Wall;
-            
+
             if (type.length > 0) {
                 let prep = new Number(type);
                 if (this.isTileSubImage(prep.valueOf())) {
@@ -190,7 +190,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                     //ListOfPads.compileBehaviorModel(behaviorModel);
                     if (behaviorModel.instructions[ListOfPads.instructionType] == undefined) {
                         behaviorModel.instructions[ListOfPads.instructionType] = new Instruction();
-                        
+
                     }
                     if (behaviorModel.instructions.get("JSONkeys") == undefined) {
                         behaviorModel.instructions.set("JSONkeys", ["normal", "panic"]);
@@ -213,7 +213,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
                     let pad = ListOfPads.createBehaviorPad(src, toolType);
                     ListOfPads.updateInstructionCopy();
                     //console.log(behaviorModel, behaviorModel.instructions.);
-                    
+
                 }
             }
         }
@@ -265,13 +265,13 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
-       
+
         let pal_standart_h = Math.round((window.innerHeight - 30) / 3);
-        
+
         document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
         document.getElementById("palette2")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
         document.getElementById("palette3")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
-        
+
         document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
         document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
@@ -282,14 +282,14 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
         document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
-        
+
         document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w4")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
         document.getElementById("w3")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
         document.getElementById("w2")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w1")["style"].top = "0px"
-        
+
         document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
 
@@ -341,7 +341,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
             panicButton.classList.add('selected');
             let normalButton = document.getElementById("normalMode") as HTMLObjectElement;
             normalButton.classList.remove("selected");
-            ListOfPads.updateInstructionCopy();            
+            ListOfPads.updateInstructionCopy();
         };
 
         document.getElementById("panicMode").onclick = panic;
@@ -399,7 +399,7 @@ private palette3_bitmap : number[]= [0, 0, 0, 0, 0,
         } else {
             this.level.display(this.draw, true);
         }
-        if (this.showCollisionGrid == true){
+        if (this.showCollisionGrid == true) {
             this.level.displayColisionGrid(this.draw);
         }
         this.cursor.display();

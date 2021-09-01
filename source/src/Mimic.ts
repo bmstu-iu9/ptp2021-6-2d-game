@@ -8,7 +8,7 @@ import { Corpse } from "./Entities/Corpse";
 import { Draw, Layer } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
 import { Biomass } from "./Entities/Projectiles/Biomass";
-import {Sounds} from "./Sounds"
+import { Sounds } from "./Sounds"
 
 export class Aim {
     public vel = 0;
@@ -16,7 +16,7 @@ export class Aim {
     public chargeMax = 5; // Максимальный заряд
     public chargingTime = 1; // Время для полного заряда
     public dir = new geom.Vector();
-    public mimic : Mimic;
+    public mimic: Mimic;
     public step() {
         let coords = this.mimic.game.draw.transformBack(Control.mousePos());
         this.dir = coords.sub(this.mimic.controlledEntity.body.center).norm();
@@ -28,54 +28,54 @@ export class Aim {
         else
             this.charge = 0;
     }
-    public getVel() : geom.Vector {
+    public getVel(): geom.Vector {
         return this.dir.mul(this.charge);
     }
 }
 
 export class Mimic {
-    
-    public sounds : Sounds;
-    public controlledEntity : Entity = null;
+
+    public sounds: Sounds;
+    public controlledEntity: Entity = null;
     public infectionRadius = 100;
-    public game : Game;
+    public game: Game;
     public aim = new Aim();
 
-    constructor(game : Game) {
+    constructor(game: Game) {
         this.game = game;
         this.aim.mimic = this;
-        this.sounds=new Sounds(1)
+        this.sounds = new Sounds(1)
     }
 
-    public takeControl(entity : Entity) {
+    public takeControl(entity: Entity) {
         if (this.controlledEntity) {
             this.sounds.playimposition("alarm")
             this.game.draw.spriteAnimation(
                 "MimicTransfer", 3,
                 new AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0),
                 new AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0),
-                0.2, 0.2/3
+                0.2, 0.2 / 3
             );
             this.game.draw.spriteAnimation(
                 "Blood", 6,
                 new AnimationState(entity.body.center, new geom.Vector(1, 1), 0),
                 new AnimationState(entity.body.center, new geom.Vector(1, 1), 0),
-                0.5, 0.5/6
+                0.5, 0.5 / 6
             );
             if (this.controlledEntity instanceof Monster) {
                 this.game.draw.spriteAnimation(
                     "MonsterDisappearance", 8,
                     new AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0),
                     new AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0),
-                    0.4, 0.4/8
+                    0.4, 0.4 / 8
                 );
             }
             if (this.controlledEntity instanceof Person) {
                 this.controlledEntity.behaviorModel.refreshInstruction();
             }
         }
-        if (this.controlledEntity instanceof Monster || 
-            (this.controlledEntity instanceof Person) && 
+        if (this.controlledEntity instanceof Monster ||
+            (this.controlledEntity instanceof Person) &&
             (this.controlledEntity as Person).mode == PersonMode.Dying) {
             this.controlledEntity.die();
         }
@@ -94,7 +94,7 @@ export class Mimic {
         this.takeControl(biomass);
     }
 
-    public isDead() : boolean {
+    public isDead(): boolean {
         return this.controlledEntity instanceof Monster && !this.controlledEntity.alive;
     }
 
@@ -114,7 +114,7 @@ export class Mimic {
         }
 
         // Если мышка нажата, мы производим переселение
-        if (!Control.isMouseLeftPressed() && this.aim.charge && !(this.controlledEntity instanceof Biomass)) { 
+        if (!Control.isMouseLeftPressed() && this.aim.charge && !(this.controlledEntity instanceof Biomass)) {
             // Пересчитываем координаты на экране в игровые координаты
             let biomass = this.ejectBiomass(this.aim.getVel());
         }
@@ -135,7 +135,7 @@ export class Mimic {
     }
 
     // Рисует интерфейс
-    public display(draw : Draw) {
+    public display(draw: Draw) {
         // Aim
         if (this.aim.charge) {
             let numberOfArrows = 5;

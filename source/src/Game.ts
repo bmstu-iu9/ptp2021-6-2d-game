@@ -41,7 +41,7 @@ export class Game {
     private state = State.Waiting;
     private static levelPaths = new Map<string, string>(); // Пары уровень-путь
 
-    public sounds : Sounds = new Sounds(0.01);
+    public sounds: Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
@@ -165,7 +165,7 @@ export class Game {
             }
             if (value.dataType == 'BehaviorModel') {
                 console.log("beh mod");
-                
+
                 let behaviorModel = new BehaviorModel(null);
                 behaviorModel.instructions = value.instructions;
                 return behaviorModel;
@@ -215,7 +215,7 @@ export class Game {
     }
 
     public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
-        
+
         let body = this.makeBody(pos, 1);
         let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -257,10 +257,10 @@ export class Game {
         this.entities[this.entities.length] = entity;
         this.makeTrigger(entity, 3, 100000);
         return entity;
-        
+
     }
 
-    public makeTrigger(boundEntity: Entity, power : number, lifeTime: number) { // создаёт триггер и возвращает ссылку
+    public makeTrigger(boundEntity: Entity, power: number, lifeTime: number) { // создаёт триггер и возвращает ссылку
         let trigger = new Trigger(lifeTime, boundEntity);
         trigger.power = power;
         return this.triggers[this.triggers.length] = trigger;
@@ -291,13 +291,13 @@ export class Game {
         this.draw.cam.pos = this.mimic.controlledEntity.body.center;
         this.bodies = [];
         this.entities = [];
-        this.triggers= []; 
+        this.triggers = [];
         this.mimic = new Mimic(this);
-        this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0)); 
+        this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
         // TODO: перезапуск уровня
         Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
-        this.sounds.playcontinuously("game",0.2);
-        
+        this.sounds.playcontinuously("game", 0.2);
+
     }
 
     public step() {
@@ -390,7 +390,7 @@ export class Game {
 
         // Настройка камеры
         this.configureCamScale();
-        
+
         // Орисовка тайлов
         this.currentLevel.display(this.draw);
 
@@ -406,7 +406,7 @@ export class Game {
         // Освещение
         if (this.currentLevel.showLighting)
             this.currentLevel.displayLighting(this.draw);
-        
+
         // Анимации
         this.draw.step();
         // Отрисовка графического дебага

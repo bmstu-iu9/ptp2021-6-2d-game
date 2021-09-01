@@ -25,24 +25,24 @@ export enum Mode {
     Entity,
     Selector,
     PosPicking
-  }
+}
 
 // Курсор для редактора уровней. Хранит в себе позицию и
 // информацию о том, как должен вести себя в случае клика
 export class Cursor {
-    public level : Level;
-    public draw : Draw;
+    public level: Level;
+    public draw: Draw;
     public pos = new geom.Vector();
     public gridPos = new geom.Vector();
     public mode = Mode.Wall;
     public tile = new Tile(CollisionType.Full);
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
-    public selectedEntity : Entity = null;
-    public drawPreview : Draw;
+    public selectedEntity: Entity = null;
+    public drawPreview: Draw;
     private mouseLeftButtonClicked = true;
-    private entityLocations : Map<any, number> = new Map();
+    private entityLocations: Map<any, number> = new Map();
 
-    constructor(level : Level = null, draw : Draw = null) {
+    constructor(level: Level = null, draw: Draw = null) {
         this.level = level;
         this.draw = draw;
     }
@@ -60,15 +60,15 @@ export class Cursor {
         }
         this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = currentLocation;
         if (this.entity instanceof Soldier) {
-            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
+            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
             this.level.Entities[currentLocation] = new Soldier(null, new Body(pos, 1), PersonMode.Fine);
         }
         if (this.entity instanceof Scientist) {
-            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
+            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
             this.level.Entities[currentLocation] = new Scientist(null, new Body(pos, 1), PersonMode.Fine);
         }
         if (this.entity instanceof Monster) {
-            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2));
+            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
             this.level.Entities[currentLocation] = new Monster(null, new Body(pos, 1));
         }
     }
@@ -76,8 +76,8 @@ export class Cursor {
     public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
-        if(Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
-            switch(this.mode) {
+        if (Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
+            switch (this.mode) {
                 case Mode.Wall: {
                     this.setBlock();
                     break;
@@ -101,7 +101,7 @@ export class Cursor {
                 }
                 case Mode.PosPicking: {
                     let fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(),
-                    new Number(new Number(this.pos.y).toFixed(2)).valueOf());
+                        new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                     ListOfPads.choosePoint(fixedPos);
                     this.mode = Mode.Selector;
                 }
@@ -119,22 +119,22 @@ export class Cursor {
         switch (this.mode) {
             case Mode.Wall: {
                 //console.log(this.tile)
-                this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50),0,0);
+                this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 if (this.tile.sub_image) {
-                    this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50),0,0);
+                    this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 }
                 break;
             }
             case Mode.Entity: {
-                this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50),0,0);
+                this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 break;
             }
         }
         // Cursor on grid
-        if(this.level.isInBounds(this.pos))
+        if (this.level.isInBounds(this.pos))
             this.draw.strokeRect(
-                this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1/2)), 
-                new geom.Vector(this.level.tileSize, this.level.tileSize), 
+                this.gridPos.mul(this.level.tileSize).add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2)),
+                new geom.Vector(this.level.tileSize, this.level.tileSize),
                 new Color(0, 255, 0),
                 0.1
             );
