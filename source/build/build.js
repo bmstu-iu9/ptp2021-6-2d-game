@@ -1233,7 +1233,7 @@ define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "
     }(Projectile_1.Projectile));
     exports.CombatProjectile = CombatProjectile;
 });
-define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Random", "Entities/Projectiles/CombatProjectile", "Draw"], function (require, exports, Game_4, Body_1, geom, Random_1, CombatProjectile_1, Draw_7) {
+define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Random", "Entities/Projectiles/CombatProjectile", "Draw", "Sounds"], function (require, exports, Game_4, Body_1, geom, Random_1, CombatProjectile_1, Draw_7, Sounds_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Weapon = void 0;
@@ -1251,7 +1251,10 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.projectileAnimationFrames = 3;
             this.range = 5;
             this.isMagazineRecharging = false;
+            this.sound = new Sounds_3.Sounds(1);
             this.owner = owner;
+            this.sound.playcontinuously("firemashine", 1);
+            this.sound.current_sound.muted = true;
         }
         Weapon.prototype.rechargeClip = function () {
             this.timeToCooldown = this.magazineCooldown;
@@ -1271,14 +1274,20 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.owner.game.entities.push(projectile);
         };
         Weapon.prototype.shoot = function (dir) {
-            if (this.isMagazineRecharging)
+            if (this.isMagazineRecharging) {
+                this.sound.current_sound.muted = true;
                 return;
+            }
             if (this.projectilesInMagazine <= 0) {
+                this.sound.current_sound.muted = true;
                 this.rechargeClip();
                 return;
             }
-            if (this.timeToCooldown > 0)
+            if (this.timeToCooldown > 0) {
+                this.sound.current_sound.muted = true;
                 return;
+            }
+            this.sound.current_sound.muted = false;
             for (var i = 0; i < this.projectilesInOneShot; i++)
                 this.createProjectile(dir);
             this.projectilesInMagazine--;
@@ -1878,7 +1887,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
     }(Projectile_2.Projectile));
     exports.Biomass = Biomass;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1, Sounds_3) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1, Sounds_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
@@ -1914,7 +1923,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.aim = new Aim();
             this.game = game;
             this.aim.mimic = this;
-            this.sounds = new Sounds_3.Sounds(1);
+            this.sounds = new Sounds_4.Sounds(1);
         }
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
@@ -2016,7 +2025,7 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_4) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_11, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_3, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Game = void 0;
@@ -2030,7 +2039,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             this.ghost = new geom.Vector(0, 0);
-            this.sounds = new Sounds_4.Sounds(0.01);
+            this.sounds = new Sounds_5.Sounds(0.01);
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
