@@ -1871,11 +1871,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
     }(Projectile_2.Projectile));
     exports.Biomass = Biomass;
 });
-<<<<<<< HEAD
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_5, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1, Sounds_2) {
-=======
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1) {
->>>>>>> master
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1, Sounds_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
