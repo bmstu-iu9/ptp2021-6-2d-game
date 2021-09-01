@@ -2048,11 +2048,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             this.ghost = new geom.Vector(0, 0);
-<<<<<<< HEAD
-            this.sounds = new Sounds_5.Sounds(0.01);
-=======
             this.state = State.Waiting;
->>>>>>> death-and-start-screens
+            this.sounds = new Sounds_5.Sounds(0.01);
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
