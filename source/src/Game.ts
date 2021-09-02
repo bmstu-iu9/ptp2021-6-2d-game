@@ -136,7 +136,8 @@ export class Game {
             if (value.dataType == 'Soldier') {
                 let soldier = Game.currentGame.makeSoldier(value.center) as Soldier;
                 soldier.behaviorModel = new BehaviorModel(soldier.myAI);
-                soldier.behaviorModel = value.behaviorModel.instructions;
+                soldier.behaviorModel = value.behaviorModel;
+                soldier.behaviorModel.myAI = soldier.myAI;
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
