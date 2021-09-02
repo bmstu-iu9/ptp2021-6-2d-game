@@ -114,6 +114,12 @@ export class Person extends Entity {
     }
 
     public changedirection(x: number, y: number) {
+        let currentdist: geom.Vector = this.body.center.sub(this.game.mimic.controlledEntity.body.center) // Получаем расстояние до Мумука
+        let dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2))
+        let volume = 1 / dist;
+        if (volume > 1)
+            volume = 1;
+        this.sound.current_sound.volume = volume;
         if (x == 0 && y == 0) {
             this.animation.changedirection("stand", this.modeToString())
             this.sound.current_sound.muted = true;

@@ -984,6 +984,12 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             }
         };
         Person.prototype.changedirection = function (x, y) {
+            var currentdist = this.body.center.sub(this.game.mimic.controlledEntity.body.center);
+            var dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2));
+            var volume = 1 / dist;
+            if (volume > 1)
+                volume = 1;
+            this.sound.current_sound.volume = volume;
             if (x == 0 && y == 0) {
                 this.animation.changedirection("stand", this.modeToString());
                 this.sound.current_sound.muted = true;
@@ -1925,6 +1931,9 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.aim.mimic = this;
             this.sounds = new Sounds_4.Sounds(1);
         }
+        Mimic.prototype.getEntity = function () {
+            return this.controlledEntity;
+        };
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
                 this.sounds.playimposition("alarm");
