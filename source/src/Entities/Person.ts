@@ -43,6 +43,7 @@ export class Person extends Entity {
         this.setModeTimings(10, 5, 5);
         this.sound.playcontinuously("step", 1);
         this.sound.current_sound.muted = true;
+        game.soundsarr.push(this.sound);
     }
 
     public setModeTimings(fine: number, corrupted: number, dying: number) {
@@ -56,6 +57,7 @@ export class Person extends Entity {
         if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
         super.die();
+
     }
 
     public isPointVisible(pos: geom.Vector): boolean {

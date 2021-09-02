@@ -28,7 +28,7 @@ export class Game {
     public levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
     public static dt = 0.02;
     public static currentGame: Game;
-
+    public soundsarr: Sounds[] = [];
     public draw: Draw;
     private bodies: Body[] = []; // массив всех тел
     public entities: Entity[] = []; // массив всех entity
@@ -297,6 +297,7 @@ export class Game {
         // TODO: перезапуск уровня
         Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
         this.sounds.playcontinuously("game", 0.2);
+        this.soundsarr.push(this.sounds)
 
     }
 
@@ -310,6 +311,10 @@ export class Game {
 
         // Смерть
         if (this.mimic.isDead()) {
+            for (; 0 < this.soundsarr.length;) {
+                let cursound = this.soundsarr.pop()
+                cursound.stop();
+            }
             this.state = State.Waiting;
         }
 

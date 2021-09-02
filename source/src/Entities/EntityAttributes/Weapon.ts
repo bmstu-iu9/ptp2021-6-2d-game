@@ -29,6 +29,7 @@ export class Weapon {
         this.owner = owner;
         this.sound.playcontinuously("firemashine", 1)
         this.sound.current_sound.muted = true;
+        this.owner.game.soundsarr.push(this.sound)
     }
 
     // Перезарядить обойму

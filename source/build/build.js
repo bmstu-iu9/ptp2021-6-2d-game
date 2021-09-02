@@ -929,6 +929,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             _this.setModeTimings(10, 5, 5);
             _this.sound.playcontinuously("step", 1);
             _this.sound.current_sound.muted = true;
+            game.soundsarr.push(_this.sound);
             return _this;
         }
         Person.prototype.setModeTimings = function (fine, corrupted, dying) {
@@ -1260,6 +1261,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.owner = owner;
             this.sound.playcontinuously("firemashine", 1);
             this.sound.current_sound.muted = true;
+            this.owner.game.soundsarr.push(this.sound);
         }
         Weapon.prototype.rechargeClip = function () {
             this.timeToCooldown = this.magazineCooldown;
@@ -1931,9 +1933,6 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.aim.mimic = this;
             this.sounds = new Sounds_4.Sounds(1);
         }
-        Mimic.prototype.getEntity = function () {
-            return this.controlledEntity;
-        };
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
                 this.sounds.playimposition("alarm");
@@ -2049,6 +2048,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
     ;
     var Game = (function () {
         function Game(draw) {
+            this.soundsarr = [];
             this.bodies = [];
             this.entities = [];
             this.triggers = [];
@@ -2307,6 +2307,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
             Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
             this.sounds.playcontinuously("game", 0.2);
+            this.soundsarr.push(this.sounds);
         };
         Game.prototype.step = function () {
             if (this.state == State.Waiting) {
@@ -2315,6 +2316,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 return;
             }
             if (this.mimic.isDead()) {
+                for (; 0 < this.soundsarr.length;) {
+                    var cursound = this.soundsarr.pop();
+                    cursound.stop();
+                }
                 this.state = State.Waiting;
             }
             if (this.levels[this.currentLevelName]) {
