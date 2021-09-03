@@ -1424,6 +1424,13 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 operationsData: value.operationsData
             };
         }
+        if (value instanceof LightSource) {
+            return {
+                dataType: 'LightSource',
+                pos: value.pos,
+                power: value.power
+            };
+        }
         return value;
     }
     var LevelJSON = (function () {
@@ -1476,47 +1483,63 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.tileSize = 1;
             this.lightSources = [];
             this.showLighting = false;
+            this.gridSize = new geom.Vector();
             this.Grid = [];
-            for (var x = 0; x < size.x; x++) {
+            for (var x = 0; x < 50; x++) {
                 this.Grid.push([]);
-                for (var y = 0; y < size.y; y++) {
+                for (var y = 0; y < 50; y++) {
                     this.Grid[x].push(new Tile_3.Tile());
                 }
             }
+            this.gridSize.x = size.x;
+            this.gridSize.y = size.y;
         }
+        Level.prototype.setNewDrawX = function (new_x) {
+            this.gridSize.x = new_x;
+        };
+        Level.prototype.setNewDrawY = function (new_y) {
+            this.gridSize.y = new_y;
+        };
         Level.prototype.gridCoordinates = function (pos) {
             pos = new geom.Vector(Math.floor(pos.x / this.tileSize), Math.floor(pos.y / this.tileSize));
             if (pos.x < 0)
                 pos.x = 0;
             if (pos.y < 0)
                 pos.y = 0;
-            if (pos.x >= this.Grid.length)
-                pos.x = this.Grid.length - 1;
-            if (pos.y >= this.Grid[0].length)
-                pos.y = this.Grid[0].length - 1;
+            if (pos.x >= this.gridSize.x)
+                pos.x = this.gridSize.x - 1;
+            if (pos.y >= this.gridSize.y)
+                pos.y = this.gridSize.y - 1;
             return pos;
         };
         Level.prototype.isInBounds = function (pos) {
             return pos.x > 0 &&
                 pos.y > 0 &&
-                pos.x < this.Grid.length * this.tileSize &&
-                pos.y < this.Grid[0].length * this.tileSize;
+                pos.x < this.gridSize.x * this.tileSize &&
+                pos.y < this.gridSize.y * this.tileSize;
         };
         Level.prototype.isCellInBounds = function (pos) {
             return pos.x >= 0 &&
                 pos.y >= 0 &&
-                pos.x < this.Grid.length &&
-                pos.y < this.Grid[0].length;
+                pos.x < this.gridSize.x &&
+                pos.y < this.gridSize.y;
         };
         Level.prototype.getTile = function (pos) {
             return this.Grid[pos.x][pos.y];
         };
         Level.prototype.makeLightSource = function (pos, power) {
-            this.lightSources.push(new LightSource(pos, power));
+            this.lightSources.push(new LightSource(pos.clone(), power));
         };
         Level.prototype.serialize = function () {
             var newLevel;
-            newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
+            var newGrid = [];
+            for (var x = 0; x < this.gridSize.x; x++) {
+                newGrid.push([]);
+                for (var y = 0; y < this.gridSize.y; y++) {
+                    newGrid[x].push(this.Grid[y]);
+                }
+            }
+            newLevel = { Grid: newGrid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
             console.log(newLevel.Grid);
             PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
@@ -1532,11 +1555,12 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.Grid = prototype.Grid;
             this.CollisionMesh = prototype.CollisionMesh;
             this.PathMatrix = prototype.PathMatrix;
+            this.lightSources = prototype.Lights;
         };
         Level.prototype.display = function (draw, advanced) {
             if (advanced === void 0) { advanced = false; }
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++) {
+            for (var i = 0; i < this.gridSize.x; i++) {
+                for (var j = 0; j < this.gridSize.y; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
@@ -1551,33 +1575,36 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
         };
         Level.prototype.displayColisionGrid = function (draw) {
-            for (var i = 0; i < this.Grid.length; i++) {
-                for (var j = 0; j < this.Grid[i].length; j++)
+            for (var i = 0; i < this.gridSize.x; i++) {
+                for (var j = 0; j < this.gridSize.y; j++)
                     if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
                         draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
                     }
             }
         };
         Level.prototype.displayLighting = function (draw) {
+            if (!this.showLighting) {
+                return;
+            }
             var cellSize = 1;
             var buffer = document.createElement('canvas');
-            buffer.width = this.Grid.length * cellSize;
-            buffer.height = this.Grid[0].length * cellSize;
+            buffer.width = this.gridSize.x * cellSize;
+            buffer.height = this.gridSize.y * cellSize;
             var imgCtx = buffer.getContext('2d');
-            for (var x = 0; x < this.Grid.length; x++) {
-                for (var y = 0; y < this.Grid[x].length; y++) {
+            for (var x = 0; x < this.gridSize.x; x++) {
+                for (var y = 0; y < this.gridSize.y; y++) {
                     var alpha = 1 - this.Grid[x][y].light / 10;
                     imgCtx.fillStyle = new Draw_8.Color(0, 0, 0, alpha).toString();
                     imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
             }
             draw.ctx.imageSmoothingEnabled = true;
-            var box = new geom.Vector(this.Grid.length, this.Grid[0].length);
+            var box = new geom.Vector(this.gridSize.x, this.gridSize.y);
             draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
         };
         Level.prototype.generateLighting = function () {
-            for (var i = 0; i < this.Grid.length; i++)
-                for (var j = 0; j < this.Grid[i].length; j++)
+            for (var i = 0; i < this.gridSize.x; i++)
+                for (var j = 0; j < this.gridSize.y; j++)
                     this.Grid[i][j].light = 0;
             var queue = new Queue_1.Queue();
             var dirs = [
@@ -1713,6 +1740,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             this.Path[this.Path.length] = point;
         };
         AI.prototype.wait = function (milliseconds) {
+            this.stop();
             this.activationTime = aux.getMilliCount() + milliseconds;
         };
         AI.prototype.pursuit = function () {
@@ -1987,84 +2015,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 });
             });
         };
-        Game.replacer = function (key, value) {
-            if (value instanceof Map) {
-                var val = void 0;
-                if (value.get("JSONkeys") != undefined) {
-                    var keys = value.get("JSONkeys");
-                    console.log("JSONkeys", keys);
-                    var remapping = new Map();
-                    for (var i = 0; i < keys.length; i++) {
-                        remapping.set(keys[i], value[keys[i]]);
-                    }
-                    val = Array.from(remapping.entries());
-                }
-                else {
-                    val = Array.from(value.entries());
-                }
-                console.log(val);
-                return {
-                    dataType: 'Map',
-                    value: val,
-                };
-            }
-            if (value instanceof HTMLImageElement) {
-                var name_2 = value.src;
-                var nameSplit = name_2.split("/");
-                var lastSplit = nameSplit[nameSplit.length - 1];
-                return {
-                    dataType: 'HTMLImageElement',
-                    value: lastSplit
-                };
-            }
-            if (value instanceof geom.Vector) {
-                return {
-                    dataType: 'Vector',
-                    x: value.x,
-                    y: value.y
-                };
-            }
-            if (value instanceof Soldier_2.Soldier) {
-                return {
-                    dataType: 'Soldier',
-                    center: value.body.center,
-                    behaviorModel: value.behaviorModel
-                };
-            }
-            if (value instanceof Scientist_2.Scientist) {
-                return {
-                    dataType: 'Scientist',
-                    center: value.body.center,
-                    behaviorModel: value.behaviorModel
-                };
-            }
-            if (value instanceof Monster_4.Monster) {
-                return {
-                    dataType: 'Monster',
-                    center: value.body.center
-                };
-            }
-            if (value instanceof StationaryObject_3.StationaryObject) {
-                return {
-                    dataType: 'StationaryObject',
-                    center: value.body.center,
-                };
-            }
-            if (value instanceof BehaviorModel_3.BehaviorModel) {
-                return {
-                    dataType: 'BehaviorModel',
-                    instructions: value.instructions
-                };
-            }
-            if (value instanceof BehaviorModel_3.Instruction) {
-                return {
-                    dataType: 'Instruction',
-                    operations: value.operations,
-                    operationsData: value.operationsData
-                };
-            }
-            return value;
-        };
         Game.reviver = function (key, value) {
             if (typeof value === 'object' && value !== null) {
                 if (value.dataType === 'Map') {
@@ -2079,7 +2029,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 if (value.dataType == 'Soldier') {
                     var soldier = Game.currentGame.makeSoldier(value.center);
                     soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-                    soldier.behaviorModel = value.behaviorModel.instructions;
+                    soldier.behaviorModel = value.behaviorModel;
+                    soldier.behaviorModel.myAI = soldier.myAI;
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
@@ -2099,7 +2050,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return stationaryObject;
                 }
                 if (value.dataType == 'BehaviorModel') {
-                    console.log("beh mod");
                     var behaviorModel = new BehaviorModel_3.BehaviorModel(null);
                     behaviorModel.instructions = value.instructions;
                     return behaviorModel;
@@ -2109,6 +2059,10 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     instruction.operations = value.operations;
                     instruction.operationsData = value.operationsData;
                     return instruction;
+                }
+                if (value.dataType == 'LightSource') {
+                    var light = new Level_1.LightSource(value.pos, value.power);
+                    return light;
                 }
             }
             return value;
@@ -2127,9 +2081,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
                                 level.showLighting = true;
-                                level.makeLightSource(new geom.Vector(0, 0), 10);
-                                level.makeLightSource(new geom.Vector(5, 5), 10);
-                                level.generateLighting();
+                                level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
                                 Game.currentGame.levels[name] = level;
                             })];
                         case 1:
@@ -2208,6 +2160,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
             }
+            this.currentLevel.generateLighting();
             this.mimic.step();
             this.attachCamToMimic();
             this.entities.forEach(function (entity) { return entity.animation.step(); });
@@ -2252,8 +2205,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
             this.draw.getimage();
             this.mimic.display(this.draw);
-            if (this.currentLevel.showLighting)
-                this.currentLevel.displayLighting(this.draw);
+            this.currentLevel.displayLighting(this.draw);
             this.draw.step();
             Debug_3.Debug.drawPoints(this);
             Debug_3.Debug.clear();
@@ -2640,8 +2592,8 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
             };
         }
         if (value instanceof HTMLImageElement) {
-            var name_3 = value.src;
-            var nameSplit = name_3.split("/");
+            var name_2 = value.src;
+            var nameSplit = name_2.split("/");
             var lastSplit = nameSplit[nameSplit.length - 1];
             return {
                 dataType: 'HTMLImageElement',
@@ -2723,7 +2675,6 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
             return this.GUIelements[this.GUIelements.length] = new GUILine(begin, end, color);
         };
         EditorGUI.display = function (draw) {
-            console.log(this.GUIelements.length);
             for (var i = 0; i < this.GUIelements.length; i++) {
                 this.GUIelements[i].display(draw);
             }
@@ -2829,7 +2780,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
                     var posPick = function () {
                         console.log("clicked");
                         additionalElement.classList.add("selected");
-                        _this.cursor.mode = Cursor_1.Mode.PosPicking;
+                        _this.cursor.changeMode(Cursor_1.Mode.PosPicking);
                         _this.currentPad = additionalElement.parentElement;
                         _this.updateInstructionCopy();
                     };
@@ -2893,7 +2844,6 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
             this.updateInstructionCopy();
         };
         ListOfPads.GUIstep = function () {
-            console.log(this.instructionCopy);
             if (this.instructionCopy == null) {
                 return;
             }
@@ -2992,6 +2942,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
         Mode[Mode["Entity"] = 2] = "Entity";
         Mode[Mode["Selector"] = 3] = "Selector";
         Mode[Mode["PosPicking"] = 4] = "PosPicking";
+        Mode[Mode["Light"] = 5] = "Light";
     })(Mode = exports.Mode || (exports.Mode = {}));
     var Cursor = (function () {
         function Cursor(level, draw) {
@@ -2999,10 +2950,10 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             if (draw === void 0) { draw = null; }
             this.pos = new geom.Vector();
             this.gridPos = new geom.Vector();
-            this.mode = Mode.Wall;
             this.tile = new Tile_5.Tile(Tile_5.CollisionType.Full);
             this.entity = new Entity_4.Entity(null, new Body_3.Body(new geom.Vector(0, 0), 1));
             this.selectedEntity = null;
+            this.mode = Mode.Wall;
             this.mouseLeftButtonClicked = true;
             this.entityLocations = new Map();
             this.level = level;
@@ -3010,7 +2961,9 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
         }
         Cursor.prototype.setBlock = function () {
             console.log(this.tile);
+            var tileLight = this.level.Grid[this.gridPos.x][this.gridPos.y].light;
             this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+            this.level.Grid[this.gridPos.x][this.gridPos.y].light = tileLight;
             console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
         };
         Cursor.prototype.setEntity = function () {
@@ -3032,11 +2985,60 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                 this.level.Entities[currentLocation] = new Monster_5.Monster(null, new Body_3.Body(pos, 1));
             }
         };
+        Cursor.prototype.setLight = function () {
+            this.level.makeLightSource(this.gridPos, 10);
+            this.level.generateLighting();
+        };
+        Cursor.prototype.changeMode = function (mode) {
+            this.mode = mode;
+            switch (mode) {
+                case Mode.Eraser: {
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png) 9 21, auto";
+                    this.selectedEntity = null;
+                    break;
+                }
+                case Mode.Entity: {
+                    this.selectedEntity = null;
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
+                    break;
+                }
+                case Mode.Wall: {
+                    this.selectedEntity = null;
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
+                    break;
+                }
+                case Mode.PosPicking: {
+                    document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png) 2 25, auto";
+                    break;
+                }
+                case Mode.Selector: {
+                    document.getElementById("gameCanvas")["style"].cursor = "default";
+                    break;
+                }
+                case Mode.Light: {
+                    this.selectedEntity = null;
+                    break;
+                }
+            }
+        };
         Cursor.prototype.step = function () {
             this.pos = this.draw.transformBack(Control_3.Control.mousePos());
             this.gridPos = this.level.gridCoordinates(this.pos);
             if (Control_3.Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
                 switch (this.mode) {
+                    case Mode.Eraser: {
+                        if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                            console.log(this.level.Entities);
+                            this.level.Entities.splice(this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)], 1);
+                            for (var j = 0; j < this.level.Entities.length; j++) {
+                                var gridCord = this.level.gridCoordinates(this.level.Entities[j].body.center);
+                                this.entityLocations[JSON.stringify(gridCord, aux.replacer)] = j;
+                            }
+                            console.log(this.level.Entities);
+                            this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = null;
+                        }
+                        break;
+                    }
                     case Mode.Wall: {
                         this.setBlock();
                         break;
@@ -3061,7 +3063,12 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                     case Mode.PosPicking: {
                         var fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(), new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                         ListOfPads_1.ListOfPads.choosePoint(fixedPos);
-                        this.mode = Mode.Selector;
+                        this.changeMode(Mode.Selector);
+                        break;
+                    }
+                    case Mode.Light: {
+                        this.setLight();
+                        break;
                     }
                 }
             }
@@ -3166,7 +3173,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTile = function () {
-                _this.cursor.mode = Cursor_2.Mode.Wall;
+                _this.cursor.changeMode(Cursor_2.Mode.Wall);
                 if (type.length > 0) {
                     var prep = new Number(type);
                     if (_this.isTileSubImage(prep.valueOf())) {
@@ -3200,7 +3207,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var button = document.createElement("img");
             if (entityType == "Soldier") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_2.Mode.Entity;
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
                     _this.cursor.entity = new Soldier_4.Soldier(null, new Body_4.Body(new geom.Vector(0, 0), 1), Person_7.PersonMode.Fine);
                     _this.cursor.entity.animation = new Animation_5.Animation("Soldier", 8);
                 };
@@ -3209,7 +3216,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             }
             if (entityType == "Scientist") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_2.Mode.Entity;
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
                     _this.cursor.entity = new Scientist_4.Scientist(null, new Body_4.Body(new geom.Vector(0, 0), 1), Person_7.PersonMode.Fine);
                     _this.cursor.entity.animation = new Animation_5.Animation("Scientist", 8);
                 };
@@ -3218,7 +3225,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             }
             if (entityType == "Monster") {
                 var applyEntity = function () {
-                    _this.cursor.mode = Cursor_2.Mode.Entity;
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
                     _this.cursor.entity = new Monster_6.Monster(null, new Body_4.Body(new geom.Vector(0, 0), 1));
                     _this.cursor.entity.animation = new Animation_5.Animation("Monster", 8);
                 };
@@ -3253,7 +3260,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             var palette = document.getElementById("palette" + type);
             palette.appendChild(button);
             var applyTool = function () {
-                _this.cursor.mode = Cursor_2.Mode.Selector;
+                _this.cursor.changeMode(Cursor_2.Mode.Selector);
                 console.log(_this.cursor.selectedEntity);
                 if (_this.cursor.selectedEntity != null) {
                     if (_this.cursor.selectedEntity instanceof Person_7.Person) {
@@ -3290,13 +3297,34 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             };
             button.onclick = applyTool;
         };
+        Editor.prototype.createCursorButton = function (cursorType, type) {
+            var _this = this;
+            var button = document.createElement("img");
+            button.className = "cursorButton";
+            if (cursorType == Cursor_2.Mode.Eraser) {
+                button.src = "textures/Editor/Cursors/eraser1.png";
+            }
+            if (cursorType == Cursor_2.Mode.Selector) {
+                button.src = "textures/Editor/Cursors/cursor_old.png";
+            }
+            if (cursorType == Cursor_2.Mode.Light) {
+                button.src = "textures/Editor/Cursors/Bulb.png";
+            }
+            var palette = document.getElementById("palette" + type);
+            palette.appendChild(button);
+            var applyCursor = function () {
+                _this.cursor.changeMode(cursorType);
+            };
+            button.onclick = applyCursor;
+        };
         Editor.prototype.initHTML = function () {
             var _this = this;
             ListOfPads_2.ListOfPads.init(this.cursor);
             var generate = function () { _this.level.serialize(); };
             document.getElementById("generate").onclick = generate;
             var showcollision = function () {
-                _this.showCollisionGrid = !_this.showCollisionGrid;
+                var chboxxx = document.getElementById("showcolision");
+                _this.showCollisionGrid = chboxxx.checked;
                 var b = document.getElementById("button_col");
                 if (b["style"].backgroundColor == "lime") {
                     b["style"].backgroundColor = "red";
@@ -3307,7 +3335,8 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             };
             document.getElementById("showcolision").onclick = showcollision;
             var hidegrid = function () {
-                _this.hideGrid = !_this.hideGrid;
+                var chboxxx = document.getElementById("hidegrid");
+                _this.hideGrid = chboxxx.checked;
                 var b = document.getElementById("button_grid");
                 if (b["style"].backgroundColor == "red") {
                     b["style"].backgroundColor = "lime";
@@ -3317,7 +3346,20 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 }
             };
             document.getElementById("hidegrid").onclick = hidegrid;
-            for (var i = 0; i < 47; i++)
+            var showlight = function () {
+                var chboxxx = document.getElementById("showShadows");
+                _this.level.showLighting = chboxxx.checked;
+                _this.level.generateLighting();
+                var b = document.getElementById("button_shadows");
+                if (b["style"].backgroundColor == "lime") {
+                    b["style"].backgroundColor = "red";
+                }
+                else {
+                    b["style"].backgroundColor = "lime";
+                }
+            };
+            document.getElementById("showShadows").onclick = showlight;
+            for (var i = 0; i < 69; i++)
                 this.createTileButton("textures/tiles/ceilings/ceiling" + i + ".png", Tile_6.CollisionType.Full, "");
             for (var i = 0; i < 64; i++)
                 this.createTileButton("textures/tiles/walls/wall" + i + ".png", Tile_6.CollisionType.Full, "2");
@@ -3329,6 +3371,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
             this.createToolButton(Cursor_2.ToolType.Waiting, "5");
             this.createToolButton(Cursor_2.ToolType.Pursuit, "5");
+            this.createCursorButton(Cursor_2.Mode.Eraser, "7");
+            this.createCursorButton(Cursor_2.Mode.Selector, "7");
+            this.createCursorButton(Cursor_2.Mode.Light, "7");
             this.cursor.drawPreview = new Draw_16.Draw(document.getElementById("preview"), new geom.Vector(50, 50));
             var pal_standart_h = Math.round((window.innerHeight - 30) / 3);
             document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
@@ -3337,12 +3382,18 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("palette4")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette5")["style"].height = Math.round(window.innerHeight / 3) - 40 + "px";
             document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
+            document.getElementById("palette7")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
+            document.getElementById("palette8")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
             document.getElementById("palette")["style"].top = "24px";
             document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette4")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
             document.getElementById("palette5")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
+            document.getElementById("palette7")["style"].top = "24px";
+            document.getElementById("palette8")["style"].top = "24px";
+            document.getElementById("w8")["style"].top = "0px";
+            document.getElementById("w7")["style"].top = "0px";
             document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w5")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
             document.getElementById("w4")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
@@ -3352,6 +3403,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
             document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
             document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
+            document.getElementById("range_menu")["style"].left = window.innerHeight - 20 + "px";
             var normal = function () {
                 if (ListOfPads_2.ListOfPads.instructionType == "normal") {
                     return;
@@ -3362,9 +3414,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                     ListOfPads_2.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
                 }
                 var normalButton = document.getElementById("normalMode");
-                normalButton.classList.add('selected');
+                normalButton.classList.remove('selected');
                 var panicButton = document.getElementById("panicMode");
-                panicButton.classList.remove("selected");
+                panicButton.classList.add("selected");
                 ListOfPads_2.ListOfPads.updateInstructionCopy();
             };
             document.getElementById("normalMode").onclick = normal;
@@ -3378,9 +3430,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                     ListOfPads_2.ListOfPads.compileBehaviorModel(_this.cursor.selectedEntity.behaviorModel);
                 }
                 var panicButton = document.getElementById("panicMode");
-                panicButton.classList.add('selected');
+                panicButton.classList.remove('selected');
                 var normalButton = document.getElementById("normalMode");
-                normalButton.classList.remove("selected");
+                normalButton.classList.add("selected");
                 ListOfPads_2.ListOfPads.updateInstructionCopy();
             };
             document.getElementById("panicMode").onclick = panic;
@@ -3414,6 +3466,29 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.cursor.draw = this.draw;
         };
         Editor.prototype.step = function () {
+            var _this = this;
+            if (this.cursor.selectedEntity == null) {
+                document.getElementById("palette6")["style"].display = "none";
+                document.getElementById("palette6")["style"].animationPlayState = "pause";
+                document.getElementById("w6")["style"].display = "none";
+                document.getElementById("normalMode")["style"].display = "none";
+                document.getElementById("panicMode")["style"].display = "none";
+            }
+            else {
+                document.getElementById("palette6")["style"].display = "block";
+                document.getElementById("palette6")["style"].animationPlayState = "running";
+                document.getElementById("w6")["style"].display = "block";
+                document.getElementById("normalMode")["style"].display = "block";
+                document.getElementById("panicMode")["style"].display = "block";
+            }
+            var range_x = document.getElementById("range_menu_x");
+            var range_y = document.getElementById("range_menu_y");
+            range_x.oninput = function () {
+                _this.level.setNewDrawX(range_x.valueAsNumber);
+            };
+            range_y.oninput = function () {
+                _this.level.setNewDrawY(range_y.valueAsNumber);
+            };
             this.moveCamera();
             this.cursor.step();
         };
@@ -3427,6 +3502,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             if (this.showCollisionGrid == true) {
                 this.level.displayColisionGrid(this.draw);
             }
+            this.level.displayLighting(this.draw);
             this.cursor.display();
             for (var i = 0; i < this.level.Entities.length; i++) {
                 this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
@@ -3524,7 +3600,7 @@ define("RayCasting", ["require", "exports", "Debug", "Draw", "Geom"], function (
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor", "RayCasting"], function (require, exports, geom, aux, Draw_18, Game_9, Editor_1, RayCasting_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("http://127.0.0.1:8000/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
@@ -3544,9 +3620,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         if (game.levels["map"] != undefined) {
             t++;
             if (x == false) {
-                console.log(game.entities[1]);
-                var person = game.entities[1];
-                person.behaviorModel.changeCurrentInstruction("normal");
                 console.log(game.levels["map"].PathMatrix);
                 RayCasting_1.Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
                 x = true;

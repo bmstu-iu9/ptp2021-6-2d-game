@@ -114,7 +114,7 @@ export class LevelJSON {
 }
 
 // Источник света
-export class LightSource {  
+export class LightSource {
     public pos: geom.Vector;
     public power: number;
     public enableFlickering = true;
@@ -168,8 +168,7 @@ export class Level {
     public tileSize = 1;
     public lightSources: LightSource[] = [];
     public showLighting = false;
-    public draw_x : number;
-    public draw_y : number;
+    public gridSize = new geom.Vector();
 
     constructor(size = new geom.Vector(0, 0)) {
         this.Grid = [];
@@ -179,16 +178,16 @@ export class Level {
                 this.Grid[x].push(new Tile())
             }
         }
-        this.draw_x = size.x;
-        this.draw_y = size.y;
+        this.gridSize.x = size.x;
+        this.gridSize.y = size.y;
     }
 
     public setNewDrawX(new_x : number) {
-        this.draw_x = new_x;
+        this.gridSize.x = new_x;
     }
 
     public setNewDrawY(new_y : number) {
-        this.draw_y = new_y;
+        this.gridSize.y = new_y;
     }
 
 
@@ -201,8 +200,8 @@ export class Level {
         // Проверка на границы
         if (pos.x < 0) pos.x = 0;
         if (pos.y < 0) pos.y = 0;
-        if (pos.x >= this.draw_x) pos.x = this.draw_x - 1;
-        if (pos.y >= this.draw_y) pos.y = this.draw_y - 1;
+        if (pos.x >= this.gridSize.x) pos.x = this.gridSize.x - 1;
+        if (pos.y >= this.gridSize.y) pos.y = this.gridSize.y - 1;
         return pos;
     }
 
@@ -210,16 +209,16 @@ export class Level {
     public isInBounds(pos: geom.Vector): boolean {
         return pos.x > 0 &&
             pos.y > 0 &&
-            pos.x < this.draw_x * this.tileSize &&
-            pos.y < this.draw_y * this.tileSize;
+            pos.x < this.gridSize.x * this.tileSize &&
+            pos.y < this.gridSize.y * this.tileSize;
     }
 
     // Проверяет, находится ли клетка в пределах карты
     public isCellInBounds(pos: geom.Vector): boolean {
         return pos.x >= 0 &&
             pos.y >= 0 &&
-            pos.x < this.draw_x &&
-            pos.y < this.draw_y;
+            pos.x < this.gridSize.x &&
+            pos.y < this.gridSize.y;
     }
 
     // Возвращает тайл по координатам
@@ -237,9 +236,9 @@ export class Level {
         let newLevel : LevelJSON;
 
         let newGrid = [];
-        for (let x = 0; x < this.draw_x; x++) {
+        for (let x = 0; x < this.gridSize.x; x++) {
             newGrid.push([]);
-            for (let y = 0; y < this.draw_y; y++) {
+            for (let y = 0; y < this.gridSize.y; y++) {
                 newGrid[x].push(this.Grid[y]);
             }
         }
@@ -274,8 +273,8 @@ export class Level {
 
     // Отрисовка
     public display(draw : Draw, advanced = false) {
-        for (let i = 0; i < this.draw_x; i++) {
-            for (let j = 0; j < this.draw_y; j++) {
+        for (let i = 0; i < this.gridSize.x; i++) {
+            for (let j = 0; j < this.gridSize.y; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
                 draw.image(this.Grid[i][j].image, 
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
@@ -293,8 +292,8 @@ export class Level {
         }
     }
     public displayColisionGrid(draw : Draw){
-        for(let i = 0; i < this.draw_x; i++){
-            for (let j = 0; j < this.draw_y; j++)
+        for(let i = 0; i < this.gridSize.x; i++){
+            for (let j = 0; j < this.gridSize.y; j++)
             if (this.Grid[i][j].colision == CollisionType.Full) {
                 draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5*Math.sin(aux.getMilliCount()*0.005) + 0.5));
             }
@@ -309,13 +308,13 @@ export class Level {
         let cellSize = 1; // Чем больше размер, тем меньше рамзытие
         // Создаём картинку на которой будем рендерить освещение
         let buffer = document.createElement('canvas');
-        buffer.width = this.draw_x * cellSize;
-        buffer.height = this.draw_y * cellSize;
+        buffer.width = this.gridSize.x * cellSize;
+        buffer.height = this.gridSize.y * cellSize;
         // Получаем контекст
         let imgCtx = buffer.getContext('2d');
         // Расставляем точки
-        for (let x = 0; x < this.draw_x; x++) {
-            for (let y = 0; y < this.draw_y; y++) {
+        for (let x = 0; x < this.gridSize.x; x++) {
+            for (let y = 0; y < this.gridSize.y; y++) {
                 let alpha = 1 - this.Grid[x][y].light / 10;
                 imgCtx.fillStyle = new Color(0, 0, 0, alpha).toString();
                 imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
@@ -323,15 +322,15 @@ export class Level {
         }
         // Рисуем
         draw.ctx.imageSmoothingEnabled = true; // Это позволяет создать размытие освещения
-        let box = new geom.Vector(this.draw_x, this.draw_y);
+        let box = new geom.Vector(this.gridSize.x, this.gridSize.y);
         draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
     }
 
     // Построение освещения 
     public generateLighting() {
         // Очищаем освещение
-        for(let i = 0; i < this.draw_x; i++)
-            for (let j = 0; j < this.draw_y; j++)
+        for(let i = 0; i < this.gridSize.x; i++)
+            for (let j = 0; j < this.gridSize.y; j++)
                 this.Grid[i][j].light = 0;
         // Очередь для bfs
         let queue = new Queue();
