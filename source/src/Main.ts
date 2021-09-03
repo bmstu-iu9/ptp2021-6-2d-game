@@ -9,8 +9,8 @@ import { Person } from "./Entities/Person";
 import { Scientist } from "./Entities/Scientist";
 import { Behavior } from "./Entities/Person";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LeverEditorCursor/source/env/"); // Если с Гита
-//aux.setEnvironment("http://127.0.0.1:4500"); // Если локальный сервер
+//aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LeverEditorCursor/source/env/"); // Если с Гита
+aux.setEnvironment("http://127.0.0.1:8000/"); // Если локальный сервер
 
 // Флаг режима редактора уровней
 let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");

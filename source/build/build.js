@@ -1483,6 +1483,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.tileSize = 1;
             this.lightSources = [];
             this.showLighting = false;
+            this.gridSize = new geom.Vector();
             this.Grid = [];
             for (var x = 0; x < 50; x++) {
                 this.Grid.push([]);
@@ -1490,14 +1491,14 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                     this.Grid[x].push(new Tile_3.Tile());
                 }
             }
-            this.draw_x = size.x;
-            this.draw_y = size.y;
+            this.gridSize.x = size.x;
+            this.gridSize.y = size.y;
         }
         Level.prototype.setNewDrawX = function (new_x) {
-            this.draw_x = new_x;
+            this.gridSize.x = new_x;
         };
         Level.prototype.setNewDrawY = function (new_y) {
-            this.draw_y = new_y;
+            this.gridSize.y = new_y;
         };
         Level.prototype.gridCoordinates = function (pos) {
             pos = new geom.Vector(Math.floor(pos.x / this.tileSize), Math.floor(pos.y / this.tileSize));
@@ -1505,23 +1506,23 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 pos.x = 0;
             if (pos.y < 0)
                 pos.y = 0;
-            if (pos.x >= this.draw_x)
-                pos.x = this.draw_x - 1;
-            if (pos.y >= this.draw_y)
-                pos.y = this.draw_y - 1;
+            if (pos.x >= this.gridSize.x)
+                pos.x = this.gridSize.x - 1;
+            if (pos.y >= this.gridSize.y)
+                pos.y = this.gridSize.y - 1;
             return pos;
         };
         Level.prototype.isInBounds = function (pos) {
             return pos.x > 0 &&
                 pos.y > 0 &&
-                pos.x < this.draw_x * this.tileSize &&
-                pos.y < this.draw_y * this.tileSize;
+                pos.x < this.gridSize.x * this.tileSize &&
+                pos.y < this.gridSize.y * this.tileSize;
         };
         Level.prototype.isCellInBounds = function (pos) {
             return pos.x >= 0 &&
                 pos.y >= 0 &&
-                pos.x < this.draw_x &&
-                pos.y < this.draw_y;
+                pos.x < this.gridSize.x &&
+                pos.y < this.gridSize.y;
         };
         Level.prototype.getTile = function (pos) {
             return this.Grid[pos.x][pos.y];
@@ -1532,9 +1533,9 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         Level.prototype.serialize = function () {
             var newLevel;
             var newGrid = [];
-            for (var x = 0; x < this.draw_x; x++) {
+            for (var x = 0; x < this.gridSize.x; x++) {
                 newGrid.push([]);
-                for (var y = 0; y < this.draw_y; y++) {
+                for (var y = 0; y < this.gridSize.y; y++) {
                     newGrid[x].push(this.Grid[y]);
                 }
             }
@@ -1558,8 +1559,8 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
         };
         Level.prototype.display = function (draw, advanced) {
             if (advanced === void 0) { advanced = false; }
-            for (var i = 0; i < this.draw_x; i++) {
-                for (var j = 0; j < this.draw_y; j++) {
+            for (var i = 0; i < this.gridSize.x; i++) {
+                for (var j = 0; j < this.gridSize.y; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
@@ -1574,8 +1575,8 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
         };
         Level.prototype.displayColisionGrid = function (draw) {
-            for (var i = 0; i < this.draw_x; i++) {
-                for (var j = 0; j < this.draw_y; j++)
+            for (var i = 0; i < this.gridSize.x; i++) {
+                for (var j = 0; j < this.gridSize.y; j++)
                     if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
                         draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_8.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
                     }
@@ -1587,23 +1588,23 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             }
             var cellSize = 1;
             var buffer = document.createElement('canvas');
-            buffer.width = this.draw_x * cellSize;
-            buffer.height = this.draw_y * cellSize;
+            buffer.width = this.gridSize.x * cellSize;
+            buffer.height = this.gridSize.y * cellSize;
             var imgCtx = buffer.getContext('2d');
-            for (var x = 0; x < this.draw_x; x++) {
-                for (var y = 0; y < this.draw_y; y++) {
+            for (var x = 0; x < this.gridSize.x; x++) {
+                for (var y = 0; y < this.gridSize.y; y++) {
                     var alpha = 1 - this.Grid[x][y].light / 10;
                     imgCtx.fillStyle = new Draw_8.Color(0, 0, 0, alpha).toString();
                     imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
             }
             draw.ctx.imageSmoothingEnabled = true;
-            var box = new geom.Vector(this.draw_x, this.draw_y);
+            var box = new geom.Vector(this.gridSize.x, this.gridSize.y);
             draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
         };
         Level.prototype.generateLighting = function () {
-            for (var i = 0; i < this.draw_x; i++)
-                for (var j = 0; j < this.draw_y; j++)
+            for (var i = 0; i < this.gridSize.x; i++)
+                for (var j = 0; j < this.gridSize.y; j++)
                     this.Grid[i][j].light = 0;
             var queue = new Queue_1.Queue();
             var dirs = [
@@ -2080,6 +2081,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                                 var level = new Level_1.Level();
                                 level.createFromPrototype(prototype);
                                 level.showLighting = true;
+                                level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
                                 Game.currentGame.levels[name] = level;
                             })];
                         case 1:
@@ -3514,7 +3516,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_17, Game_9, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LeverEditorCursor/source/env/");
+    aux.setEnvironment("http://127.0.0.1:8000/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');

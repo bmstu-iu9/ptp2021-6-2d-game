@@ -188,6 +188,7 @@ export class Game {
                 let level = new Level();
                 level.createFromPrototype(prototype);
                 level.showLighting = true;
+                level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
                 // level.makeLightSource(new geom.Vector(5, 5), 10);
                 // level.makeLightSource(new geom.Vector(0, 0), 10);
                 Game.currentGame.levels[name] = level;
