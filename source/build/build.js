@@ -1263,7 +1263,8 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.owner = owner;
             this.sound.playcontinuously("firemashine", 1);
             this.sound.current_sound.muted = true;
-            this.owner.game.soundsarr.push(this.sound);
+            if (this.owner.game)
+                this.owner.game.soundsarr.push(this.sound);
         }
         Weapon.prototype.rechargeClip = function () {
             this.timeToCooldown = this.magazineCooldown;
