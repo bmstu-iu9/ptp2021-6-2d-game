@@ -7,6 +7,7 @@
 '''
 import http.server as httpserver
 
+
 class CORSHTTPRequestHandler(httpserver.SimpleHTTPRequestHandler):
     def send_head(self):
         """Common code for GET and HEAD commands.
@@ -54,7 +55,7 @@ class CORSHTTPRequestHandler(httpserver.SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     import os
     import socketserver
-    
+
     import sys
     PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4500
 

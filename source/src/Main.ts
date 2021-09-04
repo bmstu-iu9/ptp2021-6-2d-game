@@ -1,49 +1,62 @@
 import * as geom from "./Geom";
 import * as aux from "./AuxLib";
-import {Draw} from "./Draw";
+import { Draw } from "./Draw";
 import { Game } from "./Game";
-import { Level } from "./Level";
+import { Level, LightSource } from "./Level";
 import { Editor } from "./Editor";
+import { Instruction } from "./BehaviorModel";
+import { Person } from "./Entities/Person";
+import { Scientist } from "./Entities/Scientist";
+import { Behavior } from "./Entities/Person";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
-//aux.setEnvironment("http://127.0.0.1:4500/server.py"); // Если локальный сервер
+//aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/LeverEditorCursor/source/env/"); // Если с Гита
+aux.setEnvironment("http://127.0.0.1:8000/"); // Если локальный сервер
 
-let canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-let draw = new Draw(canvas, new geom.Vector(640, 640));
-draw.cam.scale = 0.4;
-Game.levels = new Map();
-Game.loadMap("map.json", "map");
+// Флаг режима редактора уровней
+let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
+
+aux.setEditorMode(levelEditorMode);
+
+let canvas: HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let draw = new Draw(canvas);
+draw.cam.scale = 10;
 
 let game = new Game(draw);
-game.makeScientist(new geom.Vector(1, 0));
-game.makeSoldier(new geom.Vector(2.5, 1));
+game.levels = new Map();
+Game.currentGame = game;
+Game.loadMap("map.json", "map");
+game.makeSoldier(new geom.Vector(1, 1));
 
 game.mimic.takeControl(game.entities[0]);
 
 let x = false;
 let t = 0;
 
-// Флаг режима редактора уровней
-let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
-
 // В случае если режим игры
 function step() {
-    if (Game.levels["map"] != undefined) {
+    if (game.levels["map"] != undefined) {
         t++;
-        if (x == false) {
-            //console.log(Game.levels["map"]);
+        // if (x == false) {
+        //     console.log(game.entities[1]);
             
-            game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
-            game.makeTrigger(100000000, game.entities[1]);
-            console.log(Game.levels["map"].PathMatrix); 
-            x = true;
-        }
+        //     let person = game.entities[1] as Scientist;
+        //     person.behaviorModel.changeCurrentInstruction("normal"); 
+        //     //console.log(Game.levels["map"]);
+            
+        //     //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
+        //     //game.makeTrigger(100000000, game.entities[1]);
+        //     console.log(game.levels["map"].PathMatrix); 
+        //     x = true;
+        // }
         if (t % 100 == 0) {
+            console.log(game.entities);
             //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
-            for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
-                console.log(game.entities[1].myAI.Path[i]);
-                
-            }
+            //for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
+            //    console.log(game.entities[1].myAI.Path[i]);
+            //    
+            //}
         }
         draw.clear();
         game.step();
@@ -58,6 +71,7 @@ if (levelEditorMode) {
     // В случае если режим редактора
     let editor = new Editor();
     editor.setDraw(draw);
+    editor.draw.resize(new geom.Vector(window.innerHeight - 30, window.innerHeight - 30));
     let editorStep = function () {
         editor.step();
         draw.clear();
