@@ -27,34 +27,34 @@ export class Body {
     public move(delta : geom.Vector) : boolean {
         let touched = false;
         let delta1 = delta.add(this.collisionBox.mul(1 / 2));
-        let collisionDR = this.game.check_wall(this.center.add(delta1));
-        let collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
-        let collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
-        let collisionUR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
+        let collisionDR = this.game.checkWall(this.center.add(delta1));
+        let collisionDL = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
+        let collisionUL = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
+        let collisionUR = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
         if (collisionDL == CollisionType.Full || collisionUR == CollisionType.Full || collisionDR == CollisionType.Full || collisionDL == CollisionType.Full) {
             if (collisionDR == CollisionType.Full) {
-                let collisionRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -delta.y))));
+                let collisionRW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -delta.y))));
                 if (collisionRW == CollisionType.Full) {
                     this.isWallNear = 1;//right wall
                 } else {
                     this.isWallNear = 4;//down wall
                 }
             } else if (collisionDL == CollisionType.Full) {
-                let collisionLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -delta.y))));
+                let collisionLW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -delta.y))));
                 if (collisionLW == CollisionType.Full) {
                     this.isWallNear = 3;//left wall
                 } else {
                     this.isWallNear = 4;//down wall
                 }
             } else if (collisionUL == CollisionType.Full) {
-                let collisonLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -(this.collisionBox.y + delta.y)))));
+                let collisonLW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -(this.collisionBox.y + delta.y)))));
                 if (collisonLW == CollisionType.Full) {
                     this.isWallNear = 3;
                 } else {
                     this.isWallNear = 2;
                 }
             } else {
-                let collisonRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -(this.collisionBox.y + delta.y)))));
+                let collisonRW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -(this.collisionBox.y + delta.y)))));
                 if (collisonRW == CollisionType.Full) {
                     this.isWallNear = 1;
                 } else {

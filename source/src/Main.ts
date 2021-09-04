@@ -1,6 +1,6 @@
 import * as geom from "./Geom";
 import * as aux from "./AuxLib";
-import {Draw} from "./Draw";
+import { Draw } from "./Draw";
 import { Game } from "./Game";
 import { Level, LightSource } from "./Level";
 import { Editor } from "./Editor";
@@ -19,9 +19,9 @@ let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
 
 aux.setEditorMode(levelEditorMode);
 
-let canvas:HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
-        canvas.width=window.innerWidth ;
-        canvas.height = window.innerHeight;
+let canvas: HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 let draw = new Draw(canvas);
 draw.cam.scale = 10;
 
@@ -40,18 +40,19 @@ let t = 0;
 function step() {
     if (game.levels["map"] != undefined) {
         t++;
-        // if (x == false) {
-        //     console.log(game.entities[1]);
-            
-        //     let person = game.entities[1] as Scientist;
-        //     person.behaviorModel.changeCurrentInstruction("normal"); 
-        //     //console.log(Game.levels["map"]);
-            
+        Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
+        if (x == false) {
+            // console.log(game.entities[1]);
+
+            // let person = game.entities[1] as Scientist;
+            // person.behaviorModel.changeCurrentInstruction("normal"); 
+            // console.log(Game.levels["map"]);
+
             //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
             //game.makeTrigger(100000000, game.entities[1]);
-            
-            console.log(game.levels["map"].PathMatrix); 
-            Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
+
+            console.log(game.levels["map"].PathMatrix);
+            //Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
             x = true;
         }
         if (t % 100 == 0) {

@@ -52,7 +52,7 @@ var __extends = (this && this.__extends) || (function () {
 define("Geom", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.dist = exports.vectorFromAngle = exports.Vector = exports.eps = void 0;
+    exports.dist = exports.vectorFromAngle = exports.vectorComparison = exports.Vector = exports.eps = void 0;
     exports.eps = 1e-4;
     var Vector = (function () {
         function Vector(x, y) {
@@ -104,6 +104,26 @@ define("Geom", ["require", "exports"], function (require, exports) {
         return Vector;
     }());
     exports.Vector = Vector;
+    function vectorComparison(vec1, vec2) {
+        if (vec1.x - vec2.x > -exports.eps && vec1.x - vec2.x < exports.eps) {
+            if (vec1.y - vec2.y > -exports.eps && vec1.y - vec2.y < exports.eps) {
+                return 0;
+            }
+            if (vec1.y < vec2.y) {
+                return -1;
+            }
+            else {
+                return 1;
+            }
+        }
+        if (vec1.x < vec2.x) {
+            return -1;
+        }
+        else {
+            return 1;
+        }
+    }
+    exports.vectorComparison = vectorComparison;
     function vectorFromAngle(angle) {
         return new Vector(Math.cos(angle), Math.sin(angle));
     }
@@ -399,13 +419,13 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
         Body.prototype.move = function (delta) {
             var touched = false;
             var delta1 = delta.add(this.collisionBox.mul(1 / 2));
-            var collisionDR = this.game.check_wall(this.center.add(delta1));
-            var collisionDL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
-            var collisionUL = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
-            var collisionUR = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
+            var collisionDR = this.game.checkWall(this.center.add(delta1));
+            var collisionDL = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
+            var collisionUL = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
+            var collisionUR = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
             if (collisionDL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full) {
                 if (collisionDR == Tile_1.CollisionType.Full) {
-                    var collisionRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -delta.y))));
+                    var collisionRW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -delta.y))));
                     if (collisionRW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 1;
                     }
@@ -414,7 +434,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
                     }
                 }
                 else if (collisionDL == Tile_1.CollisionType.Full) {
-                    var collisionLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -delta.y))));
+                    var collisionLW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -delta.y))));
                     if (collisionLW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 3;
                     }
@@ -423,7 +443,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
                     }
                 }
                 else if (collisionUL == Tile_1.CollisionType.Full) {
-                    var collisonLW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -(this.collisionBox.y + delta.y)))));
+                    var collisonLW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -(this.collisionBox.y + delta.y)))));
                     if (collisonLW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 3;
                     }
@@ -432,7 +452,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
                     }
                 }
                 else {
-                    var collisonRW = this.game.check_wall(this.center.add(delta1.add(new geom.Vector(0, -(this.collisionBox.y + delta.y)))));
+                    var collisonRW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -(this.collisionBox.y + delta.y)))));
                     if (collisonRW == Tile_1.CollisionType.Full) {
                         this.isWallNear = 1;
                     }
@@ -817,7 +837,6 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.changeCurrentInstruction(this.currentInstruction);
         };
         BehaviorModel.prototype.step = function () {
-            console.log("here?");
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
                 console.log(this.currentInstruction, "in progress");
                 this.operationNum++;
@@ -2173,7 +2192,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
         Game.prototype.attachCamToMimic = function () {
             this.draw.cam.pos = this.draw.cam.pos.add(this.mimic.controlledEntity.body.center.sub(this.draw.cam.pos).mul(0.1));
         };
-        Game.prototype.check_wall = function (pos) {
+        Game.prototype.checkWall = function (pos) {
             var posRound = new geom.Vector(Math.floor(pos.x / this.currentLevel.tileSize), Math.floor(pos.y / this.currentLevel.tileSize));
             if (posRound.x < 0 || posRound.y < 0 ||
                 posRound.x >= this.currentLevel.Grid.length ||
@@ -2556,7 +2575,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_13, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.reviver = exports.replacer = exports.getMilliCount = exports.arrayMove = exports.swap = exports.setEnvironment = exports.setEditorMode = exports.editorMode = exports.environment = void 0;
+    exports.reviver = exports.replacer = exports.getMilliCount = exports.mergeArray = exports.arrayMove = exports.swap = exports.setEnvironment = exports.setEditorMode = exports.editorMode = exports.environment = void 0;
     exports.editorMode = false;
     function setEditorMode(newEditorMode) {
         exports.editorMode = newEditorMode;
@@ -2580,6 +2599,24 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
     }
     exports.arrayMove = arrayMove;
     ;
+    function mergeArray(arr1, arr2, func) {
+        if (arr1.length == 0) {
+            return arr2;
+        }
+        if (arr2.length == 0) {
+            return arr1;
+        }
+        var arr = [];
+        for (var i = 0; i < arr1.length; i++) {
+            arr[arr.length] = arr1[i];
+        }
+        for (var i = 0; i < arr2.length; i++) {
+            arr[arr.length] = arr2[i];
+        }
+        arr.sort(func);
+        return arr;
+    }
+    exports.mergeArray = mergeArray;
     function getMilliCount() {
         return new Date().getTime();
     }
@@ -3514,7 +3551,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
     }());
     exports.Editor = Editor;
 });
-define("RayCasting", ["require", "exports", "Debug", "Draw", "Geom"], function (require, exports, Debug_4, Draw_17, Geom_6) {
+define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], function (require, exports, AuxLib_1, Debug_4, Draw_17, Geom_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Ray = void 0;
@@ -3526,18 +3563,18 @@ define("RayCasting", ["require", "exports", "Debug", "Draw", "Geom"], function (
                 (begin - Geom_6.eps < middle && middle - Geom_6.eps < end));
         };
         Ray.pointGenerator = function (begin, end) {
-            var angle = end.sub(begin).getAngle(new Geom_6.Vector(1, 0));
+            var angle = end.sub(begin).angle();
             var stepVec = new Geom_6.Vector(Math.cos(angle), Math.sin(angle));
             var xPoints = [];
             xPoints[0] = begin.clone();
             if (!this.isBetween(-Geom_6.eps, stepVec.x, Geom_6.eps)) {
                 if (stepVec.x < 0) {
                     xPoints[1] = new Geom_6.Vector(Math.floor(begin.x), 0);
-                    xPoints[1] = stepVec.mul((xPoints[1].x - begin.x) / stepVec.x);
+                    xPoints[1] = begin.add(stepVec.mul((xPoints[1].x - begin.x) / stepVec.x));
                 }
                 else {
                     xPoints[1] = new Geom_6.Vector(Math.ceil(begin.x), 0);
-                    xPoints[1] = stepVec.mul((xPoints[1].x - begin.x) / stepVec.x);
+                    xPoints[1] = begin.add(stepVec.mul((xPoints[1].x - begin.x) / stepVec.x));
                 }
             }
             else {
@@ -3548,27 +3585,28 @@ define("RayCasting", ["require", "exports", "Debug", "Draw", "Geom"], function (
             if (!this.isBetween(-Geom_6.eps, stepVec.y, Geom_6.eps)) {
                 if (stepVec.y < 0) {
                     yPoints[1] = new Geom_6.Vector(0, Math.floor(begin.y));
-                    yPoints[1] = stepVec.mul((yPoints[1].y - begin.y) / stepVec.y);
+                    yPoints[1] = begin.add(stepVec.mul((yPoints[1].y - begin.y) / stepVec.y));
                 }
                 else {
                     yPoints[1] = new Geom_6.Vector(0, Math.ceil(begin.y));
-                    yPoints[1] = stepVec.mul((yPoints[1].y - begin.y) / stepVec.y);
+                    yPoints[1] = begin.add(stepVec.mul((yPoints[1].y - begin.y) / stepVec.y));
                 }
             }
             else {
                 yPoints[1] = end.clone();
             }
+            console.log(xPoints, yPoints);
             for (var i = 1; this.isBetween(begin.x, xPoints[i].x, end.x); i++) {
                 if (this.isBetween(-Geom_6.eps, stepVec.x, Geom_6.eps)) {
                     break;
                 }
                 if (stepVec.x < 0) {
                     xPoints[i + 1] = xPoints[i].add(new Geom_6.Vector(-1, 0));
-                    xPoints[i + 1] = stepVec.mul((xPoints[i + 1].x - begin.x) / stepVec.x);
+                    xPoints[i + 1] = begin.add(stepVec.mul((xPoints[i + 1].x - begin.x) / stepVec.x));
                 }
                 else {
                     xPoints[i + 1] = xPoints[i].add(new Geom_6.Vector(1, 0));
-                    xPoints[i + 1] = stepVec.mul((xPoints[i + 1].x - begin.x) / stepVec.x);
+                    xPoints[i + 1] = begin.add(stepVec.mul((xPoints[i + 1].x - begin.x) / stepVec.x));
                 }
             }
             xPoints[xPoints.length - 1] = end.clone();
@@ -3578,20 +3616,25 @@ define("RayCasting", ["require", "exports", "Debug", "Draw", "Geom"], function (
                 }
                 if (stepVec.y < 0) {
                     yPoints[i + 1] = yPoints[i].add(new Geom_6.Vector(0, -1));
-                    yPoints[i + 1] = stepVec.mul((yPoints[i + 1].y - begin.y) / stepVec.y);
+                    yPoints[i + 1] = begin.add(stepVec.mul((yPoints[i + 1].y - begin.y) / stepVec.y));
                 }
                 else {
                     yPoints[i + 1] = yPoints[i].add(new Geom_6.Vector(0, 1));
-                    yPoints[i + 1] = stepVec.mul((yPoints[i + 1].y - begin.y) / stepVec.y);
+                    yPoints[i + 1] = begin.add(stepVec.mul((yPoints[i + 1].y - begin.y) / stepVec.y));
                 }
             }
             yPoints[yPoints.length - 1] = end.clone();
-            for (var i = 0; i < xPoints.length; i++) {
-                Debug_4.Debug.addPoint(xPoints[i], new Draw_17.Color(256, 0, 0));
+            var points = AuxLib_1.mergeArray(xPoints, yPoints, Geom_6.vectorComparison);
+            console.log(points);
+            var midPoints = [];
+            for (var i = 1; i < points.length; i++) {
+                midPoints[midPoints.length] = (points[i - 1].add(points[i])).mul(1 / 2);
             }
-            for (var i = 0; i < yPoints.length; i++) {
-                Debug_4.Debug.addPoint(yPoints[i], new Draw_17.Color(0, 0, 256));
+            for (var i = 0; i < midPoints.length; i++) {
+                Debug_4.Debug.addPoint(midPoints[i], new Draw_17.Color(256, 0, 0));
             }
+        };
+        Ray.prototype.wallIntersection = function () {
         };
         return Ray;
     }());
@@ -3619,9 +3662,9 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     function step() {
         if (game.levels["map"] != undefined) {
             t++;
+            RayCasting_1.Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
             if (x == false) {
                 console.log(game.levels["map"].PathMatrix);
-                RayCasting_1.Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
                 x = true;
             }
             if (t % 100 == 0) {
