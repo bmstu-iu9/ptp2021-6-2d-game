@@ -2172,12 +2172,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 if (value.dataType == 'Soldier') {
                     var soldier = Game.currentGame.makeSoldier(value.center);
                     soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-<<<<<<< HEAD
-                    soldier.behaviorModel.instructions = value.behaviorModel.instructions;
-=======
                     soldier.behaviorModel = value.behaviorModel;
                     soldier.behaviorModel.myAI = soldier.myAI;
->>>>>>> master
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
