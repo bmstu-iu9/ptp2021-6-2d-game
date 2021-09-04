@@ -10,41 +10,41 @@ export enum Keys {
 }
 
 export class Control {
-    private static  keyMapping : Map<number, string[]>;
-    private static _keys : boolean[] = [];
+    private static keyMapping: Map<number, string[]>;
+    private static _keys: boolean[] = [];
     private static clicked = false;
     private static mouseLeftPressed = false;
     private static mouseRightPressed = false;
     private static currentMousePos = new geom.Vector();
     private static mouseWheelDelta = 0;
-    private static commandsCounter : Map<string, number>;
-    public static commands : Commands;
+    private static commandsCounter: Map<string, number>;
+    public static commands: Commands;
 
     private static async readTextFile(path) {
         const response = await fetch(path)
         const text = await response.text()
         return text;
     }
-    
-    public static async loadConfig(path : string) {
+
+    public static async loadConfig(path: string) {
         if (localStorage.getItem("commands") == undefined) {
             let result = await this.readTextFile(aux.environment + path)
-            .then(result =>  { 
-                Control.keyMapping = JSON.parse(result, aux.reviver);
-                localStorage.setItem("commands", result);
-            })
-            .then(result => {
-                
-                let vals = Array.from(Control.keyMapping.values());
-                for (let i = 0; i < vals.length; i++) {
-                    for (let j = 0; j < vals[i].length; j++) {
-                        Control.commands.active[vals[i][j]] = false;
-                        Control.commandsCounter[vals[i][j]] = 0;
+                .then(result => {
+                    Control.keyMapping = JSON.parse(result, aux.reviver);
+                    localStorage.setItem("commands", result);
+                })
+                .then(result => {
+
+                    let vals = Array.from(Control.keyMapping.values());
+                    for (let i = 0; i < vals.length; i++) {
+                        for (let j = 0; j < vals[i].length; j++) {
+                            Control.commands.active[vals[i][j]] = false;
+                            Control.commandsCounter[vals[i][j]] = 0;
+                        }
                     }
-                }
-            });
+                });
         } else {
-            
+
             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
             let vals = Array.from(Control.keyMapping.values());
             for (let i = 0; i < vals.length; i++) {
@@ -56,7 +56,7 @@ export class Control {
         }
     }
 
-    public static init() : void {
+    public static init(): void {
         for (let i = 0; i < 256; i++) {
             Control._keys[i] = false;
         }
@@ -72,29 +72,29 @@ export class Control {
         window.addEventListener("mouseup", Control.onMouseUp);
         // Блокировка контекстного меню по ПКМ
         window.addEventListener("contextmenu", e => e.preventDefault());
-        
-        
+
+
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Commands();
-        Control.loadConfig("keys.json");       
-        
+        Control.loadConfig("keys.json");
+
     }
 
-    public static isKeyDown(key : Keys) : boolean {
+    public static isKeyDown(key: Keys): boolean {
         return Control._keys[key];
     }
 
-    public static isMouseClicked() : boolean {
+    public static isMouseClicked(): boolean {
         return Control.clicked;
     }
 
-    public static lastMouseCoordinates() : geom.Vector {
+    public static lastMouseCoordinates(): geom.Vector {
         Control.clicked = false;
         return Control.commands.pointer.clone();
     }
 
-    public static wheelDelta() : number {
+    public static wheelDelta(): number {
         let delta = this.mouseWheelDelta;
         this.mouseWheelDelta = 0;
         return delta;
@@ -104,7 +104,7 @@ export class Control {
         this.mouseWheelDelta = 0;
     }
 
-    public static mousePos() : geom.Vector {
+    public static mousePos(): geom.Vector {
         let canvas = document.getElementById("gameCanvas");
         return this.currentMousePos.sub(new geom.Vector(canvas.offsetLeft, canvas.offsetTop));
     }
@@ -117,7 +117,7 @@ export class Control {
         return Control.mouseRightPressed;
     }
 
-    private static onKeyDown(event : KeyboardEvent) : boolean {
+    private static onKeyDown(event: KeyboardEvent): boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == false) {
             if (Control.keyMapping.get(event.keyCode) == undefined) {
                 Control.keyMapping.set(event.keyCode, []);
@@ -134,7 +134,7 @@ export class Control {
         return false;
     }
 
-    private static onKeyUp(event : KeyboardEvent) : boolean {
+    private static onKeyUp(event: KeyboardEvent): boolean {
         if (Control.keyMapping != undefined && Control._keys[event.keyCode] == true) {
             if (Control.keyMapping.get(event.keyCode) == undefined) {
                 Control.keyMapping.set(event.keyCode, []);
@@ -151,7 +151,7 @@ export class Control {
         return false;
     }
 
-    private static onClick(event : MouseEvent) : boolean {
+    private static onClick(event: MouseEvent): boolean {
         Control.clicked = true;
         Control.commands.pointer = new geom.Vector(event.x, event.y);
         event.preventDefault();
@@ -159,7 +159,7 @@ export class Control {
         return false;
     }
 
-    private static onMouseDown(event : MouseEvent) : boolean {
+    private static onMouseDown(event: MouseEvent): boolean {
         if (event.button == 0)
             Control.mouseLeftPressed = true;
         if (event.button == 2)
@@ -167,7 +167,7 @@ export class Control {
         return false;
     }
 
-    private static onMouseUp(event : MouseEvent) : boolean {
+    private static onMouseUp(event: MouseEvent): boolean {
         if (event.button == 0)
             Control.mouseLeftPressed = false;
         if (event.button == 2)
@@ -175,12 +175,12 @@ export class Control {
         return false;
     }
 
-    private static onWheel(event : WheelEvent) : boolean {
+    private static onWheel(event: WheelEvent): boolean {
         Control.mouseWheelDelta = event.deltaY;
         return false;
     }
 
-    private static onMouseMove(event : MouseEvent) : boolean {
+    private static onMouseMove(event: MouseEvent): boolean {
         Control.currentMousePos = new geom.Vector(event.x, event.y);
         return false;
     }
