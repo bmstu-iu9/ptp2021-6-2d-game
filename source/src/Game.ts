@@ -4,7 +4,7 @@ import { Body } from "./Entities/EntityAttributes/Body";
 import { Entity } from "./Entities/Entity";
 import { Person, PersonMode } from "./Entities/Person";
 import { Control, Keys } from "./Control";
-import { Draw, Color } from "./Draw";
+import { Draw, Color, Layer } from "./Draw";
 import { Tile, CollisionType } from "./Tile";
 import { Mimic } from "./Mimic";
 import { Level, LightSource } from "./Level";
@@ -17,12 +17,18 @@ import { Corpse } from "./Entities/Corpse";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { Biomass } from "./Entities/Projectiles/Biomass";
+import { Sounds } from "./Sounds";
+
+export enum State {
+    Waiting,
+    Game
+};
 
 export class Game {
     public levels: Map<any, any>; // набор всех уровней каждый карта вызывается по своему названию
     public static dt = 0.02;
     public static currentGame: Game;
-
+    public soundsarr: Sounds[] = [];
     public draw: Draw;
     private bodies: Body[] = []; // массив всех тел
     public entities: Entity[] = []; // массив всех entity
@@ -32,7 +38,10 @@ export class Game {
     public playerID = 0;  // атавизм? id игрока, хз зачем нужно
     public mimic: Mimic; // объект мимик, за который играет игрок
     public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
+    private state = State.Waiting;
+    private static levelPaths = new Map<string, string>(); // Пары уровень-путь
 
+    public sounds: Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
         const text = await response.text()
@@ -144,8 +153,7 @@ export class Game {
                 console.log("loading scientist");
                 let scientist = Game.currentGame.makeScientist(value.center) as Scientist;
                 scientist.behaviorModel = new BehaviorModel(scientist.myAI);
-                scientist.behaviorModel = value.behaviorModel;
-                scientist.behaviorModel.myAI = scientist.myAI;
+                scientist.behaviorModel.instructions = value.behaviorModel.instructions;
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -179,10 +187,10 @@ export class Game {
     }
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
+        Game.levelPaths[name] = path;
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
-                console.log(result);
-                console.log(this.currentGame);
+                console.log("Map loaded");
 
                 let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
@@ -210,6 +218,7 @@ export class Game {
     }
 
     public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
+
         let body = this.makeBody(pos, 1);
         let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -251,9 +260,10 @@ export class Game {
         this.entities[this.entities.length] = entity;
         this.makeTrigger(entity, 3, 100000);
         return entity;
+
     }
 
-    public makeTrigger(boundEntity: Entity, power : number, lifeTime: number) { // создаёт триггер и возвращает ссылку
+    public makeTrigger(boundEntity: Entity, power: number, lifeTime: number) { // создаёт триггер и возвращает ссылку
         let trigger = new Trigger(lifeTime, boundEntity);
         trigger.power = power;
         return this.triggers[this.triggers.length] = trigger;
@@ -279,7 +289,38 @@ export class Game {
         }
     }
 
+    public startGame() {
+        this.state = State.Game;
+        this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+        this.bodies = [];
+        this.entities = [];
+        this.triggers = [];
+        this.mimic = new Mimic(this);
+        this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
+        // TODO: перезапуск уровня
+        Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
+        this.sounds.playcontinuously("game", 0.2);
+        this.soundsarr.push(this.sounds)
+
+    }
+
     public step() {
+        // Экран загрузки
+        if (this.state == State.Waiting) { // Если в режиме ожидания
+            if (Control.isMouseLeftPressed() || Control.isMouseRightPressed())
+                this.startGame();
+            return;
+        }
+
+        // Смерть
+        if (this.mimic.isDead()) {
+            for (; 0 < this.soundsarr.length;) {
+                let cursound = this.soundsarr.pop()
+                cursound.stop();
+            }
+            this.state = State.Waiting;
+        }
+
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
@@ -340,9 +381,25 @@ export class Game {
     }
 
     public display() {
+        // Экран загрузки
+        if (this.state == State.Waiting) { // Если в режиме ожидания
+            this.draw.attachToCanvas();
+            let image = Draw.loadImage("textures/Screens/Start.png");
+            if (this.mimic.isDead())
+                image = Draw.loadImage("textures/Screens/Death.png");
+            this.draw.image(
+                image,
+                this.draw.cam.center,
+                this.draw.cam.center.mul(2),
+                0, Layer.HudLayer
+            );
+            this.draw.getimage();
+            return;
+        }
+
         // Настройка камеры
         this.configureCamScale();
-        
+
         // Орисовка тайлов
         this.currentLevel.display(this.draw);
 

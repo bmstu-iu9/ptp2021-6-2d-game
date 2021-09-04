@@ -4,8 +4,8 @@ import { LevelJSON } from "../Level";
 import { CollisionType, Tile } from "../Tile";
 
 export class PathGenerator {
-    private static fillTile(collisionMesh : boolean[][], tileInfo : Tile, place : Vector) {
-        switch(tileInfo.colision) {
+    private static fillTile(collisionMesh: boolean[][], tileInfo: Tile, place: Vector) {
+        switch (tileInfo.colision) {
             case CollisionType.CornerDL: {
                 let k = -2;
                 for (let i = -1; i <= 1; i++) {
@@ -57,7 +57,7 @@ export class PathGenerator {
         }
     }
 
-    private static findNearestWays(collisionMesh : boolean[][], place : Vector, distance : Map<any, any>, path : Map<any, any>) {
+    private static findNearestWays(collisionMesh: boolean[][], place: Vector, distance: Map<any, any>, path: Map<any, any>) {
         for (let i = -1; i <= 1; i++) {
             if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
                 continue;
@@ -78,7 +78,7 @@ export class PathGenerator {
         }
     }
 
-    private static FloydWarshall(vertices : Vector[], distance : Map<any, any>, path : Map<any, any>) {
+    private static FloydWarshall(vertices: Vector[], distance: Map<any, any>, path: Map<any, any>) {
         for (let k = 0; k < vertices.length; k++) {
             for (let i = 0; i < vertices.length; i++) {
                 for (let j = 0; j < vertices.length; j++) {
@@ -97,13 +97,13 @@ export class PathGenerator {
         }
     }
 
-    public static generateMatrix(MimicMap : LevelJSON) {
+    public static generateMatrix(MimicMap: LevelJSON) {
         let collisionMap = MimicMap.Grid;
-        let collisionMesh : boolean[][]; // Коллизионная сетка
+        let collisionMesh: boolean[][]; // Коллизионная сетка
         let distance = new Map(); // Матрица расстояний между узлами коллизионной сетки
         collisionMesh = [];
         collisionMesh[0] = [];
-        collisionMesh[0][0] = false; 
+        collisionMesh[0][0] = false;
         for (let j = 0; j < collisionMap[0].length; j++) {
             collisionMesh[0][j * 2 + 1] = false;
             collisionMesh[0][j * 2 + 2] = false;
@@ -116,7 +116,7 @@ export class PathGenerator {
             collisionMesh[i * 2 + 2][0] = false;
             for (let j = 0; j < collisionMap[i].length; j++) {
                 collisionMesh[i * 2 + 1][j * 2 + 1] = false;
-                collisionMesh[i * 2  + 1][j * 2 + 2] = false;
+                collisionMesh[i * 2 + 1][j * 2 + 2] = false;
                 collisionMesh[i * 2 + 2][j * 2 + 1] = false;
                 collisionMesh[i * 2 + 2][j * 2 + 2] = false;
             }
@@ -125,13 +125,13 @@ export class PathGenerator {
         for (let i = 0; i < collisionMap.length; i++) {
             for (let j = 0; j < collisionMap[i].length; j++) {
                 console.log(i, j, collisionMap[i][j], i * 2 + 1, j * 2 + 1);
-                
+
                 this.fillTile(collisionMesh, collisionMap[i][j], new Vector(j * 2 + 1, i * 2 + 1));
             }
         }
         for (let i = 0; i < collisionMesh.length; i++) {
             let x = "";
-            for(let j = 0; j < collisionMesh[i].length; j++) {
+            for (let j = 0; j < collisionMesh[i].length; j++) {
                 if (collisionMesh[i][j]) {
                     x += "1";
                 }
@@ -141,7 +141,7 @@ export class PathGenerator {
             }
             console.log(x);
         }
-        let vertices : Vector[]; // свободные узлы коллизионной сетки
+        let vertices: Vector[]; // свободные узлы коллизионной сетки
         vertices = [];
         let path = new Map(); // матрица предков
         // Заполнение матрицы расстояний рёбрами графа
@@ -153,13 +153,13 @@ export class PathGenerator {
                         distance.set(JSON.stringify(place), new Map());
                         path.set(JSON.stringify(place), new Map());
                     }
-                    this.findNearestWays(collisionMesh, place, distance, path); 
+                    this.findNearestWays(collisionMesh, place, distance, path);
                     vertices[vertices.length] = place;
                 }
             }
         }
         console.log(path);
-        
+
         // Поиск кратчайших путей
         this.FloydWarshall(vertices, distance, path);
         console.log(path);
@@ -173,11 +173,11 @@ export class PathGenerator {
                         correctPath.set(vertices[i], new Map());
                     }
                     correctPath.get(vertices[i]).set(vertices[j],
-                         path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])));
+                        path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])));
                 }
             }
         }
-        
+
         MimicMap.PathMatrix = correctPath;
         MimicMap.CollisionMesh = collisionMesh;
     }

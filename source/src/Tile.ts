@@ -12,11 +12,11 @@ export enum CollisionType {
 
 export class Tile {
     public colision = CollisionType.Empty;
-    public image : HTMLImageElement;
-    public sub_image : HTMLImageElement;
+    public image: HTMLImageElement;
+    public sub_image: HTMLImageElement;
     public light = 0;
-    
-    constructor(colision : CollisionType = 0, image : HTMLImageElement = null, sub_image : HTMLImageElement = null) {
+
+    constructor(colision: CollisionType = 0, image: HTMLImageElement = null, sub_image: HTMLImageElement = null) {
         this.colision = colision;
         if (colision == 0) {
             this.image = Draw.loadImage("textures/tiles/Empty.png");
@@ -39,24 +39,24 @@ export class Tile {
         if (image) {
             this.image = image;
         }
-        if (sub_image){
+        if (sub_image) {
             this.sub_image = sub_image;
         }
     }
 
-    public setColision(colision : CollisionType) {
+    public setColision(colision: CollisionType) {
         this.colision = colision;
     }
 
-    public setImage(image : HTMLImageElement) {
+    public setImage(image: HTMLImageElement) {
         this.image = image;
     }
 
-    public setSubImage(sub_image : HTMLImageElement) {
+    public setSubImage(sub_image: HTMLImageElement) {
         this.sub_image = sub_image;
     }
 
-    public clone() : Tile {
+    public clone(): Tile {
         return new Tile(this.colision, this.image, this.sub_image);
     }
 }

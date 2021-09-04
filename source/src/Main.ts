@@ -1,6 +1,6 @@
 import * as geom from "./Geom";
 import * as aux from "./AuxLib";
-import {Draw} from "./Draw";
+import { Draw } from "./Draw";
 import { Game } from "./Game";
 import { Level, LightSource } from "./Level";
 import { Editor } from "./Editor";
@@ -17,9 +17,9 @@ let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
 
 aux.setEditorMode(levelEditorMode);
 
-let canvas:HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
-        canvas.width=window.innerWidth ;
-        canvas.height = window.innerHeight;
+let canvas: HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 let draw = new Draw(canvas);
 draw.cam.scale = 10;
 
@@ -27,7 +27,7 @@ let game = new Game(draw);
 game.levels = new Map();
 Game.currentGame = game;
 Game.loadMap("map.json", "map");
-game.makeScientist(new geom.Vector(1, 1));
+game.makeSoldier(new geom.Vector(1, 1));
 
 game.mimic.takeControl(game.entities[0]);
 

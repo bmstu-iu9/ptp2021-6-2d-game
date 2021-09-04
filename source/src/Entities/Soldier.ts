@@ -10,9 +10,9 @@ import { Monster } from "./Monster";
 export class Soldier extends Person {
     public weapon = new Weapon(this);
 
-    constructor(game : Game, body : Body, mode : PersonMode) {
+    constructor(game: Game, body: Body, mode: PersonMode) {
         super(game, body, mode);
-        this.animation = new Animation("Soldier",8);
+        this.animation = new Animation("Soldier", 8);
         this.type = "Soldier";
     }
 
@@ -28,7 +28,7 @@ export class Soldier extends Person {
                 if (geom.dist(entity.body.center, this.body.center) < this.weapon.range)
                     this.myAI.commands.active["shoot"] = true;
                 this.myAI.commands.pointer = entity.body.center.sub(this.body.center);
-                
+
             }
         }
 
@@ -40,7 +40,7 @@ export class Soldier extends Person {
         super.step();
     }
 
-    public display(draw : Draw) {
+    public display(draw: Draw) {
         super.display(draw);
         this.displayAwareness(draw);
         this.weapon.display(draw);

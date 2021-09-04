@@ -1,14 +1,14 @@
 {
-    "compilerOptions": {
-      "target": "ES5",
-      "removeComments": true,
-      "preserveConstEnums": true,
-      "module" : "amd",
-      "outFile": "./build/build.js",
-      "sourceRoot": "./src/",
-      "rootDir": "./src/",
-      "sourceMap": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true
-    }
+  "compilerOptions": {
+    "target": "ES5",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "module": "amd",
+    "outFile": "./build/build.js",
+    "sourceRoot": "./src/",
+    "rootDir": "./src/",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  }
 }
