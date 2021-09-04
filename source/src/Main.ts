@@ -40,7 +40,7 @@ let t = 0;
 function step() {
     if (game.levels["map"] != undefined) {
         t++;
-        Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
+        Ray.wallIntersection(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0), game);
         if (x == false) {
             // console.log(game.entities[1]);
 

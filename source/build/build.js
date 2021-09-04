@@ -3612,7 +3612,7 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
             xPoints[xPoints.length - 1] = end.clone();
             for (var i = 1; this.isBetween(begin.y, yPoints[i].y, end.y); i++) {
                 if (this.isBetween(-Geom_6.eps, stepVec.y, Geom_6.eps)) {
-                    continue;
+                    break;
                 }
                 if (stepVec.y < 0) {
                     yPoints[i + 1] = yPoints[i].add(new Geom_6.Vector(0, -1));
@@ -3633,8 +3633,17 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
             for (var i = 0; i < midPoints.length; i++) {
                 Debug_4.Debug.addPoint(midPoints[i], new Draw_17.Color(256, 0, 0));
             }
+            return midPoints;
         };
-        Ray.prototype.wallIntersection = function () {
+        Ray.wallIntersection = function (begin, end, game) {
+            var points = Ray.pointGenerator(begin, end);
+            for (var i = 0; i < points.length; i++) {
+                if (game.checkWall(points[i])) {
+                    Debug_4.Debug.addPoint(points[i], new Draw_17.Color(255, 100, 255));
+                    return points[i];
+                }
+            }
+            return false;
         };
         return Ray;
     }());
@@ -3662,7 +3671,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     function step() {
         if (game.levels["map"] != undefined) {
             t++;
-            RayCasting_1.Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
+            RayCasting_1.Ray.wallIntersection(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0), game);
             if (x == false) {
                 console.log(game.levels["map"].PathMatrix);
                 x = true;

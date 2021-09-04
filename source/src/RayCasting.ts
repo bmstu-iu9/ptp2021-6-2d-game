@@ -1,6 +1,7 @@
 import { mergeArray } from "./AuxLib";
 import { Debug } from "./Debug";
 import { Color } from "./Draw";
+import { Game } from "./Game";
 import { eps, Vector, vectorComparison } from "./Geom";
 import { Mimic } from "./Mimic";
 
@@ -60,7 +61,7 @@ export class Ray {
 
         for (let i = 1; this.isBetween(begin.y, yPoints[i].y, end.y); i++) {
             if (this.isBetween(-eps, stepVec.y, eps)) {
-                continue;
+                break;
             }
             if (stepVec.y < 0) {
                 yPoints[i + 1] = yPoints[i].add(new Vector(0, -1));
@@ -80,9 +81,17 @@ export class Ray {
         for (let i = 0; i < midPoints.length; i++) {
             Debug.addPoint(midPoints[i], new Color(256, 0, 0));
         }
+        return midPoints;
     }
 
-    public wallIntersection() {
-
+    public static wallIntersection(begin : Vector, end : Vector, game : Game) {
+        let points = Ray.pointGenerator(begin, end);
+        for (let i = 0; i < points.length; i++) {
+            if (game.checkWall(points[i])) {
+                Debug.addPoint(points[i], new Color(255, 100, 255));
+                return points[i];
+            }
+        }
+        return false;
     }
 }
