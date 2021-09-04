@@ -12,6 +12,7 @@ import { CollisionType, Tile } from "../Tile";
 import { BehaviorModel } from "../BehaviorModel";
 import * as aux from "../AuxLib";
 import { ListOfPads } from "./ListOfPads";
+import { url } from "inspector";
 
 export enum ToolType {
     GoToPoint,
@@ -24,8 +25,9 @@ export enum Mode {
     Wall,
     Entity,
     Selector,
-    PosPicking
-}
+    PosPicking,
+    Light
+  }
 
 // Курсор для редактора уровней. Хранит в себе позицию и
 // информацию о том, как должен вести себя в случае клика
@@ -34,11 +36,11 @@ export class Cursor {
     public draw: Draw;
     public pos = new geom.Vector();
     public gridPos = new geom.Vector();
-    public mode = Mode.Wall;
     public tile = new Tile(CollisionType.Full);
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
-    public selectedEntity: Entity = null;
-    public drawPreview: Draw;
+    public selectedEntity : Entity = null;
+    public drawPreview : Draw;
+    private mode = Mode.Wall;
     private mouseLeftButtonClicked = true;
     private entityLocations: Map<any, number> = new Map();
 
@@ -49,7 +51,9 @@ export class Cursor {
 
     private setBlock() {
         console.log(this.tile);
+        let tileLight = this.level.Grid[this.gridPos.x][this.gridPos.y].light;
         this.level.Grid[this.gridPos.x][this.gridPos.y] = this.tile.clone();
+        this.level.Grid[this.gridPos.x][this.gridPos.y].light = tileLight;
         console.log(this.level.Grid[this.gridPos.x][this.gridPos.y]);
     }
 
@@ -73,11 +77,62 @@ export class Cursor {
         }
     }
 
+    public setLight() {
+        this.level.makeLightSource(this.gridPos, 10);
+        this.level.generateLighting();
+    }
+
+    public changeMode(mode : Mode) {
+        this.mode = mode;
+        switch (mode) {
+            case Mode.Eraser: {
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/eraser.png) 9 21, auto";
+                this.selectedEntity = null;
+                break;
+            }
+            case Mode.Entity: {
+                this.selectedEntity = null;
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
+                break;
+            }
+            case Mode.Wall: {
+                this.selectedEntity = null;
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/adding.png) 15 15, auto";
+                break;
+            }
+            case Mode.PosPicking: {
+                document.getElementById("gameCanvas")["style"].cursor = "url(textures/Editor/Cursors/flag.png) 2 25, auto";
+                break;
+            }
+            case Mode.Selector: {
+                document.getElementById("gameCanvas")["style"].cursor = "default";
+                break;
+            }
+            case Mode.Light: {
+                this.selectedEntity = null;
+                break;
+            }
+        }
+    }
+
     public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
-        if (Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
-            switch (this.mode) {
+        if(Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
+            switch(this.mode) {
+                case Mode.Eraser: {
+                    if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
+                        console.log(this.level.Entities);
+                        this.level.Entities.splice(this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)], 1);
+                        for (let j = 0; j < this.level.Entities.length; j++) {
+                            let gridCord = this.level.gridCoordinates(this.level.Entities[j].body.center);
+                            this.entityLocations[JSON.stringify(gridCord, aux.replacer)] = j;
+                        }
+                        console.log(this.level.Entities);
+                        this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] = null;
+                    }
+                    break;
+                }
                 case Mode.Wall: {
                     this.setBlock();
                     break;
@@ -103,7 +158,12 @@ export class Cursor {
                     let fixedPos = new geom.Vector(new Number(new Number(this.pos.x).toFixed(2)).valueOf(),
                         new Number(new Number(this.pos.y).toFixed(2)).valueOf());
                     ListOfPads.choosePoint(fixedPos);
-                    this.mode = Mode.Selector;
+                    this.changeMode(Mode.Selector);
+                    break;
+                }
+                case Mode.Light: {
+                    this.setLight();
+                    break;
                 }
             }
         }

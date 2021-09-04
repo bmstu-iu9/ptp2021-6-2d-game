@@ -7,12 +7,17 @@
     .layer4,
     .layer5,
     .layer6,
+    .layer7,
+    #w8,
+    .layer8,
     .window6,
     .normalButton,
+    .changeMode,
     .up_menu,
     .panicButton,
     .listOfPads,
     .overed_text,
+    .range_menu,
     .palettes_text {
         position: absolute
     }
@@ -26,7 +31,12 @@
     .tileButton:hover {
         box-shadow: 0 0 7px red;
     }
-    
+
+    .changeMode {
+        right: 400px;
+        top: 10px;
+    }
+
     .behaviorPad {
         height: 50px;
         width: 230px;
@@ -100,7 +110,17 @@
     .toolButton:hover {
         box-shadow: 0 0 7px red;
     }
-    
+
+    .cursorButton {
+        width: 50px;
+        height: auto;
+        margin: 1px;
+    }
+
+    .cursorButton:hover {
+        box-shadow: 0 0 7px red;
+    }
+
     .normalButton {
         width: 70px;
         right: 690px;
@@ -129,7 +149,8 @@
     }
     
     .layer {
-        background: url(textures/Editor/metal_blue.png) center repeat;
+        /*background: url(textures/Editor/metal_blue.png) center repeat;*/
+        background: rgb(205, 209, 228);
         overflow-y: scroll;
         width: 300px;
         padding: 5px;
@@ -139,7 +160,7 @@
     }
     
     .layer2 {
-        background: url(textures/Editor/metal_blue.png) center repeat;
+        background: rgb(205, 209, 228);
         overflow-y: scroll;
         /* Добавляем полосы прокрутки */
         width: 300px;
@@ -153,7 +174,7 @@
     }
     
     .layer3 {
-        background: url(textures/Editor/metal_blue.png) center repeat;
+        background: rgb(205, 209, 228);
         overflow-y: scroll;
         /* Добавляем полосы прокрутки */
         width: 300px;
@@ -167,6 +188,7 @@
     }
     
     .layer4 {
+        overflow-y: auto;
         /*overflow-y: scroll; */
         background: url(textures/Editor/metal_dark.png) center repeat;
         width: 54px;
@@ -177,6 +199,7 @@
     }
     
     .layer5 {
+        overflow-y: auto;
         background: url(textures/Editor/metal_dark.png) center repeat;
         width: 54px;
         padding: 2px;
@@ -186,7 +209,7 @@
     }
     
     .layer6 {
-        background: url(textures/Editor/metal_dark.png) left repeat;
+        background: url(textures/Editor/metal_dark.png) top repeat;
         width: 260px;
         right: 410px;
         /*display: flex;*/
@@ -197,7 +220,26 @@
         border-radius: 4px;
         height: 95%;
     }
-    
+
+    .layer7 {
+        overflow-y: auto;
+        background: url(textures/Editor/metal_dark.png) left repeat;
+        width: 54px;
+        padding: 2px;
+        /*border: solid 1px black;*/
+        right: 320px;
+        border-radius: 4px;
+    }
+
+    .layer8 {
+        overflow-y: auto;
+        background: url(textures/Editor/metal_dark.png) left repeat;
+        width: 150px;
+        padding: 2px;
+        right: 410px;
+        border-radius: 4px;
+    }
+
     .window6 {
         background-color: rgb(236, 247, 134);
         border: solid 2px black;
@@ -266,14 +308,60 @@
         border-radius: 4px;
         height: 40px;
     }
-    
+
+    .show_shadows {
+        align-items: center;
+        display: flex;
+        background-color: red;
+        border-radius: 4px;
+        height: 40px;
+    }
+
     .up_menu {
         top: 0px;
         background-color: darkgray;
         border-radius: 4px;
         border: 2px solid black;
     }
+
+    .range_menu {
+        bottom: 25px;
+        background-color: darkgray;
+        border-radius: 4px;
+        border: 2px solid black;
+        /*width: 135px;*/
+    }
     
+    .range_state {
+        display: inline-block;
+        width: 20px;
+        height: 300px;
+        padding: 0;
+    }
+
+    .range_state input {
+        width: 300px;
+        height: 20px;
+        margin: 0;
+        transform-origin: 150px 150px;
+        transform: rotate(-90deg);
+    }
+
+    .range_text {
+        display: inline-block;
+        width: 15px;
+        height: 300px;
+        padding: 0;
+    }
+
+    .range_text div {
+        width: 300px;
+        height: 15px;
+        margin: 0;
+        transform-origin: 150px 150px;
+        transform: rotate(-90deg);
+    }
+
     .standart_text {
         text-align: center;
     }
@@ -283,10 +371,19 @@
         background-color: rgb(236, 247, 134);
         border: solid 2px black;
         border-radius: 4px;
-        width: 58px;
+        width: 59px;
         right: 319px;
     }
-    
+
+    #w8 {
+        text-align: center;
+        background-color: rgb(236, 247, 134);
+        border: solid 2px black;
+        border-radius: 4px;
+        width: 150px;
+        right: 410px;
+    }
+
     .palettes_text {
         text-align: center;
         background-color: rgb(236, 247, 134);
@@ -297,7 +394,7 @@
     }
     
     .layer::-webkit-scrollbar {
-        width: 10px;
+        width: 15px;
         background-color: #8a8a8a;
     }
     
@@ -306,7 +403,7 @@
     }
     
     .layer2::-webkit-scrollbar {
-        width: 10px;
+        width: 15px;
         background-color: #8a8a8a;
     }
     
@@ -315,7 +412,7 @@
     }
     
     .layer3::-webkit-scrollbar {
-        width: 10px;
+        width: 15px;
         background-color: #8a8a8a;
     }
     
@@ -340,6 +437,80 @@
         border-bottom-right-radius: 4px;
         border-top-right-radius: 4px;
     }
+
+    .layer7::-webkit-scrollbar {
+        width: 5px;
+        background-color: #8a8a8a;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer7::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer7::-webkit-scrollbar-track {
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer5::-webkit-scrollbar {
+        width: 5px;
+        background-color: #8a8a8a;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer5::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer5::-webkit-scrollbar-track {
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer4::-webkit-scrollbar {
+        width: 5px;
+        background-color: #8a8a8a;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer4::-webkit-scrollbar-thumb {
+        background-color: #223c50;
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .layer4::-webkit-scrollbar-track {
+        border-bottom-right-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .anim_in {
+        animation-duration: 1s;
+        animation-timing-function: ease-in;
+        animation-name: slidein;
+        animation-play-state: paused;
+    }
+    @keyframes slidein {
+        from {
+            height: 0%;
+        }
+
+        25% {
+            height: 25%;
+        }
+
+        50% {
+            height: 50%;
+        }
+    }
 </style>
 
 <!-- Невероятная важная невидимая вещь!!! -->
@@ -363,9 +534,42 @@
             <label for="hidegrid">Hide grid</label>
         </div>
 
+        <div id="button_shadows" class="show_shadows">
+            <input type="checkbox" id="showShadows" name="showShadows">
+            <label for="showShadows">Show shadows</label>
+        </div>
+
         <canvas id="preview" class="prevCanvass"></canvas>
 
         <button id="generate" class="buttonGen"> Generate </button>
+    </div>
+
+    <div id="range_menu" class="range_menu">
+        <div class="range_text">
+            <div class="standart_text">
+                Columns:
+            </div>
+        </div>
+        <div class="range_state">
+            <input id="range_menu_x" type="range" min=10 max=50 step=1 value=10 list="tickmarks">
+        </div>
+        <div class="range_text">
+            <div class="standart_text">
+                Rows:
+            </div>
+        </div>
+        <div class="range_state">
+            <input id="range_menu_y" type="range" min=10 max=50 step=1 value=10 list="tickmarks">
+        </div>
+
+        <datalist id="tickmarks">
+          <option value="10">
+          <option value="20">
+          <option value="30">
+          <option value="40">
+          <option value="50">
+        </datalist>
+
     </div>
 
     <!--<progress id="progressbar" class="progress is-large is-info" max="100" value="1"></progress> -->
@@ -405,15 +609,27 @@
             <!-- Палитра инструментов -->
 
         </div>
+        <div id="w7" class="overed_text">
+            <b>Cursors:</b>
+        </div>
+        <div id="palette7" class="layer7">
+            <!-- Палитра курсоров -->
+        </div>
         <div id="w6" class="window6">
             <!-- <p class="standart_text">Behavior Pads:</p> -->
             <div class="standart_text">
                 <b>Behavior Pads:</b>
             </div>
         </div>
-        <div id="palette6" class="layer6">
+        <div id="palette6" class="layer6 anim_in">
             <!-- Палитра команд -->
             <ul id="mainListPads" class="listOfPads"></ul>
+        </div>
+        <div id="w8">
+            <b>Interior Kits:</b>
+        </div>
+        <div id="palette8" class="layer8">
+            <!-- Палитра курсоров -->
         </div>
         <button id="normalMode" class="normalButton">Normal</button>
         <button id="panicMode" class="normalButton">Panic</button>

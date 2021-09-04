@@ -13,6 +13,7 @@ import * as aux from "./AuxLib";
 import { Queue } from "./Queue";
 import { Random } from "./Random";
 import { Game } from "./Game";
+import { Person } from "./Entities/Person";
 
 function replacer(key, value) { // функция замены классов для преобразования в JSON
     if (value instanceof Map) { // упаковка Map
@@ -93,6 +94,13 @@ function replacer(key, value) { // функция замены классов д
             operationsData: value.operationsData
         }
     }
+    if (value instanceof LightSource) {
+        return {
+            dataType: 'LightSource',
+            pos: value.pos,
+            power: value.power
+        }
+    } 
     return value;
 }
 
@@ -102,6 +110,7 @@ export class LevelJSON {
     Entities?: Entity[];
     CollisionMesh?: boolean[][];
     PathMatrix?: Map<any, any>;
+    Lights?: LightSource[];
 }
 
 // Источник света
@@ -159,15 +168,26 @@ export class Level {
     public tileSize = 1;
     public lightSources: LightSource[] = [];
     public showLighting = false;
+    public gridSize = new geom.Vector();
 
     constructor(size = new geom.Vector(0, 0)) {
         this.Grid = [];
-        for (let x = 0; x < size.x; x++) {
+        for (let x = 0; x < 50; x++) {
             this.Grid.push([]);
-            for (let y = 0; y < size.y; y++) {
+            for (let y = 0; y < 50; y++) {
                 this.Grid[x].push(new Tile())
             }
         }
+        this.gridSize.x = size.x;
+        this.gridSize.y = size.y;
+    }
+
+    public setNewDrawX(new_x : number) {
+        this.gridSize.x = new_x;
+    }
+
+    public setNewDrawY(new_y : number) {
+        this.gridSize.y = new_y;
     }
 
 
@@ -180,8 +200,8 @@ export class Level {
         // Проверка на границы
         if (pos.x < 0) pos.x = 0;
         if (pos.y < 0) pos.y = 0;
-        if (pos.x >= this.Grid.length) pos.x = this.Grid.length - 1;
-        if (pos.y >= this.Grid[0].length) pos.y = this.Grid[0].length - 1;
+        if (pos.x >= this.gridSize.x) pos.x = this.gridSize.x - 1;
+        if (pos.y >= this.gridSize.y) pos.y = this.gridSize.y - 1;
         return pos;
     }
 
@@ -189,16 +209,16 @@ export class Level {
     public isInBounds(pos: geom.Vector): boolean {
         return pos.x > 0 &&
             pos.y > 0 &&
-            pos.x < this.Grid.length * this.tileSize &&
-            pos.y < this.Grid[0].length * this.tileSize;
+            pos.x < this.gridSize.x * this.tileSize &&
+            pos.y < this.gridSize.y * this.tileSize;
     }
 
     // Проверяет, находится ли клетка в пределах карты
     public isCellInBounds(pos: geom.Vector): boolean {
         return pos.x >= 0 &&
             pos.y >= 0 &&
-            pos.x < this.Grid.length &&
-            pos.y < this.Grid[0].length;
+            pos.x < this.gridSize.x &&
+            pos.y < this.gridSize.y;
     }
 
     // Возвращает тайл по координатам
@@ -208,13 +228,22 @@ export class Level {
 
     // Добавляет источник освещения
     public makeLightSource(pos: geom.Vector, power: number) {
-        this.lightSources.push(new LightSource(pos, power));
+        this.lightSources.push(new LightSource(pos.clone(), power));
     }
 
     // Заворачивает в json
     public serialize() {
-        let newLevel: LevelJSON;
-        newLevel = { Grid: this.Grid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
+        let newLevel : LevelJSON;
+
+        let newGrid = [];
+        for (let x = 0; x < this.gridSize.x; x++) {
+            newGrid.push([]);
+            for (let y = 0; y < this.gridSize.y; y++) {
+                newGrid[x].push(this.Grid[y]);
+            }
+        }
+
+        newLevel = {Grid: newGrid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
 
         console.log(newLevel.Grid);
 
@@ -240,19 +269,18 @@ export class Level {
         this.Grid = prototype.Grid;
         this.CollisionMesh = prototype.CollisionMesh;
         this.PathMatrix = prototype.PathMatrix;
+        this.lightSources = prototype.Lights;
     }
 
     // Отрисовка
-    public display(draw: Draw, advanced = false) {
-        for (let i = 0; i < this.Grid.length; i++) {
-            for (let j = 0; j < this.Grid[i].length; j++) {
+    public display(draw : Draw, advanced = false) {
+        for (let i = 0; i < this.gridSize.x; i++) {
+            for (let j = 0; j < this.gridSize.y; j++) {
                 let size = new geom.Vector(this.tileSize, this.tileSize);
-                /**console.log(this.Grid)*/
-                draw.image(this.Grid[i][j].image,
+                draw.image(this.Grid[i][j].image, 
                     (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
                 if (this.Grid[i][j].sub_image) {
-                    //console.log("nigga" + i + "_" + j)
                     draw.image(this.Grid[i][j].sub_image,
                         (new geom.Vector(this.tileSize * i, this.tileSize * j))
                             .add(size.mul(1 / 2)), size, 0, 0);
@@ -264,27 +292,30 @@ export class Level {
             }
         }
     }
-    public displayColisionGrid(draw: Draw) {
-        for (let i = 0; i < this.Grid.length; i++) {
-            for (let j = 0; j < this.Grid[i].length; j++)
-                if (this.Grid[i][j].colision == CollisionType.Full) {
-                    draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
-                }
+    public displayColisionGrid(draw : Draw){
+        for(let i = 0; i < this.gridSize.x; i++){
+            for (let j = 0; j < this.gridSize.y; j++)
+            if (this.Grid[i][j].colision == CollisionType.Full) {
+                draw.fillRect(new geom.Vector(i*this.tileSize+0.5, j*this.tileSize+0.5), new geom.Vector(1*this.tileSize, 1*this.tileSize), new Color(0, 255, 0, 0.5*Math.sin(aux.getMilliCount()*0.005) + 0.5));
+            }
         }
     }
 
     public displayLighting(draw: Draw) {
+        if (!this.showLighting) {
+            return;
+        }
         // Натуральное число, размер одной световой клетки
         let cellSize = 1; // Чем больше размер, тем меньше рамзытие
         // Создаём картинку на которой будем рендерить освещение
         let buffer = document.createElement('canvas');
-        buffer.width = this.Grid.length * cellSize;
-        buffer.height = this.Grid[0].length * cellSize;
+        buffer.width = this.gridSize.x * cellSize;
+        buffer.height = this.gridSize.y * cellSize;
         // Получаем контекст
         let imgCtx = buffer.getContext('2d');
         // Расставляем точки
-        for (let x = 0; x < this.Grid.length; x++) {
-            for (let y = 0; y < this.Grid[x].length; y++) {
+        for (let x = 0; x < this.gridSize.x; x++) {
+            for (let y = 0; y < this.gridSize.y; y++) {
                 let alpha = 1 - this.Grid[x][y].light / 10;
                 imgCtx.fillStyle = new Color(0, 0, 0, alpha).toString();
                 imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
@@ -292,15 +323,15 @@ export class Level {
         }
         // Рисуем
         draw.ctx.imageSmoothingEnabled = true; // Это позволяет создать размытие освещения
-        let box = new geom.Vector(this.Grid.length, this.Grid[0].length);
+        let box = new geom.Vector(this.gridSize.x, this.gridSize.y);
         draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
     }
 
     // Построение освещения 
     public generateLighting() {
         // Очищаем освещение
-        for (let i = 0; i < this.Grid.length; i++)
-            for (let j = 0; j < this.Grid[i].length; j++)
+        for(let i = 0; i < this.gridSize.x; i++)
+            for (let j = 0; j < this.gridSize.y; j++)
                 this.Grid[i][j].light = 0;
         // Очередь для bfs
         let queue = new Queue();

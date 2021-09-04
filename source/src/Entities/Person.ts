@@ -43,7 +43,9 @@ export class Person extends Entity {
         this.setModeTimings(10, 5, 5);
         this.sound.playcontinuously("step", 1);
         this.sound.current_sound.muted = true;
-        game.soundsarr.push(this.sound);
+        if (game) {
+            game.soundsarr.push(this.sound);
+        }
     }
 
     public setModeTimings(fine: number, corrupted: number, dying: number) {
