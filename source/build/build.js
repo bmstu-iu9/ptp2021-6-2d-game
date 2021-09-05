@@ -932,17 +932,16 @@ define("Sounds", ["require", "exports"], function (require, exports) {
     }());
     exports.Sounds = Sounds;
 });
-define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom", "Sounds", "SpriteAnimation"], function (require, exports, Entity_1, Draw_3, geom, Sounds_1, SpriteAnimation_1) {
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom"], function (require, exports, Entity_1, Draw_3, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.StationaryObject = void 0;
     var StationaryObject = (function (_super) {
         __extends(StationaryObject, _super);
-        function StationaryObject(game, body, type) {
+        function StationaryObject(game, body, type, category) {
+            if (category === void 0) { category = "Objects"; }
             var _this = _super.call(this, game, body) || this;
-            _this.image = Draw_3.Draw.loadImage("textures/Corpses/" + type + ".png");
-            _this.sounds = new Sounds_1.Sounds(1);
-            _this.sounds.play("dying");
+            _this.image = Draw_3.Draw.loadImage("textures/" + category + "/" + type + ".png");
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
@@ -954,22 +953,27 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
         StationaryObject.prototype.die = function () {
             this.hp = 0;
             this.alive = false;
-            console.log("firrre");
-            this.draw.spriteAnimation("Explosion", 16, new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), 0.5, 0.5 / 3);
         };
         return StationaryObject;
     }(Entity_1.Entity));
     exports.StationaryObject = StationaryObject;
 });
-define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject"], function (require, exports, StationaryObject_1) {
+define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "Sounds", "Geom", "SpriteAnimation"], function (require, exports, StationaryObject_1, Sounds_1, geom, SpriteAnimation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Corpse = void 0;
     var Corpse = (function (_super) {
         __extends(Corpse, _super);
         function Corpse(game, body, type) {
-            return _super.call(this, game, body, type) || this;
+            var _this = _super.call(this, game, body, type, "Corpses") || this;
+            _this.sounds = new Sounds_1.Sounds(1);
+            _this.sounds.play("dying");
+            return _this;
         }
+        Corpse.prototype.die = function () {
+            _super.prototype.die.call(this);
+            this.draw.spriteAnimation("Explosion", 16, new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), 0.5, 0.5 / 3);
+        };
         return Corpse;
     }(StationaryObject_1.StationaryObject));
     exports.Corpse = Corpse;
@@ -2478,7 +2482,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.mimic.display(this.draw);
             this.currentLevel.displayLighting(this.draw);
             this.draw.step();
-            Debug_4.Debug.drawPoints(this);
             Debug_4.Debug.clear();
         };
         Game.dt = 0.02;

@@ -8,14 +8,12 @@ import { AnimationState} from "../SpriteAnimation";
 
 
 export class StationaryObject extends Entity {
-    private sounds: Sounds;
-    private draw: Draw;
+    protected sounds: Sounds;
+    protected draw: Draw;
     image: HTMLImageElement;
-    constructor(game: Game, body: Body, type: string) {
+    constructor(game: Game, body: Body, type: string, category = "Objects") {
         super(game, body);
-        this.image = Draw.loadImage("textures/Corpses/" + type + ".png");
-        this.sounds = new Sounds(1);
-        this.sounds.play("dying");
+        this.image = Draw.loadImage("textures/" + category + "/" + type + ".png");
     }
     public display(draw: Draw) {
         if (draw) {
@@ -26,12 +24,5 @@ export class StationaryObject extends Entity {
     public die() {
         this.hp = 0;
         this.alive = false;
-        console.log("firrre")
-        this.draw.spriteAnimation(
-            "Explosion", 16,
-            new AnimationState(this.body.center, new geom.Vector(2, 2), 0),
-            new AnimationState(this.body.center, new geom.Vector(2, 2), 0),
-            0.5, 0.5 / 3
-        );
     }
 }
