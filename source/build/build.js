@@ -494,7 +494,6 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "Au
     exports.Animation = void 0;
     var Animation = (function () {
         function Animation(person, states) {
-            this.stateMachine = [];
             this.counter = 0;
             this.cycles = aux.getMilliCount() / 75;
             this.name = person;
@@ -880,7 +879,60 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/E
     }(Person_1.Person));
     exports.Monster = Monster;
 });
-define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom"], function (require, exports, Entity_1, Draw_3, geom) {
+define("Sounds", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Sounds = void 0;
+    var Sounds = (function () {
+        function Sounds(volume) {
+            this.currentstate = false;
+            this.current_sound = new Audio('./sounds/alarm.mp3');
+            this.current_sound.volume = volume;
+            this.time = 0;
+        }
+        Sounds.prototype.changestatus = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            console.log(this.currentstate);
+            if (this.currentstate == false) {
+                this.currentstate = true;
+                this.playcontinuously(track, volume);
+            }
+            else {
+                this.currentstate = false;
+                this.stop();
+            }
+        };
+        Sounds.prototype.stop = function () {
+            this.current_sound.pause();
+        };
+        Sounds.prototype.playcontinuously = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+            this.current_sound.addEventListener("ended", function () {
+                this.play();
+            });
+        };
+        Sounds.prototype.play = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            if (this.time == this.current_sound.currentTime)
+                this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+            this.time = this.current_sound.currentTime;
+        };
+        Sounds.prototype.playimposition = function (track, volume) {
+            if (volume === void 0) { volume = 1; }
+            this.current_sound = new Audio('./sounds/' + track + '.mp3');
+            this.current_sound.volume = volume;
+            this.current_sound.play();
+        };
+        return Sounds;
+    }());
+    exports.Sounds = Sounds;
+});
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom", "Sounds"], function (require, exports, Entity_1, Draw_3, geom, Sounds_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.StationaryObject = void 0;
@@ -889,6 +941,8 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
         function StationaryObject(game, body, type) {
             var _this = _super.call(this, game, body) || this;
             _this.image = Draw_3.Draw.loadImage("textures/Corpses/" + type + ".png");
+            _this.sounds = new Sounds_1.Sounds(1);
+            _this.sounds.play("dying");
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
@@ -990,7 +1044,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
     }(Projectile_1.Projectile));
     exports.Biomass = Biomass;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass"], function (require, exports, Game_2, geom, Control_1, Person_2, Monster_1, Draw_5, SpriteAnimation_2, Biomass_1) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_2, geom, Control_1, Person_2, Monster_1, Draw_5, SpriteAnimation_2, Biomass_1, Sounds_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
@@ -1026,9 +1080,11 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.aim = new Aim();
             this.game = game;
             this.aim.mimic = this;
+            this.sounds = new Sounds_2.Sounds(1);
         }
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
+                this.sounds.playimposition("alarm");
                 this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
                 this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_1.Monster) {
@@ -1053,6 +1109,9 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             var biomass = this.game.makeBiomass(this.controlledEntity.body.center, vel);
             biomass.baseEntity = this.controlledEntity;
             this.takeControl(biomass);
+        };
+        Mimic.prototype.isDead = function () {
+            return this.controlledEntity instanceof Monster_1.Monster && !this.controlledEntity.alive;
         };
         Mimic.prototype.step = function () {
             Control_1.Control.commands.active["shoot"] = Control_1.Control.isMouseRightPressed();
@@ -1199,7 +1258,7 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
     }());
     exports.Ray = Ray;
 });
-define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geom", "Debug", "Draw", "BehaviorModel", "SpriteAnimation", "RayCasting"], function (require, exports, Entity_3, Game_3, geom, Debug_2, Draw_7, BehaviorModel_1, SpriteAnimation_3, RayCasting_1) {
+define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geom", "Debug", "Draw", "BehaviorModel", "SpriteAnimation", "RayCasting", "Sounds"], function (require, exports, Entity_3, Game_3, geom, Debug_2, Draw_7, BehaviorModel_1, SpriteAnimation_3, RayCasting_1, Sounds_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Person = exports.Behavior = exports.PersonMode = void 0;
@@ -1224,12 +1283,18 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             _this.hpThresholdCorrupted = 10;
             _this.hpThresholdDying = 5;
             _this.type = null;
+            _this.sound = new Sounds_3.Sounds(0.9);
             _this.mode = mode;
             _this.viewRadius = 5;
             _this.viewingAngle = Math.PI / 4;
             _this.direction = new geom.Vector(1, 0);
             _this.behaviorModel = new BehaviorModel_1.BehaviorModel(_this.myAI);
             _this.setModeTimings(10, 5, 5);
+            _this.sound.playcontinuously("step", 1);
+            _this.sound.current_sound.muted = true;
+            if (game) {
+                game.soundsarr.push(_this.sound);
+            }
             return _this;
         }
         Person.prototype.setModeTimings = function (fine, corrupted, dying) {
@@ -1286,20 +1351,31 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             }
         };
         Person.prototype.changedirection = function (x, y) {
+            var currentdist = this.body.center.sub(this.game.mimic.controlledEntity.body.center);
+            var dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2));
+            var volume = 1 / dist;
+            if (volume > 1)
+                volume = 1;
+            this.sound.current_sound.volume = volume;
             if (x == 0 && y == 0) {
                 this.animation.changedirection("stand", this.modeToString());
+                this.sound.current_sound.muted = true;
             }
             if (x == 1) {
                 this.animation.changedirection("right", this.modeToString());
+                this.sound.current_sound.muted = false;
             }
             if (x == -1) {
                 this.animation.changedirection("left", this.modeToString());
+                this.sound.current_sound.muted = false;
             }
             if (x == 0 && y == 1) {
                 this.animation.changedirection("top", this.modeToString());
+                this.sound.current_sound.muted = false;
             }
             if (x == 0 && y == -1) {
                 this.animation.changedirection("down", this.modeToString());
+                this.sound.current_sound.muted = false;
             }
         };
         Person.prototype.updateMode = function () {
@@ -1447,7 +1523,7 @@ define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "
     }(Projectile_2.Projectile));
     exports.CombatProjectile = CombatProjectile;
 });
-define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Random", "Entities/Projectiles/CombatProjectile", "Draw"], function (require, exports, Game_5, Body_1, geom, Random_1, CombatProjectile_1, Draw_9) {
+define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Random", "Entities/Projectiles/CombatProjectile", "Draw", "Sounds"], function (require, exports, Game_5, Body_1, geom, Random_1, CombatProjectile_1, Draw_9, Sounds_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Weapon = void 0;
@@ -1465,7 +1541,12 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.projectileAnimationFrames = 3;
             this.range = 5;
             this.isMagazineRecharging = false;
+            this.sound = new Sounds_4.Sounds(1);
             this.owner = owner;
+            this.sound.playcontinuously("firemashine", 1);
+            this.sound.current_sound.muted = true;
+            if (this.owner.game)
+                this.owner.game.soundsarr.push(this.sound);
         }
         Weapon.prototype.rechargeClip = function () {
             this.timeToCooldown = this.magazineCooldown;
@@ -1485,14 +1566,20 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
             this.owner.game.entities.push(projectile);
         };
         Weapon.prototype.shoot = function (dir) {
-            if (this.isMagazineRecharging)
+            if (this.isMagazineRecharging) {
+                this.sound.current_sound.muted = true;
                 return;
+            }
             if (this.projectilesInMagazine <= 0) {
+                this.sound.current_sound.muted = true;
                 this.rechargeClip();
                 return;
             }
-            if (this.timeToCooldown > 0)
+            if (this.timeToCooldown > 0) {
+                this.sound.current_sound.muted = true;
                 return;
+            }
+            this.sound.current_sound.muted = false;
             for (var i = 0; i < this.projectilesInOneShot; i++)
                 this.createProjectile(dir);
             this.projectilesInMagazine--;
@@ -1811,6 +1898,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             window.open(url);
         };
         Level.prototype.createFromPrototype = function (prototype) {
+            this.Entities = [];
             this.Grid = prototype.Grid;
             this.CollisionMesh = prototype.CollisionMesh;
             this.PathMatrix = prototype.PathMatrix;
@@ -2103,12 +2191,19 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
     }());
     exports.Trigger = Trigger;
 });
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_12, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_4, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2) {
+define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_12, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_4, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Game = void 0;
+    exports.Game = exports.State = void 0;
+    var State;
+    (function (State) {
+        State[State["Waiting"] = 0] = "Waiting";
+        State[State["Game"] = 1] = "Game";
+    })(State = exports.State || (exports.State = {}));
+    ;
     var Game = (function () {
         function Game(draw) {
+            this.soundsarr = [];
             this.bodies = [];
             this.entities = [];
             this.triggers = [];
@@ -2116,6 +2211,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel = new Level_1.Level();
             this.playerID = 0;
             this.ghost = new geom.Vector(0, 0);
+            this.state = State.Waiting;
+            this.sounds = new Sounds_5.Sounds(0.01);
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
@@ -2160,8 +2257,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     console.log("loading scientist");
                     var scientist = Game.currentGame.makeScientist(value.center);
                     scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
-                    scientist.behaviorModel = value.behaviorModel;
-                    scientist.behaviorModel.myAI = scientist.myAI;
+                    scientist.behaviorModel.instructions = value.behaviorModel.instructions;
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
@@ -2196,17 +2292,18 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, this.readTextFile(aux.environment + path)
-                                .then(function (result) {
-                                console.log(result);
-                                console.log(_this.currentGame);
-                                var prototype = JSON.parse(result, _this.reviver);
-                                var level = new Level_1.Level();
-                                level.createFromPrototype(prototype);
-                                level.showLighting = true;
-                                level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
-                                Game.currentGame.levels[name] = level;
-                            })];
+                        case 0:
+                            Game.levelPaths[name] = path;
+                            return [4, this.readTextFile(aux.environment + path)
+                                    .then(function (result) {
+                                    console.log("Map loaded");
+                                    var prototype = JSON.parse(result, _this.reviver);
+                                    var level = new Level_1.Level();
+                                    level.createFromPrototype(prototype);
+                                    level.showLighting = true;
+                                    level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
+                                    Game.currentGame.levels[name] = level;
+                                })];
                         case 1:
                             result = _a.sent();
                             return [2];
@@ -2279,7 +2376,31 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
             }
         };
+        Game.prototype.startGame = function () {
+            this.state = State.Game;
+            this.draw.cam.pos = this.mimic.controlledEntity.body.center;
+            this.bodies = [];
+            this.entities = [];
+            this.triggers = [];
+            this.mimic = new Mimic_1.Mimic(this);
+            this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
+            Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
+            this.sounds.playcontinuously("game", 0.2);
+            this.soundsarr.push(this.sounds);
+        };
         Game.prototype.step = function () {
+            if (this.state == State.Waiting) {
+                if (Control_2.Control.isMouseLeftPressed() || Control_2.Control.isMouseRightPressed())
+                    this.startGame();
+                return;
+            }
+            if (this.mimic.isDead()) {
+                for (; 0 < this.soundsarr.length;) {
+                    var cursound = this.soundsarr.pop();
+                    cursound.stop();
+                }
+                this.state = State.Waiting;
+            }
             if (this.levels[this.currentLevelName]) {
                 this.currentLevel = this.levels[this.currentLevelName];
             }
@@ -2320,6 +2441,15 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             }
         };
         Game.prototype.display = function () {
+            if (this.state == State.Waiting) {
+                this.draw.attachToCanvas();
+                var image = Draw_12.Draw.loadImage("textures/Screens/Start.png");
+                if (this.mimic.isDead())
+                    image = Draw_12.Draw.loadImage("textures/Screens/Death.png");
+                this.draw.image(image, this.draw.cam.center, this.draw.cam.center.mul(2), 0, Draw_12.Layer.HudLayer);
+                this.draw.getimage();
+                return;
+            }
             this.configureCamScale();
             this.currentLevel.display(this.draw);
             for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
@@ -2334,6 +2464,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             Debug_4.Debug.clear();
         };
         Game.dt = 0.02;
+        Game.levelPaths = new Map();
         return Game;
     }());
     exports.Game = Game;
@@ -3670,7 +3801,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     game.levels = new Map();
     Game_9.Game.currentGame = game;
     Game_9.Game.loadMap("map.json", "map");
-    game.makeScientist(new geom.Vector(1, 1));
+    game.makeSoldier(new geom.Vector(1, 1));
     game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;

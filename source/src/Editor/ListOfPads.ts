@@ -200,7 +200,7 @@ export class ListOfPads {
             return;
         }
         let currentPos = this.entityPos;
-        let imageMas : HTMLImageElement[] = [];
+        let imageMas: HTMLImageElement[] = [];
         let imageSize = 1;
         for (let i = 0; i < this.instructionCopy.operations.length; i++) {
             switch (this.instructionCopy.operations[i]) {
@@ -213,7 +213,7 @@ export class ListOfPads {
 
                     for (let j = 0; j < imageMas.length; j++) {
                         EditorGUI.addImage(oldPos.add(new Vector((-imageMas.length * 0.5 + 0.5 + j) * imageSize, 0)),
-                         imageMas[j], new Vector(imageSize, imageSize));
+                            imageMas[j], new Vector(imageSize, imageSize));
                     }
                     imageMas = [];
 
@@ -231,7 +231,7 @@ export class ListOfPads {
         }
         for (let j = 0; j < imageMas.length; j++) {
             EditorGUI.addImage(currentPos.add(new Vector(-imageMas.length * 0.5 + 0.5 + j, 0)),
-             imageMas[j], new Vector(imageSize, imageSize));
+                imageMas[j], new Vector(imageSize, imageSize));
         }
         imageMas = [];
     }

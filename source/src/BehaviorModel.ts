@@ -11,16 +11,16 @@ export enum Operations {
 }
 
 export class Instruction {
-    public operations : number[] = [];
-    public operationsData : any[] = [];
+    public operations: number[] = [];
+    public operationsData: any[] = [];
 
-    public addGoingToPoint(point : Vector) {
+    public addGoingToPoint(point: Vector) {
         let place = this.operations.length;
         this.operations[place] = Operations.goToPoint;
         this.operationsData[place] = point;
     }
 
-    public addWaiting(milliseconds : number) {
+    public addWaiting(milliseconds: number) {
         let place = this.operations.length;
         this.operations[place] = Operations.wait;
         this.operationsData[place] = milliseconds;
@@ -30,7 +30,7 @@ export class Instruction {
         let place = this.operations.length;
         this.operations[place] = Operations.pursuit;
     }
-    
+
     public clone() {
         let copy = new Instruction();
         for (let i = 0; i < this.operations.length; i++) {
@@ -55,16 +55,16 @@ export class Instruction {
 
 export class BehaviorModel {
     private operationNum = 0;
-    private currentInstruction : string;
+    private currentInstruction: string;
     public instructions = new Map<string, any>();
-    public myAI : AI;
+    public myAI: AI;
 
-    constructor(myAI : AI) {
+    constructor(myAI: AI) {
         this.myAI = myAI;
         this.instructions = new Map;
     }
 
-    public changeCurrentInstruction(newInstruction : string) {
+    public changeCurrentInstruction(newInstruction: string) {
         this.operationNum = 0;
         this.myAI.Path = [];
         this.myAI.wait(0);
@@ -80,7 +80,7 @@ export class BehaviorModel {
         
         if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions.get(this.currentInstruction)) {
             console.log(this.currentInstruction, "in progress");
-            
+
             this.operationNum++;
             this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
             let operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];

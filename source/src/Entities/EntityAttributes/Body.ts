@@ -1,8 +1,8 @@
 import * as geom from "./../../Geom";
 import { Game } from "./../../Game";
-import {Tile, CollisionType} from "./../../Tile";
+import { Tile, CollisionType } from "./../../Tile";
 
-export enum Direction{
+export enum Direction {
     Right = 1,
     Up,
     Left,
@@ -10,21 +10,21 @@ export enum Direction{
 }
 
 export class Body {
-    public center : geom.Vector; // центр коллизии объекта
-    public radius : number; // радиус объекта, сейчас используется только в mimic, для того чтобы перехватывать управление
-    public game : Game;
+    public center: geom.Vector; // центр коллизии объекта
+    public radius: number; // радиус объекта, сейчас используется только в mimic, для того чтобы перехватывать управление
+    public game: Game;
     public velocity = 0.05; // скорость объекта
     public collisionBox = new geom.Vector(0.5, 0.3);
-    public isWallNear = 0; 
+    public isWallNear = 0;
     private collisions = 0; // Счётчик коллизий
 
-    constructor(center : geom.Vector, radius:number) {
+    constructor(center: geom.Vector, radius: number) {
         this.center = center;
         this.radius = radius;
     }
 
     // функция передвижения с коллизионной проверкой, возвращает было ли касание со стеной
-    public move(delta : geom.Vector) : boolean {
+    public move(delta: geom.Vector): boolean {
         let touched = false;
         let delta1 = delta.add(this.collisionBox.mul(1 / 2));
         let collisionDR = this.game.checkWall(this.center.add(delta1));
@@ -63,13 +63,13 @@ export class Body {
             }
             delta = new geom.Vector();
             touched = true;
-        } else if (collisionDL != CollisionType.Empty){
-            let norm : geom.Vector;
+        } else if (collisionDL != CollisionType.Empty) {
+            let norm: geom.Vector;
             if (collisionDL == CollisionType.CornerDL) norm = new geom.Vector(1, -1);
             if (collisionDL == CollisionType.CornerDR) norm = new geom.Vector(-1, -1);
             if (collisionDL == CollisionType.CornerUL) norm = new geom.Vector(1, 1);
             if (collisionDL == CollisionType.CornerUR) norm = new geom.Vector(-1, 1);
-            delta = delta.sub(norm.mul(delta.dot(norm) / norm.dot(norm))).add(norm.mul(1/10000));
+            delta = delta.sub(norm.mul(delta.dot(norm) / norm.dot(norm))).add(norm.mul(1 / 10000));
         }
         let posNew = this.center.add(delta);
         this.center = posNew;
