@@ -95,7 +95,9 @@ export class Person extends Entity {
 
         // Проверка на пассивные триггеры
         for (let entity of this.game.entities) {
-            if (entity == this || !this.isPointVisible(entity.body.center))
+            if (entity == this ||
+                !(entity instanceof Person) ||
+                !this.isPointVisible(entity.body.center))
                 continue;
             // Видим покоцанного челика
             if (entity instanceof Person && entity.hp < entity.hpThresholdCorrupted)

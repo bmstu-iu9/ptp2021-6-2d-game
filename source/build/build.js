@@ -1350,7 +1350,9 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             }
             for (var _i = 0, _a = this.game.entities; _i < _a.length; _i++) {
                 var entity = _a[_i];
-                if (entity == this || !this.isPointVisible(entity.body.center))
+                if (entity == this ||
+                    !(entity instanceof Person) ||
+                    !this.isPointVisible(entity.body.center))
                     continue;
                 if (entity instanceof Person && entity.hp < entity.hpThresholdCorrupted)
                     this.awareness += 2 * Game_3.Game.dt;
