@@ -1168,7 +1168,7 @@ define("Random", ["require", "exports", "Geom"], function (require, exports, geo
     }());
     exports.Random = Random;
 });
-define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom", "Sounds"], function (require, exports, Entity_3, Draw_5, geom, Sounds_2) {
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom", "Sounds", "SpriteAnimation"], function (require, exports, Entity_3, Draw_5, geom, Sounds_2, SpriteAnimation_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.StationaryObject = void 0;
@@ -1182,7 +1182,16 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             return _this;
         }
         StationaryObject.prototype.display = function (draw) {
-            draw.image(this.image, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, Draw_5.Layer.EntityLayer);
+            if (draw) {
+                draw.image(this.image, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, Draw_5.Layer.EntityLayer);
+                this.draw = draw;
+            }
+        };
+        StationaryObject.prototype.die = function () {
+            this.hp = 0;
+            this.alive = false;
+            console.log("firrre");
+            this.draw.spriteAnimation("Explosion", 16, new SpriteAnimation_3.AnimationState(this.body.center, new geom.Vector(2, 2), 0), new SpriteAnimation_3.AnimationState(this.body.center, new geom.Vector(2, 2), 0), 0.5, 0.5 / 3);
         };
         return StationaryObject;
     }(Entity_3.Entity));
@@ -1926,7 +1935,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
     }(Projectile_2.Projectile));
     exports.Biomass = Biomass;
 });
-define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_3, Biomass_1, Sounds_4) {
+define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_6, geom, Control_1, Person_4, Monster_3, Draw_10, SpriteAnimation_4, Biomass_1, Sounds_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Mimic = exports.Aim = void 0;
@@ -1967,10 +1976,10 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
                 this.sounds.playimposition("alarm");
-                this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
-                this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
+                this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_4.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_4.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
+                this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_4.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_4.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_3.Monster) {
-                    this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
+                    this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_4.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_4.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
                 }
                 if (this.controlledEntity instanceof Person_4.Person) {
                     this.controlledEntity.behaviorModel.refreshInstruction();
@@ -2394,7 +2403,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
     exports.SpriteAnimation = SpriteAnimation;
     ;
 });
-define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (require, exports, geom, SpriteAnimation_4) {
+define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (require, exports, geom, SpriteAnimation_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Draw = exports.Layer = exports.Color = exports.Camera = void 0;
@@ -2651,7 +2660,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             this.ctx.stroke();
         };
         Draw.prototype.spriteAnimation = function (name, framesNumber, initialState, finalState, duration, frameDuration) {
-            var animation = new SpriteAnimation_4.SpriteAnimation();
+            var animation = new SpriteAnimation_5.SpriteAnimation();
             animation.loadFrames(name, framesNumber);
             animation.initialState = initialState;
             animation.finalState = finalState;

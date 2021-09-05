@@ -5,6 +5,7 @@ import { AI } from "./EntityAttributes/AI";
 import { Game } from "../Game";
 import { Commands } from "./EntityAttributes/Commands";
 import { Draw } from "../Draw";
+import { AnimationState } from "../SpriteAnimation";
 
 export class Entity {
     public game: Game;

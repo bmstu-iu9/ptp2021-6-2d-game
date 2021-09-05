@@ -143,7 +143,7 @@ export class Draw {
         if (layer == 0) { // Отрисовка сразу
             this.drawimage(image, pos, box, angle, transparency);
         } else { // Отрисовка после сортировки
-            let curqueue: queue = { image, pos, box, angle, layer, transparency };
+            let curqueue: queue = { image, pos, box, angle, layer, transparency};
             this.imagequeue.push(curqueue);
 
         }
