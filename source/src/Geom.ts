@@ -62,7 +62,25 @@ export class Vector {
     }
 }
 
-export function vectorFromAngle(angle: number): Vector {
+export function vectorComparison(vec1 : Vector, vec2 : Vector) {
+    if (vec1.x - vec2.x > -eps && vec1.x - vec2.x < eps) {
+        if (vec1.y - vec2.y > -eps && vec1.y - vec2.y < eps) {
+            return 0;
+        }
+        if (vec1.y < vec2.y) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+    if (vec1.x < vec2.x) {
+        return -1;
+    } else {
+        return 1;
+    }
+}
+
+export function vectorFromAngle(angle : number) : Vector {
     return new Vector(Math.cos(angle), Math.sin(angle));
 }
 
