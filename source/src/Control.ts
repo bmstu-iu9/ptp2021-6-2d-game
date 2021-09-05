@@ -1,6 +1,7 @@
 import * as geom from "./Geom";
 import * as aux from "./AuxLib";
 import { Commands } from "./Entities/EntityAttributes/Commands";
+import * as nipplejs from '../node_modules/nipplejs/dist/nipplejs.js';
 
 export enum Keys {
     LeftArrow = 37,
@@ -19,6 +20,7 @@ export class Control {
     private static mouseWheelDelta = 0;
     private static commandsCounter: Map<string, number>;
     public static commands: Commands;
+    private static manager : any;
 
     private static async readTextFile(path) {
         const response = await fetch(path)
@@ -57,6 +59,9 @@ export class Control {
     }
 
     public static init(): void {
+        Control.manager = new nipplejs.JoystickManager();
+
+
         for (let i = 0; i < 256; i++) {
             Control._keys[i] = false;
         }

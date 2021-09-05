@@ -146,7 +146,7 @@ define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], fun
     }());
     exports.Commands = Commands;
 });
-define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Commands"], function (require, exports, geom, aux, Commands_1) {
+define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Commands", "../node_modules/nipplejs/dist/nipplejs.js"], function (require, exports, geom, aux, Commands_1, nipplejs) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Control = exports.Keys = void 0;
@@ -216,6 +216,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
             });
         };
         Control.init = function () {
+            Control.manager = new nipplejs.JoystickManager();
             for (var i = 0; i < 256; i++) {
                 Control._keys[i] = false;
             }
