@@ -77,7 +77,7 @@ export class BehaviorModel {
 
     public step() {
         //console.log("here?");
-
+        
         if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions.get(this.currentInstruction)) {
             console.log(this.currentInstruction, "in progress");
 

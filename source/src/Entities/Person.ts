@@ -7,6 +7,7 @@ import { Color, Draw } from "../Draw";
 import { BehaviorModel } from "../BehaviorModel";
 import { domainToASCII } from "url";
 import { AnimationState } from "../SpriteAnimation";
+import { Ray } from "../RayCasting";
 import { Sounds } from "../Sounds";
 
 export enum PersonMode {
@@ -62,8 +63,9 @@ export class Person extends Entity {
 
     }
 
-    public isPointVisible(pos: geom.Vector): boolean {
-        return geom.dist(this.body.center, pos) <= this.viewRadius;
+    public isPointVisible(pos : geom.Vector) : boolean {
+        return (geom.dist(this.body.center, pos) <= this.viewRadius 
+        && Ray.wallIntersection(this.body.center, pos, this.game) != false); // я не уверен, что Vector считается за true, за сим сравнение с false уместно
     }
 
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости

@@ -23,14 +23,10 @@ export class Weapon {
     public projectileAnimationFrames = 3;
     public range = 5; // Расстояние, на которое стреляет
     private isMagazineRecharging = false; // Если true, перезаряжается обойма
-    private sound: Sounds = new Sounds(1);
 
     constructor(owner: Person) {
         this.owner = owner;
-        this.sound.playcontinuously("firemashine", 1)
-        this.sound.current_sound.muted = true;
-        if (this.owner.game)
-            this.owner.game.soundsarr.push(this.sound)
+        
     }
 
     // Перезарядить обойму
@@ -58,22 +54,18 @@ export class Weapon {
 
         // Обойма на перезарядке
         if (this.isMagazineRecharging) {
-            this.sound.current_sound.muted = true;
             return;
         }
         // Если в обойме нет патронов
         if (this.projectilesInMagazine <= 0) {
-            this.sound.current_sound.muted = true;
             this.rechargeClip();
             return;
         }
         // Если на перезарядке
         if (this.timeToCooldown > 0) {
-            this.sound.current_sound.muted = true;
             return;
         }
         // Производим выстрел
-        this.sound.current_sound.muted = false;
         for (let i = 0; i < this.projectilesInOneShot; i++)
             this.createProjectile(dir);
         this.projectilesInMagazine--;

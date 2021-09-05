@@ -344,7 +344,7 @@ export class Game {
     }
 
     // Checks if pos is in wall
-    public check_wall(pos: geom.Vector): number {
+    public checkWall(pos: geom.Vector): number {
         let posRound = new geom.Vector(
             Math.floor(pos.x / this.currentLevel.tileSize),
             Math.floor(pos.y / this.currentLevel.tileSize)
@@ -418,7 +418,7 @@ export class Game {
         // Анимации
         this.draw.step();
         // Отрисовка графического дебага
-        //Debug.drawPoints(this);
+        Debug.drawPoints(this);
         Debug.clear();
     }
 

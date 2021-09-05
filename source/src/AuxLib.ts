@@ -33,6 +33,24 @@ export function arrayMove(arr, old_index, new_index) {
     arr.splice(new_index, 0, elem);
 };
 
+export function mergeArray(arr1, arr2, func : (a, b) => number) {
+    if (arr1.length == 0) {
+        return arr2;
+    }
+    if (arr2.length == 0) {
+        return arr1;
+    }
+    let arr = [];
+    for (let i = 0; i < arr1.length; i++) {
+        arr[arr.length] = arr1[i];
+    }
+    for (let i = 0; i < arr2.length; i++) {
+        arr[arr.length] = arr2[i];
+    }
+    arr.sort(func);
+    return arr;
+}
+
 export function getMilliCount() {
     return new Date().getTime();
 }
