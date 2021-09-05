@@ -4,7 +4,7 @@ import * as aux from "../../AuxLib";
 export class Animation {
     public current_state: HTMLImageElement;
     private counter: number;
-    private name: string; // имя анимации
+    public name: string; // имя анимации
     private states: number; // кол-во анимаций на 1 состояние
     public mode: string;
     public direction: string; //направление движения
