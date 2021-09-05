@@ -6,14 +6,19 @@ import { Weapon } from "./EntityAttributes/Weapon";
 import { Color, Draw } from "../Draw";
 import * as geom from "../Geom";
 import { Monster } from "./Monster";
+import { Sounds } from "../Sounds";
 
 export class Soldier extends Person {
     public weapon = new Weapon(this);
-
+    public soundweapon: Sounds = new Sounds(1);
     constructor(game: Game, body: Body, mode: PersonMode) {
         super(game, body, mode);
         this.animation = new Animation("Soldier", 8);
         this.type = "Soldier";
+        this.soundweapon.playcontinuously("firemashine", 1)
+        this.soundweapon.current_sound.muted = true;
+        if (this.game)
+            this.game.soundsarr.push(this.soundweapon)
     }
 
     public step() {
@@ -33,11 +38,19 @@ export class Soldier extends Person {
         }
 
         if (this.commands.active["shoot"]) {
+            this.soundweapon.current_sound.muted = false;
             // выстрелить в направлении this.commands.pointer
             this.weapon.shoot(this.commands.pointer);
+            
+        } else {
+            this.soundweapon.current_sound.muted = true;
         }
         this.weapon.step();
         super.step();
+    }
+    public die(){
+        super.die();
+        this.soundweapon.current_sound.muted = true;
     }
 
     public display(draw: Draw) {
