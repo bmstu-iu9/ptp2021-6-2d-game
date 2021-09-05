@@ -1088,6 +1088,11 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                 this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
                 this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_2.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_1.Monster) {
+                    if (this.controlledEntity) {
+                        var cur = this.controlledEntity;
+                        if (cur)
+                            cur.sound.stop();
+                    }
                     this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_2.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
                 }
                 if (this.controlledEntity instanceof Person_2.Person) {

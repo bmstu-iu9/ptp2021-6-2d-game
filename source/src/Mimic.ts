@@ -63,6 +63,11 @@ export class Mimic {
                 0.5, 0.5 / 6
             );
             if (this.controlledEntity instanceof Monster) {
+                if (this.controlledEntity){
+                    let cur = this.controlledEntity as Person;
+                    if (cur)
+                        cur.sound.stop();
+                }
                 this.game.draw.spriteAnimation(
                     "MonsterDisappearance", 8,
                     new AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0),
