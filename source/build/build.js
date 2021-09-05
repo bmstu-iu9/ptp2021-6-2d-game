@@ -3625,7 +3625,10 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
             }
             yPoints[yPoints.length - 1] = end.clone();
             var points = AuxLib_1.mergeArray(xPoints, yPoints, Geom_6.vectorComparison);
-            console.log(points);
+            return points;
+        };
+        Ray.wallIntersection = function (begin, end, game) {
+            var points = Ray.pointGenerator(begin, end);
             var midPoints = [];
             for (var i = 1; i < points.length; i++) {
                 midPoints[midPoints.length] = (points[i - 1].add(points[i])).mul(1 / 2);
@@ -3633,17 +3636,19 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
             for (var i = 0; i < midPoints.length; i++) {
                 Debug_4.Debug.addPoint(midPoints[i], new Draw_17.Color(256, 0, 0));
             }
-            return midPoints;
-        };
-        Ray.wallIntersection = function (begin, end, game) {
-            var points = Ray.pointGenerator(begin, end);
-            for (var i = 0; i < points.length; i++) {
-                if (game.checkWall(points[i])) {
-                    Debug_4.Debug.addPoint(points[i], new Draw_17.Color(255, 100, 255));
-                    return points[i];
+            var answer = false;
+            for (var i = 0; i < midPoints.length; i++) {
+                if (game.checkWall(midPoints[i])) {
+                    if (answer == false || points[i].sub(begin).abs() < answer.sub(begin).abs())
+                        answer = points[i];
+                    if (answer == false || points[i + 1].sub(begin).abs() < answer.sub(begin).abs())
+                        answer = points[i + 1];
                 }
             }
-            return false;
+            if (answer instanceof Geom_6.Vector) {
+                Debug_4.Debug.addPoint(answer, new Draw_17.Color(255, 100, 255));
+            }
+            return answer;
         };
         return Ray;
     }());

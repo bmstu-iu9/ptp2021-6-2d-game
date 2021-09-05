@@ -73,7 +73,11 @@ export class Ray {
         }
         yPoints[yPoints.length - 1] = end.clone();
         let points = mergeArray(xPoints, yPoints, vectorComparison);
-        console.log(points);
+        return points;
+    }
+
+    public static wallIntersection(begin : Vector, end : Vector, game : Game) {
+        let points = Ray.pointGenerator(begin, end);
         let midPoints = [];
         for (let i = 1; i < points.length; i++) {
             midPoints[midPoints.length] = (points[i - 1].add(points[i])).mul(1/2); 
@@ -81,17 +85,18 @@ export class Ray {
         for (let i = 0; i < midPoints.length; i++) {
             Debug.addPoint(midPoints[i], new Color(256, 0, 0));
         }
-        return midPoints;
-    }
-
-    public static wallIntersection(begin : Vector, end : Vector, game : Game) {
-        let points = Ray.pointGenerator(begin, end);
-        for (let i = 0; i < points.length; i++) {
-            if (game.checkWall(points[i])) {
-                Debug.addPoint(points[i], new Color(255, 100, 255));
-                return points[i];
+        let answer : any = false;
+        for (let i = 0; i < midPoints.length; i++) {
+            if (game.checkWall(midPoints[i])) {
+                if (answer == false || points[i].sub(begin).abs() < answer.sub(begin).abs())
+                    answer = points[i];
+                if (answer == false || points[i + 1].sub(begin).abs() < answer.sub(begin).abs())
+                    answer = points[i + 1];    
             }
         }
-        return false;
+        if (answer instanceof Vector) {
+            Debug.addPoint(answer, new Color(255, 100, 255));
+        }
+        return answer;
     }
 }
