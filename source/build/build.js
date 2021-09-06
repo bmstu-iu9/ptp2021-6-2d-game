@@ -2840,6 +2840,10 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
             this.ctx.clearRect(-1000, -1000, 10000, 10000);
         };
         Draw.prototype.bar = function (pos, box, percentage, backColor, frontColor, marks) {
+            if (percentage > 1)
+                percentage = 1;
+            if (percentage < 0)
+                percentage = 0;
             var queue = { pos: pos, box: box, percentage: percentage, frontColor: frontColor, backColor: backColor, marks: marks };
             this.hpqueue.push(queue);
         };
