@@ -835,6 +835,9 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
         BehaviorModel.prototype.refreshInstruction = function () {
             this.changeCurrentInstruction(this.currentInstruction);
         };
+        BehaviorModel.prototype.getCurrentInstruction = function () {
+            return this.currentInstruction + "";
+        };
         BehaviorModel.prototype.step = function () {
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
                 console.log(this.currentInstruction, "in progress");
@@ -1295,6 +1298,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             _this.viewRadius = 3;
             _this.awareness = 0;
             _this.awarenessThreshold = 10;
+            _this.awarenessOverflow = 15;
             _this.hpThresholdCorrupted = 10;
             _this.hpThresholdDying = 5;
             _this.stunTime = 0;
@@ -1442,9 +1446,17 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
         Person.prototype.step = function () {
             this.move();
             if (this.awareness >= this.awarenessThreshold) {
+                if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
+                    this.awareness = this.awarenessOverflow;
                 this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-                this.awareness = this.awarenessThreshold;
             }
+            if (this.awareness < this.awarenessThreshold) {
+                this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
+            }
+            if (this.awareness < 0) {
+                this.awareness = 0;
+            }
+            this.awareness -= Game_3.Game.dt * 0.5;
             this.updateMode();
             if (this.stunTime <= 0) {
                 this.checkTriggers();

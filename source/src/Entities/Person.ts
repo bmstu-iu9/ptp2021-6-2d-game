@@ -27,6 +27,7 @@ export class Person extends Entity {
     public direction: geom.Vector; // направление взгляда
     public awareness = 0;
     public awarenessThreshold = 10;
+    public awarenessOverflow = 15;
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     public mode: PersonMode; // маркер состояния (переименовать по необходимости)
@@ -203,9 +204,17 @@ export class Person extends Entity {
 
         // Проверка на awareness
         if (this.awareness >= this.awarenessThreshold) {
+            if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
+                this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-            this.awareness = this.awarenessThreshold;
         }
+        if (this.awareness < this.awarenessThreshold) {
+            this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
+        }
+        if (this.awareness < 0) {
+            this.awareness = 0;
+        }
+        this.awareness -= Game.dt * 0.5;
 
         this.updateMode();
         if (this.stunTime <= 0) {
