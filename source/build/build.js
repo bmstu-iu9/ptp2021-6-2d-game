@@ -1105,6 +1105,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
                     this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
                 }
                 if (this.controlledEntity instanceof Person_2.Person) {
+                    this.controlledEntity.stunTime = 1;
                     this.controlledEntity.behaviorModel.refreshInstruction();
                 }
             }
@@ -1296,6 +1297,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             _this.awarenessThreshold = 10;
             _this.hpThresholdCorrupted = 10;
             _this.hpThresholdDying = 5;
+            _this.stunTime = 0;
             _this.type = null;
             _this.sound = new Sounds_3.Sounds(0.9);
             _this.mode = mode;
@@ -1324,7 +1326,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
         };
         Person.prototype.isPointVisible = function (pos) {
             return (geom.dist(this.body.center, pos) <= this.viewRadius
-                && RayCasting_1.Ray.wallIntersection(this.body.center, pos, this.game) != false);
+                && !RayCasting_1.Ray.wallIntersection(this.body.center, pos, this.game));
         };
         Person.prototype.checkTriggers = function () {
             var center = this.body.center;
@@ -1412,7 +1414,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             this.myAI.commands.active["MoveRight"] = false;
             console.log("stop");
         };
-        Person.prototype.step = function () {
+        Person.prototype.move = function () {
             var x = 0;
             var y = 0;
             var vel = this.body.velocity;
@@ -1435,14 +1437,22 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                 this.body.move(new geom.Vector(-vel, 0));
             }
             this.changedirection(x, y);
-            this.checkTriggers();
             this.direction = new geom.Vector(x, y);
+        };
+        Person.prototype.step = function () {
+            this.move();
             if (this.awareness >= this.awarenessThreshold) {
                 this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
                 this.awareness = this.awarenessThreshold;
             }
             this.updateMode();
-            this.behaviorModel.step();
+            if (this.stunTime <= 0) {
+                this.checkTriggers();
+                this.behaviorModel.step();
+            }
+            else
+                this.stop();
+            this.stunTime -= Game_3.Game.dt;
             _super.prototype.step.call(this);
         };
         Person.prototype.displayAwareness = function (draw) {

@@ -76,6 +76,7 @@ export class Mimic {
                 );
             }
             if (this.controlledEntity instanceof Person) {
+                this.controlledEntity.stunTime = 1;
                 this.controlledEntity.behaviorModel.refreshInstruction();
             }
         }
