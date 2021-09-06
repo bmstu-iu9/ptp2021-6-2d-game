@@ -22,7 +22,12 @@ export class StationaryObject extends Entity {
         }
     }
     public die() {
-        this.hp = 0;
-        this.alive = false;
+        super.die();
+        this.draw.spriteAnimation(
+            "Explosion", 16,
+            new AnimationState(this.body.center, new geom.Vector(2, 2), 0),
+            new AnimationState(this.body.center, new geom.Vector(2, 2), 0),
+            0.4, 0.4 / 16
+        );
     }
 }

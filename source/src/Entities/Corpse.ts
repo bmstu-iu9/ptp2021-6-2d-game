@@ -13,13 +13,4 @@ export class Corpse extends StationaryObject {
         this.sounds = new Sounds(1);
         this.sounds.play("dying");
     }
-    public die() {
-        super.die();
-        this.draw.spriteAnimation(
-            "Explosion", 16,
-            new AnimationState(this.body.center, new geom.Vector(2, 2), 0),
-            new AnimationState(this.body.center, new geom.Vector(2, 2), 0),
-            0.5, 0.5 / 3
-        );
-    }
 }

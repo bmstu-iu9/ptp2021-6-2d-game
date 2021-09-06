@@ -932,7 +932,7 @@ define("Sounds", ["require", "exports"], function (require, exports) {
     }());
     exports.Sounds = Sounds;
 });
-define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom"], function (require, exports, Entity_1, Draw_3, geom) {
+define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom", "SpriteAnimation"], function (require, exports, Entity_1, Draw_3, geom, SpriteAnimation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.StationaryObject = void 0;
@@ -951,14 +951,14 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
             }
         };
         StationaryObject.prototype.die = function () {
-            this.hp = 0;
-            this.alive = false;
+            _super.prototype.die.call(this);
+            this.draw.spriteAnimation("Explosion", 16, new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), 0.4, 0.4 / 16);
         };
         return StationaryObject;
     }(Entity_1.Entity));
     exports.StationaryObject = StationaryObject;
 });
-define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "Sounds", "Geom", "SpriteAnimation"], function (require, exports, StationaryObject_1, Sounds_1, geom, SpriteAnimation_1) {
+define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "Sounds"], function (require, exports, StationaryObject_1, Sounds_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Corpse = void 0;
@@ -970,10 +970,6 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "S
             _this.sounds.play("dying");
             return _this;
         }
-        Corpse.prototype.die = function () {
-            _super.prototype.die.call(this);
-            this.draw.spriteAnimation("Explosion", 16, new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), new SpriteAnimation_1.AnimationState(this.body.center, new geom.Vector(2, 2), 0), 0.5, 0.5 / 3);
-        };
         return Corpse;
     }(StationaryObject_1.StationaryObject));
     exports.Corpse = Corpse;
