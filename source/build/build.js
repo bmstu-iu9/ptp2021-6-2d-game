@@ -559,7 +559,30 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "Au
     }());
     exports.Animation = Animation;
 });
-define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function (require, exports, Geom_2, Tile_2) {
+define("Queue", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Queue = void 0;
+    var Queue = (function () {
+        function Queue() {
+            this.data = [];
+            this.pos = 0;
+        }
+        Queue.prototype.push = function (elem) {
+            this.data.push(elem);
+        };
+        Queue.prototype.pop = function () {
+            this.pos++;
+            return this.data[this.pos - 1];
+        };
+        Queue.prototype.length = function () {
+            return this.data.length - this.pos;
+        };
+        return Queue;
+    }());
+    exports.Queue = Queue;
+});
+define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile"], function (require, exports, Geom_2, Queue_1, Tile_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.PathGenerator = void 0;
@@ -618,42 +641,66 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
                 }
             }
         };
-        PathGenerator.findNearestWays = function (collisionMesh, place, distance, path) {
+        PathGenerator.findNearestWays = function (collisionMesh, place, was) {
+            var vertices = [];
+            for (var i = -1; i <= 1; i++) {
+                if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
+                    continue;
+                }
+                if (collisionMesh[place.x + i][place.y] == false && !was[JSON.stringify(new Geom_2.Vector(place.x + i, place.y))]) {
+                    vertices.push(new Geom_2.Vector(place.x + i, place.y));
+                }
+            }
+            for (var i = -1; i <= 1; i++) {
+                if (place.y + i < 0 || place.y + i >= collisionMesh[place.x].length) {
+                    continue;
+                }
+                if (collisionMesh[place.x][place.y + i] == false && !was[JSON.stringify(new Geom_2.Vector(place.x, place.y + i))]) {
+                    vertices.push(new Geom_2.Vector(place.x, place.y + i));
+                }
+            }
             for (var i = -1; i <= 1; i++) {
                 if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
                     continue;
                 }
                 for (var j = -1; j <= 1; j++) {
-                    if (i == 0 && j == 0) {
+                    if (i == 0 || j == 0) {
                         continue;
                     }
                     if (place.y + j < 0 || place.y + j >= collisionMesh[place.x + i].length) {
                         continue;
                     }
-                    if (collisionMesh[place.x + i][place.y + j] == false) {
-                        var cur_vec = new Geom_2.Vector(place.x + i, place.y + j);
-                        distance.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), 1);
-                        path.get(JSON.stringify(place)).set(JSON.stringify(cur_vec), cur_vec);
+                    if (collisionMesh[place.x + i][place.y + j] == false && was[JSON.stringify(new Geom_2.Vector(place.x + i, place.y + j))] == false) {
+                        vertices.push(new Geom_2.Vector(place.x + i, place.y + j));
                     }
                 }
             }
+            return vertices;
         };
-        PathGenerator.FloydWarshall = function (vertices, distance, path) {
-            for (var k = 0; k < vertices.length; k++) {
-                for (var i = 0; i < vertices.length; i++) {
-                    for (var j = 0; j < vertices.length; j++) {
-                        var dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
-                        var dkj = distance.get(JSON.stringify(vertices[k])).get(JSON.stringify(vertices[j]));
-                        var dij = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j]));
-                        if (dik != undefined && dkj != undefined) {
-                            if (dij == undefined || dij > dik + dkj) {
-                                distance.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), dik + dkj);
-                                path.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), vertices[k]);
+        PathGenerator.bfsPathsFinder = function (collisionMesh) {
+            var path = new Map();
+            for (var i = 0; i < collisionMesh.length; i++) {
+                for (var j = 0; j < collisionMesh[i].length; j++) {
+                    var queue = new Queue_1.Queue();
+                    var was = new Map;
+                    var curPlace = new Geom_2.Vector(i, j);
+                    queue.push(curPlace);
+                    was[JSON.stringify(curPlace)] = true;
+                    while (queue.length() != 0) {
+                        var top_1 = queue.pop();
+                        var vertices = this.findNearestWays(collisionMesh, top_1, was);
+                        for (var k = 0; k < vertices.length; k++) {
+                            if (path.get(JSON.stringify(vertices[k])) == undefined) {
+                                path.set(JSON.stringify(vertices[k]), new Map());
                             }
+                            path.get(JSON.stringify(vertices[k])).set(JSON.stringify(curPlace), vertices[k].sub(top_1));
+                            was[JSON.stringify(vertices[k])] = true;
+                            queue.push(vertices[k]);
                         }
                     }
                 }
             }
+            return path;
         };
         PathGenerator.generateMatrix = function (MimicMap) {
             var collisionMap = MimicMap.Grid;
@@ -696,36 +743,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Tile"], function 
                 }
                 console.log(x);
             }
-            var vertices;
-            vertices = [];
-            var path = new Map();
-            for (var i = 0; i < collisionMesh.length; i++) {
-                for (var j = 0; j < collisionMesh[i].length; j++) {
-                    if (collisionMesh[i][j] == false) {
-                        var place = new Geom_2.Vector(i, j);
-                        if (distance.get(JSON.stringify(place)) == undefined) {
-                            distance.set(JSON.stringify(place), new Map());
-                            path.set(JSON.stringify(place), new Map());
-                        }
-                        this.findNearestWays(collisionMesh, place, distance, path);
-                        vertices[vertices.length] = place;
-                    }
-                }
-            }
-            console.log(path);
-            this.FloydWarshall(vertices, distance, path);
-            console.log(path);
-            var correctPath = new Map();
-            for (var i = 0; i < vertices.length; i++) {
-                for (var j = 0; j < vertices.length; j++) {
-                    if (path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])) != undefined) {
-                        if (correctPath.get(vertices[i]) == undefined) {
-                            correctPath.set(vertices[i], new Map());
-                        }
-                        correctPath.get(vertices[i]).set(vertices[j], path.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j])));
-                    }
-                }
-            }
+            var correctPath = this.bfsPathsFinder(collisionMesh);
             MimicMap.PathMatrix = correctPath;
             MimicMap.CollisionMesh = collisionMesh;
         };
@@ -1687,30 +1705,7 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities
     }(Person_4.Person));
     exports.Scientist = Scientist;
 });
-define("Queue", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Queue = void 0;
-    var Queue = (function () {
-        function Queue() {
-            this.data = [];
-            this.pos = 0;
-        }
-        Queue.prototype.push = function (elem) {
-            this.data.push(elem);
-        };
-        Queue.prototype.pop = function () {
-            this.pos++;
-            return this.data[this.pos - 1];
-        };
-        Queue.prototype.length = function () {
-            return this.data.length - this.pos;
-        };
-        return Queue;
-    }());
-    exports.Queue = Queue;
-});
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue", "Random", "Game"], function (require, exports, Tile_3, geom, Draw_10, PathGenerator_1, Soldier_1, Scientist_1, Monster_3, StationaryObject_2, BehaviorModel_2, aux, Queue_1, Random_2, Game_6) {
+define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue", "Random", "Game"], function (require, exports, Tile_3, geom, Draw_10, PathGenerator_1, Soldier_1, Scientist_1, Monster_3, StationaryObject_2, BehaviorModel_2, aux, Queue_2, Random_2, Game_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Level = exports.LightSource = exports.LevelJSON = void 0;
@@ -1974,7 +1969,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             for (var i = 0; i < this.gridSize.x; i++)
                 for (var j = 0; j < this.gridSize.y; j++)
                     this.Grid[i][j].light = 0;
-            var queue = new Queue_1.Queue();
+            var queue = new Queue_2.Queue();
             var dirs = [
                 new geom.Vector(0, 1),
                 new geom.Vector(0, -1),
@@ -2079,33 +2074,20 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             }
             return answer;
         };
-        AI.prototype.makePath = function (start, finish) {
-            var pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
-            if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)) == undefined || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
-                return [];
-            }
-            if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
-                var answer_1;
-                answer_1 = [];
-                answer_1[0] = this.getPointCoordinate(finish);
-                return answer_1;
-            }
-            var middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
-            var a1 = this.makePath(start, middlePoint);
-            var a2 = this.makePath(middlePoint, finish);
-            var answer = a1.concat(a2);
-            return answer;
-        };
         AI.prototype.goToPoint = function (point) {
+            var pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
             this.destination = point;
             this.Path = [];
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
-            var localPath = this.makePath(startMeshPoint, finishMeshPoint);
-            for (var i = 0; i < localPath.length; i++) {
-                this.Path[i] = localPath[i].clone();
+            var currentMeshPoint = startMeshPoint.clone();
+            while (JSON.stringify(startMeshPoint) != JSON.stringify(finishMeshPoint)) {
+                this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
+                currentMeshPoint.add(pathMatrix[JSON.stringify(currentMeshPoint)][JSON.stringify(finishMeshPoint)]);
             }
+            this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
             this.Path[this.Path.length] = point;
+            console.log(this.Path);
         };
         AI.prototype.wait = function (milliseconds) {
             this.stop();
