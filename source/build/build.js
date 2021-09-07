@@ -1902,10 +1902,10 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             for (var x = 0; x < this.gridSize.x; x++) {
                 newGrid.push([]);
                 for (var y = 0; y < this.gridSize.y; y++) {
-                    newGrid[x].push(this.Grid[y]);
+                    newGrid[x].push(this.Grid[x][y]);
                 }
             }
-            newLevel = { Grid: newGrid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map() };
+            newLevel = { Grid: newGrid, Entities: this.Entities, CollisionMesh: [], Lights: this.lightSources, PathMatrix: new Map() };
             console.log(newLevel.Grid);
             PathGenerator_1.PathGenerator.generateMatrix(newLevel);
             console.log(newLevel.CollisionMesh);
@@ -1929,6 +1929,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             for (var i = 0; i < this.gridSize.x; i++) {
                 for (var j = 0; j < this.gridSize.y; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
+                    console.log(i, j, this.Grid, this.Grid[i][j]);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
                     if (this.Grid[i][j].sub_image) {
@@ -3808,7 +3809,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_18, Game_9, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("http://127.0.0.1:4500/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
@@ -3828,7 +3829,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         if (game.levels["map"] != undefined) {
             t++;
             if (x == false) {
-                console.log(game.levels["map"].PathMatrix);
+                console.log(game.levels["map"]);
                 x = true;
             }
             if (t % 100 == 0) {
