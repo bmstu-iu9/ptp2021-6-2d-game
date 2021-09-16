@@ -855,7 +855,6 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
         };
         BehaviorModel.prototype.step = function () {
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
-                console.log(this.currentInstruction, "in progress");
                 this.operationNum++;
                 this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
                 var operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];
@@ -1023,12 +1022,10 @@ define("Entities/Projectiles/Projectile", ["require", "exports", "Entities/Entit
                 if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
                     (this.body.isWallNear == 3 && this.vel.x < 0)) {
                     this.vel.x = -this.vel.x;
-                    console.log("bounce x %d", this.body.isWallNear);
                 }
                 if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
                     (this.body.isWallNear == 4 && this.vel.y > 0)) {
                     this.vel.y = -this.vel.y;
-                    console.log("bounce y %d", this.body.isWallNear);
                 }
             }
             this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game_1.Game.dt));
@@ -1231,7 +1228,6 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
             else {
                 yPoints[1] = end.clone();
             }
-            console.log(xPoints, yPoints);
             for (var i = 1; this.isBetween(begin.x, xPoints[i].x, end.x); i++) {
                 if (this.isBetween(-Geom_5.eps, stepVec.x, Geom_5.eps)) {
                     break;
@@ -1924,7 +1920,6 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             for (var i = 0; i < this.gridSize.x; i++) {
                 for (var j = 0; j < this.gridSize.y; j++) {
                     var size = new geom.Vector(this.tileSize, this.tileSize);
-                    console.log(i, j, this.Grid, this.Grid[i][j]);
                     draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
                         .add(size.mul(1 / 2)), size, 0, 0);
                     if (this.Grid[i][j].sub_image) {
@@ -3791,7 +3786,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_18, Game_9, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:4500/");
+    aux.setEnvironment("http://127.0.0.1:8000/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
@@ -3811,11 +3806,9 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         if (game.levels["map"] != undefined) {
             t++;
             if (x == false) {
-                console.log(game.levels["map"]);
                 x = true;
             }
             if (t % 100 == 0) {
-                console.log(game.entities);
             }
             draw.clear();
             game.step();
