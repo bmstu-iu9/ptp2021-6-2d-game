@@ -121,6 +121,8 @@ export class AI {
     // }
 
     public goToPoint(point: geom.Vector) { // функция, прокладывающая путь до точки
+        console.log("Go to point:", point);
+        
         let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
         //console.log("q");
         this.destination = point;
@@ -128,10 +130,11 @@ export class AI {
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);
         let currentMeshPoint = startMeshPoint.clone();
-
-        while (JSON.stringify(startMeshPoint) != JSON.stringify(finishMeshPoint)) {
+        
+        while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
+            console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint));
             this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
-            currentMeshPoint.add(pathMatrix[JSON.stringify(currentMeshPoint)][JSON.stringify(finishMeshPoint)])
+            currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)))
         }
         this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
         this.Path[this.Path.length] = point;

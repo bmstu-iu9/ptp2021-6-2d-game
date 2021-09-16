@@ -51,7 +51,7 @@ function step() {
             //game.entities[1].myAI.goToPoint(new geom.Vector(1, 2.5));
             //game.makeTrigger(100000000, game.entities[1]);
 
-            //console.log(game.levels["map"]);
+            console.log(game.levels["map"]);
             //Ray.pointGenerator(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0));
             x = true;
         }

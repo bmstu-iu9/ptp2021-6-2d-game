@@ -4,6 +4,7 @@ import { Vector, vectorComparison } from "../Geom";
 import { LevelJSON } from "../Level";
 import { Queue } from "../Queue";
 import { CollisionType, Tile } from "../Tile";
+import * as aux from "../AuxLib";
 
 export class PathGenerator {
     private static fillTile(collisionMesh: boolean[][], tileInfo: Tile, place: Vector) {
@@ -62,7 +63,7 @@ export class PathGenerator {
     private static findNearestWays(collisionMesh: boolean[][], place: Vector, was : Map<string, boolean>) {
         let vertices : Vector[] = [];
         for (let i = -1; i <= 1; i++) {
-            if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
+            if (place.x + i < 0 || place.x + i >= collisionMesh.length || i == 0) {
                 continue;
             }
             if (collisionMesh[place.x + i][place.y] == false && !was[JSON.stringify(new Vector(place.x + i, place.y))]) {
@@ -70,7 +71,7 @@ export class PathGenerator {
             }
         }
         for (let i = -1; i <= 1; i++) {
-            if (place.y + i < 0 || place.y + i >= collisionMesh[place.x].length) {
+            if (place.y + i < 0 || place.y + i >= collisionMesh[place.x].length || i == 0) {
                 continue;
             }
             if (collisionMesh[place.x][place.y + i] == false && !was[JSON.stringify(new Vector(place.x, place.y + i))]) {
@@ -128,10 +129,10 @@ export class PathGenerator {
                     let top = queue.pop();
                     let vertices = this.findNearestWays(collisionMesh, top, was);
                     for (let k = 0; k < vertices.length; k++) {
-                        if (path.get(JSON.stringify(vertices[k])) == undefined) {
-                            path.set(JSON.stringify(vertices[k]), new Map());
+                        if (path.get(aux.vectorStringify(vertices[k])) == undefined) {
+                            path.set(aux.vectorStringify(vertices[k]), new Map());
                         }
-                        path.get(JSON.stringify(vertices[k])).set(JSON.stringify(curPlace), vertices[k].sub(top));
+                        path.get(aux.vectorStringify(vertices[k])).set(aux.vectorStringify(curPlace), vertices[k].sub(top));
                         was[JSON.stringify(vertices[k])] = true;
                         queue.push(vertices[k]);
                     }

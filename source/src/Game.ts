@@ -48,88 +48,6 @@ export class Game {
         return text;
     }
 
-    // public static replacer(key, value) { // функция замены классов для преобразования в JSON
-    //     if (value instanceof Map) { // упаковка Map
-    //         let val: any;
-    //         if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
-
-    //             let keys = value.get("JSONkeys");
-    //             console.log("JSONkeys", keys);
-    //             let remapping = new Map();
-    //             for (let i = 0; i < keys.length; i++) {
-    //                 remapping.set(keys[i], value[keys[i]]);
-    //             }
-    //             val = Array.from(remapping.entries());
-    //         } else {
-    //             val = Array.from(value.entries());
-    //         }
-    //         console.log(val);
-
-    //         return {
-    //             dataType: 'Map',
-    //             value: val, // or with spread: value: [...value]
-    //         };
-    //     }
-    //     if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
-    //         // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
-    //         let name = value.src;
-    //         let nameSplit = name.split("/");
-    //         let lastSplit = nameSplit[nameSplit.length - 1];
-
-    //         return {
-    //             dataType: 'HTMLImageElement',
-    //             value: lastSplit
-    //         };
-    //     }
-    //     if (value instanceof geom.Vector) { // упаковка Vector
-    //         return {
-    //             dataType: 'Vector',
-    //             x: value.x,
-    //             y: value.y
-    //         };
-    //     }
-    //     if (value instanceof Soldier) {
-    //         return {
-    //             dataType: 'Soldier',
-    //             center: value.body.center,
-    //             behaviorModel: value.behaviorModel
-    //         }
-    //     }
-    //     if (value instanceof Scientist) {
-    //         return {
-    //             dataType: 'Scientist',
-    //             center: value.body.center,
-    //             behaviorModel: value.behaviorModel
-    //         }
-    //     }
-    //     if (value instanceof Monster) {
-    //         return {
-    //             dataType: 'Monster',
-    //             center: value.body.center
-    //         }
-    //     }
-    //     if (value instanceof StationaryObject) {
-    //         return {
-    //             dataType: 'StationaryObject',
-    //             center: value.body.center,
-    //         }
-    //     }
-    //     if (value instanceof BehaviorModel) {
-    //         return {
-    //             dataType: 'BehaviorModel',
-    //             instructions: value.instructions
-    //         }
-    //     }
-    //     if (value instanceof Instruction) {
-    //         return {
-    //             dataType: 'Instruction',
-    //             operations: value.operations,
-    //             operationsData: value.operationsData
-    //         }
-    //     }
-    //     return value;
-    // }
-
     public static reviver(key, value) { // функция обратной замены классов для преобразования из JSON
 
         if (typeof value === 'object' && value !== null) {
@@ -147,6 +65,7 @@ export class Game {
                 soldier.behaviorModel = new BehaviorModel(soldier.myAI);
                 soldier.behaviorModel = value.behaviorModel;
                 soldier.behaviorModel.myAI = soldier.myAI;
+                soldier.behaviorModel.changeCurrentInstruction("normal");
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
@@ -154,6 +73,9 @@ export class Game {
                 let scientist = Game.currentGame.makeScientist(value.center) as Scientist;
                 scientist.behaviorModel = new BehaviorModel(scientist.myAI);
                 scientist.behaviorModel.instructions = value.behaviorModel.instructions;
+                scientist.behaviorModel.changeCurrentInstruction("normal");
+                console.log(scientist);
+                
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -188,6 +110,8 @@ export class Game {
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
         Game.levelPaths[name] = path;
+        console.log(aux.environment + path);
+        
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
                 console.log("Map loaded");

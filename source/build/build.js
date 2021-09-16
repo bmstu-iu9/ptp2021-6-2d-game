@@ -582,7 +582,7 @@ define("Queue", ["require", "exports"], function (require, exports) {
     }());
     exports.Queue = Queue;
 });
-define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile"], function (require, exports, Geom_2, Queue_1, Tile_2) {
+define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile", "AuxLib"], function (require, exports, Geom_2, Queue_1, Tile_2, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.PathGenerator = void 0;
@@ -644,7 +644,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile"], 
         PathGenerator.findNearestWays = function (collisionMesh, place, was) {
             var vertices = [];
             for (var i = -1; i <= 1; i++) {
-                if (place.x + i < 0 || place.x + i >= collisionMesh.length) {
+                if (place.x + i < 0 || place.x + i >= collisionMesh.length || i == 0) {
                     continue;
                 }
                 if (collisionMesh[place.x + i][place.y] == false && !was[JSON.stringify(new Geom_2.Vector(place.x + i, place.y))]) {
@@ -652,7 +652,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile"], 
                 }
             }
             for (var i = -1; i <= 1; i++) {
-                if (place.y + i < 0 || place.y + i >= collisionMesh[place.x].length) {
+                if (place.y + i < 0 || place.y + i >= collisionMesh[place.x].length || i == 0) {
                     continue;
                 }
                 if (collisionMesh[place.x][place.y + i] == false && !was[JSON.stringify(new Geom_2.Vector(place.x, place.y + i))]) {
@@ -690,10 +690,10 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile"], 
                         var top_1 = queue.pop();
                         var vertices = this.findNearestWays(collisionMesh, top_1, was);
                         for (var k = 0; k < vertices.length; k++) {
-                            if (path.get(JSON.stringify(vertices[k])) == undefined) {
-                                path.set(JSON.stringify(vertices[k]), new Map());
+                            if (path.get(aux.vectorStringify(vertices[k])) == undefined) {
+                                path.set(aux.vectorStringify(vertices[k]), new Map());
                             }
-                            path.get(JSON.stringify(vertices[k])).set(JSON.stringify(curPlace), vertices[k].sub(top_1));
+                            path.get(aux.vectorStringify(vertices[k])).set(aux.vectorStringify(curPlace), vertices[k].sub(top_1));
                             was[JSON.stringify(vertices[k])] = true;
                             queue.push(vertices[k]);
                         }
@@ -854,6 +854,7 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.changeCurrentInstruction(this.currentInstruction);
         };
         BehaviorModel.prototype.step = function () {
+            console.log("here?");
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
                 this.operationNum++;
                 this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
@@ -2070,15 +2071,17 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             return answer;
         };
         AI.prototype.goToPoint = function (point) {
+            console.log("Go to point:", point);
             var pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
             this.destination = point;
             this.Path = [];
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
             var currentMeshPoint = startMeshPoint.clone();
-            while (JSON.stringify(startMeshPoint) != JSON.stringify(finishMeshPoint)) {
+            while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
+                console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint));
                 this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
-                currentMeshPoint.add(pathMatrix[JSON.stringify(currentMeshPoint)][JSON.stringify(finishMeshPoint)]);
+                currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
             }
             this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
             this.Path[this.Path.length] = point;
@@ -2249,6 +2252,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
                     soldier.behaviorModel = value.behaviorModel;
                     soldier.behaviorModel.myAI = soldier.myAI;
+                    soldier.behaviorModel.changeCurrentInstruction("normal");
                     return soldier;
                 }
                 if (value.dataType == 'Scientist') {
@@ -2256,6 +2260,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     var scientist = Game.currentGame.makeScientist(value.center);
                     scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
                     scientist.behaviorModel.instructions = value.behaviorModel.instructions;
+                    scientist.behaviorModel.changeCurrentInstruction("normal");
+                    console.log(scientist);
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
@@ -2292,6 +2298,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     switch (_a.label) {
                         case 0:
                             Game.levelPaths[name] = path;
+                            console.log(aux.environment + path);
                             return [4, this.readTextFile(aux.environment + path)
                                     .then(function (result) {
                                     console.log("Map loaded");
@@ -2807,8 +2814,13 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_14, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.reviver = exports.replacer = exports.getMilliCount = exports.mergeArray = exports.arrayMove = exports.swap = exports.setEnvironment = exports.setEditorMode = exports.editorMode = exports.environment = void 0;
+    exports.reviver = exports.replacer = exports.getMilliCount = exports.mergeArray = exports.arrayMove = exports.swap = exports.setEnvironment = exports.setEditorMode = exports.vectorStringify = exports.editorMode = exports.environment = void 0;
     exports.editorMode = false;
+    function vectorStringify(v) {
+        var ans = "x:" + String(v.x).valueOf() + "y:" + String(v.y);
+        return ans;
+    }
+    exports.vectorStringify = vectorStringify;
     function setEditorMode(newEditorMode) {
         exports.editorMode = newEditorMode;
     }
@@ -3806,6 +3818,7 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
         if (game.levels["map"] != undefined) {
             t++;
             if (x == false) {
+                console.log(game.levels["map"]);
                 x = true;
             }
             if (t % 100 == 0) {
