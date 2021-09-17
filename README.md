@@ -16,6 +16,15 @@
   * ⇧ - движение персонажа вверх
   * ⇩ - движение персонажа вниз
 
+# Управление в редакторе карт
+
+* Управление мышью
+  * Колесико - изменение масштаба карты
+  * Правая кнопка - перемещение по карте
+  * Левая кнопка - установка обьекта (персонаж, тайлы) на карту, либо выбор обьекта
+
+
+
 # Запуск игры локально
 
 Если вы играете не через github pages, а загрузили игру локально:
@@ -33,9 +42,9 @@
 * Запустить игру
 
 ## Команда разработчиков
-* Андрей Ильин (Капитан) - [@StarikTenger](https://github.com/StarikTenger)  
-* Макаров Эдгар (Боцман) - [@Robby-the-paladin](https://github.com/Robby-the-paladin)  
-* Терюха Михаил (Юнга) - [@xtoter](https://github.com/xtoter)  
-* Белякова Софья (Юнга) - [@SoFa325](https://github.com/SoFa325)  
-* Ключник Иван (Юнга) - [@klu4vanya](https://github.com/klu4vanya)  
-* Аксютин Игорь (Кок) - [@lvlcnapps](https://github.com/lvlcnapps)  
+* Андрей Ильин (Капитан) - [@StarikTenger](https://github.com/StarikTenger)  (front-end,back-end)
+* Макаров Эдгар (Боцман) - [@Robby-the-paladin](https://github.com/Robby-the-paladin)  (front-end,back-end)
+* Терюха Михаил (Юнга) - [@xtoter](https://github.com/xtoter)   (back-end)
+* Белякова Софья (Юнга) - [@SoFa325](https://github.com/SoFa325)  (back-end)
+* Ключник Иван (Юнга) - [@klu4vanya](https://github.com/klu4vanya) (front-end)
+* Аксютин Игорь (Кок) - [@lvlcnapps](https://github.com/lvlcnapps)  (front-end)
