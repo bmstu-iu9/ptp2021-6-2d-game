@@ -130,11 +130,17 @@ export class AI {
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);
         let currentMeshPoint = startMeshPoint.clone();
+
+        if (!pathMatrix.get(aux.vectorStringify(currentMeshPoint)) ||
+         !pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint))) {
+            return;
+        }
         
         while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
-            console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint));
+            console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint),
+            pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
             this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
-            currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)))
+            currentMeshPoint = currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)))
         }
         this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
         this.Path[this.Path.length] = point;

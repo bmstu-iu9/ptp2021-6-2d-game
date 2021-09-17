@@ -132,7 +132,7 @@ export class PathGenerator {
                         if (path.get(aux.vectorStringify(vertices[k])) == undefined) {
                             path.set(aux.vectorStringify(vertices[k]), new Map());
                         }
-                        path.get(aux.vectorStringify(vertices[k])).set(aux.vectorStringify(curPlace), vertices[k].sub(top));
+                        path.get(aux.vectorStringify(vertices[k])).set(aux.vectorStringify(curPlace), top.sub(vertices[k]));
                         was[JSON.stringify(vertices[k])] = true;
                         queue.push(vertices[k]);
                     }

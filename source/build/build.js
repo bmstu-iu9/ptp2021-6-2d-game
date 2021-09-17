@@ -693,7 +693,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile", "
                             if (path.get(aux.vectorStringify(vertices[k])) == undefined) {
                                 path.set(aux.vectorStringify(vertices[k]), new Map());
                             }
-                            path.get(aux.vectorStringify(vertices[k])).set(aux.vectorStringify(curPlace), vertices[k].sub(top_1));
+                            path.get(aux.vectorStringify(vertices[k])).set(aux.vectorStringify(curPlace), top_1.sub(vertices[k]));
                             was[JSON.stringify(vertices[k])] = true;
                             queue.push(vertices[k]);
                         }
@@ -844,18 +844,21 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
             this.myAI = myAI;
             this.instructions = new Map;
         }
-        BehaviorModel.prototype.changeCurrentInstruction = function (newInstruction) {
+        BehaviorModel.prototype.changeCurrentInstruction = function (newInstruction, refresh) {
+            if (refresh === void 0) { refresh = false; }
+            if (this.currentInstruction == newInstruction && !refresh)
+                return;
             this.operationNum = 0;
             this.myAI.Path = [];
             this.myAI.wait(0);
             this.currentInstruction = newInstruction;
         };
         BehaviorModel.prototype.refreshInstruction = function () {
-            this.changeCurrentInstruction(this.currentInstruction);
+            this.changeCurrentInstruction(this.currentInstruction, true);
         };
         BehaviorModel.prototype.step = function () {
-            console.log("here?");
             if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < Geom_4.eps && this.instructions.get(this.currentInstruction)) {
+                console.log("here?");
                 this.operationNum++;
                 this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
                 var operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];
@@ -2078,10 +2081,14 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             var startMeshPoint = this.chooseMeshPoint(this.body.center);
             var finishMeshPoint = this.chooseMeshPoint(point);
             var currentMeshPoint = startMeshPoint.clone();
+            if (!pathMatrix.get(aux.vectorStringify(currentMeshPoint)) ||
+                !pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint))) {
+                return;
+            }
             while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
-                console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint));
+                console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint), pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
                 this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
-                currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
+                currentMeshPoint = currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
             }
             this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
             this.Path[this.Path.length] = point;
@@ -3798,7 +3805,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_18, Game_9, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:8000/");
+    aux.setEnvironment("http://127.0.0.1:8001/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
