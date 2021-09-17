@@ -27,9 +27,11 @@ export class Person extends Entity {
     public direction: geom.Vector; // направление взгляда
     public awareness = 0;
     public awarenessThreshold = 10;
+    public awarenessOverflow = 15;
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     public mode: PersonMode; // маркер состояния (переименовать по необходимости)
+    public stunTime = 0; // Время оглушения
     protected type: string = null;
     public behaviorModel: BehaviorModel;
     public sound: Sounds = new Sounds(0.9);
@@ -65,7 +67,7 @@ export class Person extends Entity {
 
     public isPointVisible(pos : geom.Vector) : boolean {
         return (geom.dist(this.body.center, pos) <= this.viewRadius 
-        && Ray.wallIntersection(this.body.center, pos, this.game) != false); // я не уверен, что Vector считается за true, за сим сравнение с false уместно
+        && !Ray.wallIntersection(this.body.center, pos, this.game));
     }
 
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
@@ -170,12 +172,10 @@ export class Person extends Entity {
         console.log("stop");
     }
 
-    public step() {
+    private move() {
         let x = 0;
         let y = 0;
         let vel = this.body.velocity;
-
-        // перемещение согласно commands
         if (!this.commands)
             return;
         if (this.commands.active["MoveUp"]) {
@@ -195,18 +195,35 @@ export class Person extends Entity {
             this.body.move(new geom.Vector(-vel, 0));
         }
         this.changedirection(x, y); // измененниие напрвления для анимаций
-        this.checkTriggers();
         this.direction = new geom.Vector(x, y);
+    }
+
+    public step() {  
+        // перемещение согласно commands
+        this.move();
 
         // Проверка на awareness
         if (this.awareness >= this.awarenessThreshold) {
+            if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
+                this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-            this.awareness = this.awarenessThreshold;
         }
+        if (this.awareness < this.awarenessThreshold) {
+            this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
+        }
+        if (this.awareness < 0) {
+            this.awareness = 0;
+        }
+        this.awareness -= Game.dt * 0.5;
 
         this.updateMode();
-        this.behaviorModel.step();
-
+        if (this.stunTime <= 0) {
+            this.checkTriggers();
+            this.behaviorModel.step();
+        }
+        else
+            this.stop();
+        this.stunTime -= Game.dt;
         super.step();
     }
 

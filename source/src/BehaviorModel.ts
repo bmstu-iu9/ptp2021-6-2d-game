@@ -75,6 +75,10 @@ export class BehaviorModel {
         this.changeCurrentInstruction(this.currentInstruction);
     }
 
+    public getCurrentInstruction() : string {
+        return this.currentInstruction + "";
+    }
+
     public step() {
         //console.log("here?");
         
