@@ -43,8 +43,6 @@ export class Ray {
             yPoints[1] = end.clone();
         }
 
-        console.log(xPoints, yPoints);
-
         for (let i = 1; this.isBetween(begin.x, xPoints[i].x, end.x); i++) {
             if (this.isBetween(-eps, stepVec.x, eps)) {
                 break;

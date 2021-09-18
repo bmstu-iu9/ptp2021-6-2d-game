@@ -8,7 +8,6 @@ import { Scientist } from "./Entities/Scientist";
 import { Monster } from "./Entities/Monster";
 import { StationaryObject } from "./Entities/StationaryObject";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
-import { sign } from "crypto";
 import * as aux from "./AuxLib";
 import { Queue } from "./Queue";
 import { Random } from "./Random";
@@ -239,11 +238,11 @@ export class Level {
         for (let x = 0; x < this.gridSize.x; x++) {
             newGrid.push([]);
             for (let y = 0; y < this.gridSize.y; y++) {
-                newGrid[x].push(this.Grid[y]);
+                newGrid[x].push(this.Grid[x][y]);
             }
         }
 
-        newLevel = {Grid: newGrid, Entities: this.Entities, CollisionMesh: [], PathMatrix: new Map()};
+        newLevel = {Grid: newGrid, Entities: this.Entities, CollisionMesh: [], Lights: this.lightSources, PathMatrix: new Map()};
 
         console.log(newLevel.Grid);
 

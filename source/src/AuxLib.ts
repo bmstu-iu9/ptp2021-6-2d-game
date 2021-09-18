@@ -1,9 +1,15 @@
+import { stringify } from "querystring";
 import { setEnvironmentData } from "worker_threads";
 import { Draw } from "./Draw";
 import * as geom from "./Geom";
 
 export let environment: string;
 export let editorMode = false;
+
+export function vectorStringify(v : geom.Vector) {
+    let ans = "x:"+ String(v.x).valueOf() + "y:" + String(v.y);
+    return ans;
+}
 
 export function setEditorMode(newEditorMode: boolean) {
     editorMode = newEditorMode;

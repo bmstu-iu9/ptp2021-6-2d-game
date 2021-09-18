@@ -64,7 +64,9 @@ export class BehaviorModel {
         this.instructions = new Map;
     }
 
-    public changeCurrentInstruction(newInstruction: string) {
+    public changeCurrentInstruction(newInstruction: string, refresh = false) {
+        if (this.currentInstruction == newInstruction && !refresh)
+            return;
         this.operationNum = 0;
         this.myAI.Path = [];
         this.myAI.wait(0);
@@ -72,7 +74,7 @@ export class BehaviorModel {
     }
 
     public refreshInstruction() {
-        this.changeCurrentInstruction(this.currentInstruction);
+        this.changeCurrentInstruction(this.currentInstruction, true);
     }
 
     public getCurrentInstruction() : string {
@@ -83,8 +85,7 @@ export class BehaviorModel {
         //console.log("here?");
         
         if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions.get(this.currentInstruction)) {
-            console.log(this.currentInstruction, "in progress");
-
+            console.log("here?");
             this.operationNum++;
             this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
             let operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];

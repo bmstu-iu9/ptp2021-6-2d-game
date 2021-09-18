@@ -93,45 +93,33 @@ export class AI {
         return answer;
     }
 
-    // рекурсивная функция создающая путь по точкам коллизионной сетки
-    private makePath(start: geom.Vector, finish: geom.Vector): geom.Vector[] {
-        let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
-
-        // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
-        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)) == undefined || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
-            return [];
-        }
-
-        // если точки находятся рядом то путь состоит из одной финальной вершины
-        if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
-            let answer: geom.Vector[];
-            answer = [];
-            answer[0] = this.getPointCoordinate(finish);
-            return answer;
-        }
-
-        // middlePoint - третья точка точка лежащая на кратчайшем пути
-        let middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
-        let a1 = this.makePath(start, middlePoint);
-        let a2 = this.makePath(middlePoint, finish);
-        let answer = a1.concat(a2);
-        //console.log("Path from ", start, " to ", finish, " is ", a1.concat(a2), answer);
-
-        return answer;
-    }
-
     public goToPoint(point: geom.Vector) { // функция, прокладывающая путь до точки
+        console.log("Go to point:", point);
+        
+        let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
         //console.log("q");
         this.destination = point;
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);
+        let currentMeshPoint = startMeshPoint.clone();
 
-        let localPath = this.makePath(startMeshPoint, finishMeshPoint);
-        for (let i = 0; i < localPath.length; i++) {
-            this.Path[i] = localPath[i].clone();
+        if (!pathMatrix.get(aux.vectorStringify(currentMeshPoint)) ||
+         !pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint))) {
+            return;
         }
+        
+        while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
+            console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint),
+            pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
+            this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
+            currentMeshPoint = currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)))
+        }
+        this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
         this.Path[this.Path.length] = point;
+
+        console.log(this.Path);
+        
     }
 
     // функция, определяющая когда активируется персонаж(чтобы сбросить время ожидания вызвать wait(0))
