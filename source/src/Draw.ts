@@ -335,6 +335,10 @@ export class Draw {
     }
     // hp бар 
     public bar(pos: geom.Vector, box: geom.Vector, percentage: number, backColor: Color, frontColor: Color, marks: number[]) {
+        if (percentage > 1)
+            percentage = 1;
+        if (percentage < 0)
+            percentage = 0;
         let queue: bar_queue = { pos, box, percentage, frontColor, backColor, marks };
         this.hpqueue.push(queue); // Добавляем в очередь на отрисовку
 

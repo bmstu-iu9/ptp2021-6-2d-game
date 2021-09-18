@@ -10,4 +10,8 @@ export class Monster extends Person {
         this.hpThresholdCorrupted = this.hpThresholdDying = 0;
         this.viewRadius = -1; // Костыль чтобы awareness не работало
     }
+    public step() {
+        this.game.makeTrigger(this, 10, Game.dt);
+        super.step();
+    }
 }
