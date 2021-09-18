@@ -1,5 +1,3 @@
-import { join } from "path/posix";
-import { json } from "stream/consumers";
 import { Vector, vectorComparison } from "../Geom";
 import { LevelJSON } from "../Level";
 import { Queue } from "../Queue";
@@ -96,25 +94,6 @@ export class PathGenerator {
         }
         return vertices;
     }
-
-    // private static FloydWarshall(vertices: Vector[], distance: Map<any, any>, path: Map<any, any>) {
-    //     for (let k = 0; k < vertices.length; k++) {
-    //         for (let i = 0; i < vertices.length; i++) {
-    //             for (let j = 0; j < vertices.length; j++) {
-    //                 let dik = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[k]));
-    //                 let dkj = distance.get(JSON.stringify(vertices[k])).get(JSON.stringify(vertices[j]));
-    //                 let dij = distance.get(JSON.stringify(vertices[i])).get(JSON.stringify(vertices[j]));
-    //                 if (dik != undefined && dkj != undefined) {
-    //                     if (dij == undefined || dij > dik + dkj) {
-    //                         //console.log(vertices[i], vertices[k], vertices[j], dik + dkj, dij, dij < dik + dkj);
-    //                         distance.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), dik + dkj);
-    //                         path.get(JSON.stringify(vertices[i])).set(JSON.stringify(vertices[j]), vertices[k]);
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
     private static bfsPathsFinder(collisionMesh) {
         let path = new Map();
