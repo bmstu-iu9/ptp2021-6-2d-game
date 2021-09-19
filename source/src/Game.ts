@@ -83,7 +83,7 @@ export class Game {
                 return monster;
             }
             if (value.dataType == 'StationaryObject') {
-                let stationaryObject = new StationaryObject(this.currentGame, new Body(value.center, 1), "fine");
+                let stationaryObject = new StationaryObject(this.currentGame, new Body(value.center, 1), value.type, "Interior");
                 return stationaryObject;
             }
             if (value.dataType == 'BehaviorModel') {
@@ -255,7 +255,6 @@ export class Game {
         this.mimic.step();
         this.attachCamToMimic();
         // Processing entities
-        this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
         this.triggers.forEach(trigger => trigger.step());
         this.processEntities();

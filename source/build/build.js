@@ -1493,6 +1493,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             draw.bar(this.body.center.clone().add(new geom.Vector(0, -0.9)), new geom.Vector(1, 0.1), this.awareness / this.awarenessThreshold, new Draw_7.Color(25, 25, 25), new Draw_7.Color(25, 150, 255), []);
         };
         Person.prototype.display = function (draw) {
+            this.animation.step();
             _super.prototype.display.call(this, draw);
             draw.bar(this.body.center.clone().add(new geom.Vector(0, -1)), new geom.Vector(1, 0.1), this.hp / this.hpMax, new Draw_7.Color(25, 25, 25), new Draw_7.Color(25, 255, 25), [this.hpThresholdCorrupted / this.hpMax, this.hpThresholdDying / this.hpMax]);
         };
@@ -1793,9 +1794,12 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             };
         }
         if (value instanceof StationaryObject_2.StationaryObject) {
+            var type = value.image.src.split(".")[0];
+            type = type.split("/")[type.split("/").length - 1];
             return {
                 dataType: 'StationaryObject',
                 center: value.body.center,
+                type: type
             };
         }
         if (value instanceof BehaviorModel_2.BehaviorModel) {
@@ -2302,7 +2306,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return monster;
                 }
                 if (value.dataType == 'StationaryObject') {
-                    var stationaryObject = new StationaryObject_3.StationaryObject(this.currentGame, new Body_2.Body(value.center, 1), "fine");
+                    var stationaryObject = new StationaryObject_3.StationaryObject(this.currentGame, new Body_2.Body(value.center, 1), value.type, "Interior");
                     return stationaryObject;
                 }
                 if (value.dataType == 'BehaviorModel') {
@@ -2445,7 +2449,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.currentLevel.generateLighting();
             this.mimic.step();
             this.attachCamToMimic();
-            this.entities.forEach(function (entity) { return entity.animation.step(); });
             this.entities.forEach(function (entity) { return entity.step(); });
             this.triggers.forEach(function (trigger) { return trigger.step(); });
             this.processEntities();
@@ -3243,7 +3246,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
     }());
     exports.ListOfPads = ListOfPads;
 });
-define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib", "Editor/ListOfPads"], function (require, exports, Control_3, Draw_16, Entity_4, Body_3, Monster_5, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux, ListOfPads_1) {
+define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib", "Editor/ListOfPads", "Entities/StationaryObject"], function (require, exports, Control_3, Draw_16, Entity_4, Body_3, Monster_5, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux, ListOfPads_1, StationaryObject_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Cursor = exports.Mode = exports.ToolType = void 0;
@@ -3301,6 +3304,12 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
             if (this.entity instanceof Monster_5.Monster) {
                 var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
                 this.level.Entities[currentLocation] = new Monster_5.Monster(null, new Body_3.Body(pos, 1));
+            }
+            if (this.entity instanceof StationaryObject_4.StationaryObject) {
+                var pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
+                this.level.Entities[currentLocation] = new StationaryObject_4.StationaryObject(null, new Body_3.Body(pos, 1), "0", "Interior");
+                var x = this.level.Entities[currentLocation];
+                x.image = this.entity.image;
             }
         };
         Cursor.prototype.setLight = function () {
@@ -3406,7 +3415,10 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
                     break;
                 }
                 case Mode.Entity: {
-                    this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    if (this.entity instanceof Person_6.Person)
+                        this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                    if (this.entity instanceof StationaryObject_4.StationaryObject)
+                        this.drawPreview.image(this.entity.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                     break;
                 }
             }
@@ -3417,7 +3429,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
     }());
     exports.Cursor = Cursor;
 });
-define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads", "Editor/EditorGUI"], function (require, exports, Control_4, Draw_17, Level_2, geom, Cursor_2, Tile_6, Body_4, Soldier_4, Scientist_4, Person_7, Monster_6, Animation_5, BehaviorModel_6, ListOfPads_2, EditorGUI_2) {
+define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads", "Editor/EditorGUI", "Entities/StationaryObject"], function (require, exports, Control_4, Draw_17, Level_2, geom, Cursor_2, Tile_6, Body_4, Soldier_4, Scientist_4, Person_7, Monster_6, Animation_5, BehaviorModel_6, ListOfPads_2, EditorGUI_2, StationaryObject_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Editor = void 0;
@@ -3549,6 +3561,16 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
                 };
                 button.onclick = applyEntity;
                 button.src = "textures/Monster/stand_fine_0.png";
+            }
+            if (entityType != "Soldier" && entityType != "Scientist" && entityType != "Monster") {
+                var applyEntity = function () {
+                    _this.cursor.changeMode(Cursor_2.Mode.Entity);
+                    _this.cursor.entity = new StationaryObject_5.StationaryObject(null, new Body_4.Body(new geom.Vector(0, 0), 1), entityType, "Interior");
+                };
+                button.onclick = applyEntity;
+                var obj = new StationaryObject_5.StationaryObject(null, new Body_4.Body(new geom.Vector(0, 0), 1), entityType, "Interior");
+                console.log(obj.image.src);
+                button.src = obj.image.src;
             }
             button.className = "entityButton";
             var palette = document.getElementById("palette" + type);
@@ -3686,6 +3708,9 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createEntityButton("Scientist", "4");
             this.createEntityButton("Soldier", "4");
             this.createEntityButton("Monster", "4");
+            for (var i = 0; i < 2; i++) {
+                this.createEntityButton(String(i).valueOf(), "8");
+            }
             this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
             this.createToolButton(Cursor_2.ToolType.Waiting, "5");
             this.createToolButton(Cursor_2.ToolType.Pursuit, "5");
@@ -3823,7 +3848,11 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.level.displayLighting(this.draw);
             this.cursor.display();
             for (var i = 0; i < this.level.Entities.length; i++) {
-                this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
+                var curEntity = this.level.Entities[i];
+                if (curEntity instanceof Person_7.Person)
+                    this.draw.drawimage(curEntity.animation.getDefaultImage(), this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
+                if (curEntity instanceof StationaryObject_5.StationaryObject)
+                    this.draw.drawimage(curEntity.image, this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
             }
             ListOfPads_2.ListOfPads.GUIstep();
             EditorGUI_2.EditorGUI.display(this.draw);
@@ -3835,7 +3864,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_18, Game_10, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("http://127.0.0.1:8001/");
+    aux.setEnvironment("http://127.0.0.1:4504/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
