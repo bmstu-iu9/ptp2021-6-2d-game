@@ -2306,7 +2306,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return monster;
                 }
                 if (value.dataType == 'StationaryObject') {
-                    var stationaryObject = new StationaryObject_3.StationaryObject(this.currentGame, new Body_2.Body(value.center, 1), value.type, "Interior");
+                    var stationaryObject = Game.currentGame.makeStationaryObject(value.center, value.type, "Interior");
                     return stationaryObject;
                 }
                 if (value.dataType == 'BehaviorModel') {
@@ -2357,6 +2357,13 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             var body = new Body_2.Body(coordinates, radius);
             body.game = this;
             return this.bodies[this.bodies.length] = body;
+        };
+        Game.prototype.makeStationaryObject = function (pos, type, category) {
+            var body = this.makeBody(pos, 1);
+            var entity = new StationaryObject_3.StationaryObject(this, body, type, category);
+            entity.entityID = this.entities.length;
+            this.entities[this.entities.length] = entity;
+            return entity;
         };
         Game.prototype.makeScientist = function (pos) {
             var body = this.makeBody(pos, 1);
