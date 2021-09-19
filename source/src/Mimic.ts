@@ -9,6 +9,7 @@ import { Draw, Layer } from "./Draw";
 import { AnimationState } from "./SpriteAnimation";
 import { Biomass } from "./Entities/Projectiles/Biomass";
 import { Sounds } from "./Sounds"
+import { Behavior } from "./Entities/Person";
 
 export class Aim {
     public vel = 0;
@@ -66,7 +67,7 @@ export class Mimic {
                 if (this.controlledEntity){
                     let cur = this.controlledEntity as Person;
                     if (cur)
-                        cur.sound.stop();
+                        cur.sound.current_sound.muted=true
                 }
                 this.game.draw.spriteAnimation(
                     "MonsterDisappearance", 8,
