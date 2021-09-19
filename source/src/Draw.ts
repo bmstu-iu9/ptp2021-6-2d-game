@@ -140,7 +140,7 @@ export class Draw {
     }
     // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle: number, layer: Layer, transparency = 1) {
-        if (layer == 0) { // Отрисовка сразу
+        if (layer == Layer.TileLayer || Layer.HudLayer == 2) { // Отрисовка сразу
             this.drawimage(image, pos, box, angle, transparency);
         } else { // Отрисовка после сортировки
             let curqueue: queue = { image, pos, box, angle, layer, transparency};
