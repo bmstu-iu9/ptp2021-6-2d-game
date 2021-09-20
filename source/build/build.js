@@ -1650,7 +1650,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
             _this.soundweapon = new Sounds_4.Sounds(1);
             _this.animation = new Animation_2.Animation("Soldier", 8);
             _this.type = "Soldier";
-            _this.soundweapon.playcontinuously("firemashine", 1);
+            _this.soundweapon.playcontinuously("flamethrower", 1);
             _this.soundweapon.current_sound.muted = true;
             if (_this.game)
                 _this.game.soundsarr.push(_this.soundweapon);
