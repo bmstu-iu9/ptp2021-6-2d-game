@@ -11,6 +11,6 @@ export class Corpse extends StationaryObject {
     constructor(game: Game, body: Body, type: string) {
         super(game, body, type, "Corpses");
         this.sounds = new Sounds(1);
-        this.sounds.play("dying");
+        this.sounds.play("death");
     }
 }

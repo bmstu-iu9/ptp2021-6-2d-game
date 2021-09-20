@@ -979,7 +979,7 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "S
         function Corpse(game, body, type) {
             var _this = _super.call(this, game, body, type, "Corpses") || this;
             _this.sounds = new Sounds_1.Sounds(1);
-            _this.sounds.play("dying");
+            _this.sounds.play("death");
             return _this;
         }
         return Corpse;
