@@ -1345,6 +1345,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                     if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                         this.game.ghost = this.game.mimic.controlledEntity.body.center;
                     }
+                    this.sound.current_sound.volume = 0.5;
                     if (!this.game.triggers[i].isEntityTriggered(this)) {
                         this.awareness += this.game.triggers[i].power;
                         this.game.triggers[i].entityTriggered(this);
@@ -1454,6 +1455,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                 if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
                     this.awareness = this.awarenessOverflow;
                 this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
+                this.sound.current_sound.volume = 1;
                 this.sound.current_sound.muted = false;
             }
             if (this.awareness < this.awarenessThreshold) {
