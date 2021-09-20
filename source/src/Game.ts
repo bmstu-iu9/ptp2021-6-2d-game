@@ -343,7 +343,7 @@ export class Game {
         // Мимик
         this.mimic.display(this.draw);
 
-        // Освещение
+        // Освещение и отрисовка персонажей
         
         this.draw.getimage(this.currentLevel);
         
