@@ -1100,7 +1100,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
         }
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
-                this.sounds.playimposition("alarm");
+                this.sounds.playimposition("transfer");
                 this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
                 this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_1.Monster) {

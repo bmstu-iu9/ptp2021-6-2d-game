@@ -50,7 +50,7 @@ export class Mimic {
 
     public takeControl(entity: Entity) {
         if (this.controlledEntity) {
-            this.sounds.playimposition("alarm")
+            this.sounds.playimposition("transfer")
             this.game.draw.spriteAnimation(
                 "MimicTransfer", 3,
                 new AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0),
