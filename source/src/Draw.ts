@@ -1,4 +1,5 @@
 import * as geom from "./Geom";
+import { Level } from "./Level";
 import { AnimationState, SpriteAnimation } from "./SpriteAnimation";
 
 export class Camera {
@@ -57,7 +58,8 @@ interface bar_queue { // Для отрисовки Hp бара
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
-    private imagequeue: queue[] = []; // Очередь для изображений
+    private imagequeueEntity: queue[] = []; // Очередь для изображений
+    private imagequeueHud: queue[] = []; // Очередь для изображений
     private hpqueue: bar_queue[] = []; // Очередь для hp бара
     public cam = new Camera();
     private spriteAnimations: SpriteAnimation[] = [];
@@ -140,11 +142,16 @@ export class Draw {
     }
     // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle: number, layer: Layer, transparency = 1) {
-        if (layer == Layer.TileLayer || Layer.HudLayer == 2) { // Отрисовка сразу
+        if (layer == Layer.TileLayer ) { // Отрисовка сразу
             this.drawimage(image, pos, box, angle, transparency);
-        } else { // Отрисовка после сортировки
-            let curqueue: queue = { image, pos, box, angle, layer, transparency};
-            this.imagequeue.push(curqueue);
+        } else {
+            if ( Layer.HudLayer == layer) {// Отрисовка после сортировки
+                let curqueue: queue = { image, pos, box, angle, layer, transparency};
+                this.imagequeueHud.push(curqueue);
+            } else {
+                let curqueue: queue = { image, pos, box, angle, layer, transparency};
+                this.imagequeueEntity.push(curqueue);
+            }
 
         }
     }
@@ -173,9 +180,9 @@ export class Draw {
         this.ctx.globalAlpha = 1;
     }
     // Обработка слоев изображения
-    public getimage() {
-        if (this.imagequeue.length > 0) { // Отрисовка изображений
-            this.imagequeue.sort(function (a, b) { // Сортировка
+    public getimage(curlevel : Level) {
+        if (this.imagequeueEntity.length > 0) { // Отрисовка изображений
+            this.imagequeueEntity.sort(function (a, b) { // Сортировка
                 if (a.layer > b.layer)
                     return -1;
                 if (a.layer < b.layer)
@@ -186,11 +193,12 @@ export class Draw {
                     return 1;
                 return 0;
             });
-            for (; this.imagequeue.length > 0;) {
-                let temp = this.imagequeue.pop(); //Извлечение
+            for (; this.imagequeueEntity.length > 0;) {
+                let temp = this.imagequeueEntity.pop(); //Извлечение
                 this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency)
             }
         }
+        curlevel.displayLighting(this);
         for (; this.hpqueue.length > 0;) { // Отрисовка hp бара
             let temp = this.hpqueue.pop();
             let pos = temp.pos;
@@ -213,6 +221,23 @@ export class Draw {
                 posNew = pos.clone();
                 posNew.x += box.x * marks[i];
                 this.fillRect(posNew, bar, backColor);
+            }
+        }
+        if (this.imagequeueHud.length > 0) { // Отрисовка изображений
+            this.imagequeueHud.sort(function (a, b) { // Сортировка
+                if (a.layer > b.layer)
+                    return -1;
+                if (a.layer < b.layer)
+                    return 1;
+                if (a.pos.y > b.pos.y)
+                    return -1;
+                if (a.pos.y < b.pos.y)
+                    return 1;
+                return 0;
+            });
+            for (; this.imagequeueHud.length > 0;) {
+                let temp = this.imagequeueHud.pop(); //Извлечение
+                this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency)
             }
         }
     }

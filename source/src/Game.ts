@@ -317,7 +317,7 @@ export class Game {
                 this.draw.cam.center.mul(2),
                 0, Layer.HudLayer
             );
-            this.draw.getimage();
+            this.draw.getimage(this.currentLevel);
             return;
         }
 
@@ -331,13 +331,14 @@ export class Game {
         for (let entity of this.entities) {
             entity.display(this.draw);
         }
-        this.draw.getimage();
+        
 
         // Мимик
         this.mimic.display(this.draw);
 
         // Освещение
-        this.currentLevel.displayLighting(this.draw);
+        
+        this.draw.getimage(this.currentLevel);
         
         // Анимации
         this.draw.step();
