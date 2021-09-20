@@ -15,6 +15,7 @@ import { getMilliCount } from "./AuxLib";
 import { BehaviorModel, Instruction } from "./BehaviorModel";
 import { ListOfPads } from "./Editor/ListOfPads";
 import { EditorGUI } from "./Editor/EditorGUI";
+import { StationaryObject } from "./Entities/StationaryObject";
 
 export class Editor {
     private mousePrev: geom.Vector;
@@ -146,6 +147,18 @@ export class Editor {
             }
             button.onclick = applyEntity;
             button.src = "textures/Monster/stand_fine_0.png";
+        }
+        if (entityType != "Soldier" && entityType != "Scientist" && entityType != "Monster") {
+            let applyEntity = () => {
+                this.cursor.changeMode(Mode.Entity);
+                this.cursor.entity = new StationaryObject(null, new Body(new geom.Vector(0, 0), 1), entityType, "Interior");
+            }
+            button.onclick = applyEntity;
+            let obj = new StationaryObject(null, new Body(new geom.Vector(0, 0), 1), entityType, "Interior");
+            console.log(obj.image.src);
+            
+            button.src = obj.image.src;
+
         }
         button.className = "entityButton";
         let palette = document.getElementById("palette" + type);
@@ -291,6 +304,11 @@ export class Editor {
         this.createEntityButton("Scientist", "4");
         this.createEntityButton("Soldier", "4");
         this.createEntityButton("Monster", "4");
+
+
+        for (let i = 0; i < 2; i++) {
+            this.createEntityButton(String(i).valueOf(), "8");
+        }
 
         this.createToolButton(ToolType.GoToPoint, "5");
         this.createToolButton(ToolType.Waiting, "5");
@@ -473,8 +491,13 @@ export class Editor {
         this.level.displayLighting(this.draw);
         this.cursor.display();
         for (let i = 0; i < this.level.Entities.length; i++) {
-            this.draw.drawimage(this.level.Entities[i].animation.getDefaultImage(),
-                this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
+            let curEntity = this.level.Entities[i];
+            if (curEntity instanceof Person)
+                this.draw.drawimage(curEntity.animation.getDefaultImage(),
+                    this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
+            if (curEntity instanceof StationaryObject)
+                this.draw.drawimage(curEntity.image,
+                    this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
         }
 
         ListOfPads.GUIstep();
