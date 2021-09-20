@@ -13,6 +13,7 @@ import { BehaviorModel } from "../BehaviorModel";
 import * as aux from "../AuxLib";
 import { ListOfPads } from "./ListOfPads";
 import { url } from "inspector";
+import { StationaryObject } from "../Entities/StationaryObject";
 
 export enum ToolType {
     GoToPoint,
@@ -74,6 +75,12 @@ export class Cursor {
         if (this.entity instanceof Monster) {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
             this.level.Entities[currentLocation] = new Monster(null, new Body(pos, 1));
+        }
+        if (this.entity instanceof StationaryObject) {
+            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
+            this.level.Entities[currentLocation] = new StationaryObject(null, new Body(pos, 1), "0", "Interior");
+            let x = this.level.Entities[currentLocation] as StationaryObject;
+            x.image = this.entity.image;
         }
     }
 
@@ -186,7 +193,10 @@ export class Cursor {
                 break;
             }
             case Mode.Entity: {
-                this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                if (this.entity instanceof Person)
+                    this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                if (this.entity instanceof StationaryObject)
+                    this.drawPreview.image(this.entity.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 break;
             }
         }
