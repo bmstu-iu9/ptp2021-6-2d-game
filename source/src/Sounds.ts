@@ -3,7 +3,7 @@ export class Sounds {
     public currentstate: boolean = false;
     private time: Number;
     constructor(volume: number) {
-        this.current_sound = new Audio('./sounds/alarm.mp3'); // Трек по умолчанию (нужен для уровня громкости)
+        this.current_sound = new Audio('./sounds/muted.mp3'); // Трек по умолчанию (нужен для уровня громкости)
         this.current_sound.volume = volume;
         this.time = 0;
 

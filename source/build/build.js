@@ -900,7 +900,7 @@ define("Sounds", ["require", "exports"], function (require, exports) {
     var Sounds = (function () {
         function Sounds(volume) {
             this.currentstate = false;
-            this.current_sound = new Audio('./sounds/alarm.mp3');
+            this.current_sound = new Audio('./sounds/muted.mp3');
             this.current_sound.volume = volume;
             this.time = 0;
         }
