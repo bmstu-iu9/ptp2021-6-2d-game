@@ -247,6 +247,7 @@ export class Person extends Entity {
     }
 
     public display(draw: Draw) {
+        this.animation.step();
         super.display(draw);
         draw.bar(
             this.body.center.clone().add(new geom.Vector(0, -1)), // Pos

@@ -83,7 +83,7 @@ export class Game {
                 return monster;
             }
             if (value.dataType == 'StationaryObject') {
-                let stationaryObject = new StationaryObject(this.currentGame, new Body(value.center, 1), "fine");
+                let stationaryObject = Game.currentGame.makeStationaryObject(value.center, value.type, "Interior");
                 return stationaryObject;
             }
             if (value.dataType == 'BehaviorModel') {
@@ -139,6 +139,14 @@ export class Game {
         let body = new Body(coordinates, radius);
         body.game = this;
         return this.bodies[this.bodies.length] = body;
+    }
+
+    public makeStationaryObject(pos : geom.Vector, type: string, category: string) : StationaryObject {
+        let body = this.makeBody(pos, 1);
+        let entity = new StationaryObject(this, body, type, category);
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
     }
 
     public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
@@ -255,7 +263,6 @@ export class Game {
         this.mimic.step();
         this.attachCamToMimic();
         // Processing entities
-        this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
         this.triggers.forEach(trigger => trigger.step());
         this.processEntities();
