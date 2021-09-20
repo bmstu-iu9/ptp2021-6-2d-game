@@ -44,7 +44,7 @@ export class Person extends Entity {
         this.direction = new geom.Vector(1, 0);
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
-        this.sound.playcontinuously("step", 1);
+        this.sound.playcontinuously("panic", 1);
         this.sound.current_sound.muted = true;
         if (game) {
             game.soundsarr.push(this.sound);
@@ -59,6 +59,7 @@ export class Person extends Entity {
     }
 
     public die() {
+        this.sound.stop()
         if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
         super.die();
@@ -81,6 +82,8 @@ export class Person extends Entity {
                 if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                     this.game.ghost = this.game.mimic.controlledEntity.body.center;
                 }
+                // Применение триггера
+                this.sound.current_sound.volume=0.5;
                 if (!this.game.triggers[i].isEntityTriggered(this)) {
                     this.awareness += this.game.triggers[i].power;
                     this.game.triggers[i].entityTriggered(this);
@@ -126,29 +129,28 @@ export class Person extends Entity {
     public changedirection(x: number, y: number) {
         let currentdist: geom.Vector = this.body.center.sub(this.game.mimic.controlledEntity.body.center) // Получаем расстояние до Мумука
         let dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2))
-        let volume = 1 / dist;
-        if (volume > 1)
-            volume = 1;
-        this.sound.current_sound.volume = volume;
+        if (dist == 0 ){
+            this.sound.current_sound.volume=0
+        } else {
+            let volume = 1 / dist;
+            if (volume > 1)
+                volume = 1;
+            this.sound.current_sound.volume = volume;
+        }
         if (x == 0 && y == 0) {
             this.animation.changedirection("stand", this.modeToString())
-            this.sound.current_sound.muted = true;
         }
         if (x == 1) {
             this.animation.changedirection("right", this.modeToString())
-            this.sound.current_sound.muted = false;
         }
         if (x == -1) {
             this.animation.changedirection("left", this.modeToString())
-            this.sound.current_sound.muted = false;
         }
         if (x == 0 && y == 1) {
             this.animation.changedirection("top", this.modeToString())
-            this.sound.current_sound.muted = false;
         }
         if (x == 0 && y == -1) {
             this.animation.changedirection("down", this.modeToString())
-            this.sound.current_sound.muted = false;
         }
     }
 
@@ -199,6 +201,10 @@ export class Person extends Entity {
     }
 
     public step() {  
+        
+        if (this.behaviorModel.getCurrentInstruction() != Behavior.Panic) {
+            this.sound.current_sound.muted=true
+        }
         // перемещение согласно commands
         this.move();
 
@@ -207,6 +213,8 @@ export class Person extends Entity {
             if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
                 this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
+            this.sound.current_sound.volume=1
+            this.sound.current_sound.muted=false
         }
         if (this.awareness < this.awarenessThreshold) {
             this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
