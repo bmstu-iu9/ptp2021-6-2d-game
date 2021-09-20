@@ -2397,7 +2397,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.mimic = new Mimic_1.Mimic(this);
             this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
             Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
-            this.sounds.playcontinuously("game", 0.2);
+            this.sounds.playcontinuously("soundtrack", 0.3);
             this.soundsarr.push(this.sounds);
         };
         Game.prototype.step = function () {
