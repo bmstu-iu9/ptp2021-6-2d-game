@@ -390,170 +390,6 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
     }());
     exports.Tile = Tile;
 });
-<<<<<<< HEAD
-=======
-define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"], function (require, exports, geom, Tile_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Direction;
-    (function (Direction) {
-        Direction[Direction["Right"] = 1] = "Right";
-        Direction[Direction["Up"] = 2] = "Up";
-        Direction[Direction["Left"] = 3] = "Left";
-        Direction[Direction["Down"] = 4] = "Down";
-    })(Direction = exports.Direction || (exports.Direction = {}));
-    var Body = (function () {
-        function Body(center, radius) {
-            this.velocity = 0.05;
-            this.collisionBox = new geom.Vector(0.5, 0.3);
-            this.isWallNear = 0;
-            this.collisions = 0;
-            this.center = center;
-            this.radius = radius;
-        }
-        Body.prototype.move = function (delta) {
-            var touched = false;
-            var delta1 = delta.add(this.collisionBox.mul(1 / 2));
-            var collisionDR = this.game.checkWall(this.center.add(delta1));
-            var collisionDL = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, 0))));
-            var collisionUL = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -this.collisionBox.y))));
-            var collisionUR = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -this.collisionBox.y))));
-            if (collisionDL == Tile_1.CollisionType.Full || collisionUR == Tile_1.CollisionType.Full || collisionDR == Tile_1.CollisionType.Full || collisionDL == Tile_1.CollisionType.Full) {
-                if (collisionDR == Tile_1.CollisionType.Full) {
-                    var collisionRW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -delta.y))));
-                    if (collisionRW == Tile_1.CollisionType.Full) {
-                        this.isWallNear = 1;
-                    }
-                    else {
-                        this.isWallNear = 4;
-                    }
-                }
-                else if (collisionDL == Tile_1.CollisionType.Full) {
-                    var collisionLW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -delta.y))));
-                    if (collisionLW == Tile_1.CollisionType.Full) {
-                        this.isWallNear = 3;
-                    }
-                    else {
-                        this.isWallNear = 4;
-                    }
-                }
-                else if (collisionUL == Tile_1.CollisionType.Full) {
-                    var collisonLW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(-this.collisionBox.x, -(this.collisionBox.y + delta.y)))));
-                    if (collisonLW == Tile_1.CollisionType.Full) {
-                        this.isWallNear = 3;
-                    }
-                    else {
-                        this.isWallNear = 2;
-                    }
-                }
-                else {
-                    var collisonRW = this.game.checkWall(this.center.add(delta1.add(new geom.Vector(0, -(this.collisionBox.y + delta.y)))));
-                    if (collisonRW == Tile_1.CollisionType.Full) {
-                        this.isWallNear = 1;
-                    }
-                    else {
-                        this.isWallNear = 2;
-                    }
-                }
-                delta = new geom.Vector();
-                touched = true;
-            }
-            else if (collisionDL != Tile_1.CollisionType.Empty) {
-                var norm = void 0;
-                if (collisionDL == Tile_1.CollisionType.CornerDL)
-                    norm = new geom.Vector(1, -1);
-                if (collisionDL == Tile_1.CollisionType.CornerDR)
-                    norm = new geom.Vector(-1, -1);
-                if (collisionDL == Tile_1.CollisionType.CornerUL)
-                    norm = new geom.Vector(1, 1);
-                if (collisionDL == Tile_1.CollisionType.CornerUR)
-                    norm = new geom.Vector(-1, 1);
-                delta = delta.sub(norm.mul(delta.dot(norm) / norm.dot(norm))).add(norm.mul(1 / 10000));
-            }
-            var posNew = this.center.add(delta);
-            this.center = posNew;
-            if (touched)
-                this.collisions++;
-            return touched;
-        };
-        Body.prototype.getCollisionsNumber = function () {
-            return this.collisions;
-        };
-        return Body;
-    }());
-    exports.Body = Body;
-});
-define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "AuxLib"], function (require, exports, Draw_2, aux) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Animation = (function () {
-        function Animation(person, states) {
-            this.counter = 0;
-            this.cycles = aux.getMilliCount() / 75;
-            this.name = person;
-            this.states = states;
-            this.current_state = Draw_2.Draw.loadImage("textures/" + this.name + "/right_fine_" + this.counter % this.states + ".png");
-            this.mode = "fine";
-            this.direction = "right";
-            this.Imageloader();
-        }
-        Animation.prototype.Imageloader = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var direction, mods, _a, mods_1, mod, _b, direction_1, direct, _i;
-                return __generator(this, function (_c) {
-                    direction = ["top", "down", "left", "right", "stand"];
-                    if (this.name == "Monster") {
-                        mods = ["fine"];
-                    }
-                    else {
-                        mods = ["corrupted", "dying", "fine"];
-                    }
-                    for (_a = 0, mods_1 = mods; _a < mods_1.length; _a++) {
-                        mod = mods_1[_a];
-                        for (_b = 0, direction_1 = direction; _b < direction_1.length; _b++) {
-                            direct = direction_1[_b];
-                            for (_i = 0; _i < this.states; _i++) {
-                                this.getImage("textures/" +
-                                    this.name + "/" +
-                                    direct + "_" +
-                                    mod + "_" +
-                                    _i + ".png");
-                            }
-                        }
-                    }
-                    return [2];
-                });
-            });
-        };
-        Animation.prototype.getImage = function (current) {
-            return Draw_2.Draw.loadImage(current);
-        };
-        Animation.prototype.changedirection = function (string, mode) {
-            this.direction = string;
-            this.mode = mode;
-        };
-        Animation.prototype.getDefaultImage = function () {
-            return this.getImage("textures/" +
-                this.name + "/" + "stand_fine_0.png");
-        };
-        Animation.prototype.step = function () {
-            if (aux.getMilliCount() / 75 > this.cycles) {
-                this.cycles = aux.getMilliCount() / 75 + 1;
-                this.counter++;
-            }
-            var frame = this.counter % this.states;
-            this.current_state = this.getImage("textures/" +
-                this.name + "/" +
-                this.direction + "_" +
-                this.mode + "_" +
-                frame + ".png");
-            this.direction = "stand";
-        };
-        return Animation;
-    }());
-    exports.Animation = Animation;
-});
->>>>>>> master
 define("Queue", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -780,7 +616,6 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
 define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Commands_2, aux, Debug_1, Draw_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-<<<<<<< HEAD
     var AI = (function () {
         function AI(game, body) {
             this.destination = new geom.Vector(0, 0);
@@ -789,18 +624,6 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
             this.body = body;
             this.commands = new Commands_2.Commands();
             this.Path = [];
-=======
-    var Operations;
-    (function (Operations) {
-        Operations[Operations["goToPoint"] = 0] = "goToPoint";
-        Operations[Operations["wait"] = 1] = "wait";
-        Operations[Operations["pursuit"] = 2] = "pursuit";
-    })(Operations = exports.Operations || (exports.Operations = {}));
-    var Instruction = (function () {
-        function Instruction() {
-            this.operations = [];
-            this.operationsData = [];
->>>>>>> master
         }
         AI.prototype.stop = function () {
             this.commands.active["MoveRight"] = false;
@@ -1755,7 +1578,6 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
 define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-<<<<<<< HEAD
     var Trigger = (function () {
         function Trigger(lifeTime, boundEntity) {
             this.power = 1;
@@ -1763,10 +1585,6 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
             this.boundEntity = boundEntity;
             this.active = true;
             this.triggeredEntities = new Map();
-=======
-    var Random = (function () {
-        function Random() {
->>>>>>> master
         }
         Trigger.prototype.step = function () {
             this.timeLeft -= Game_6.Game.dt;
@@ -2015,7 +1833,6 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
 define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_12, Tile_2, Mimic_1, Level_1, Trigger_1, Debug_4, Scientist_1, Soldier_1, Monster_3, Corpse_2, StationaryObject_2, BehaviorModel_2, Biomass_2, Sounds_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-<<<<<<< HEAD
     var State;
     (function (State) {
         State[State["Waiting"] = 0] = "Waiting";
@@ -2039,15 +1856,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.draw = draw;
             this.currentLevel.Grid = [];
             this.mimic = new Mimic_1.Mimic(this);
-=======
-    var Scientist = (function (_super) {
-        __extends(Scientist, _super);
-        function Scientist(game, body, mode) {
-            var _this = _super.call(this, game, body, mode) || this;
-            _this.animation = new Animation_3.Animation("Scientist", 8);
-            _this.type = "Scientist";
-            return _this;
->>>>>>> master
         }
         Game.readTextFile = function (path) {
             return __awaiter(this, void 0, void 0, function () {
@@ -2065,7 +1873,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 });
             });
         };
-<<<<<<< HEAD
         Game.reviver = function (key, value) {
             if (typeof value === 'object' && value !== null) {
                 if (value.dataType === 'Map') {
@@ -2116,24 +1923,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 if (value.dataType == 'LightSource') {
                     var light = new Level_1.LightSource(value.pos, value.power);
                     return light;
-=======
-        return Scientist;
-    }(Person_4.Person));
-    exports.Scientist = Scientist;
-});
-define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue", "Random", "Game"], function (require, exports, Tile_3, geom, Draw_10, PathGenerator_1, Soldier_1, Scientist_1, Monster_3, StationaryObject_2, BehaviorModel_2, aux, Queue_2, Random_2, Game_7) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function replacer(key, value) {
-        if (value instanceof Map) {
-            var val = void 0;
-            if (value.get("JSONkeys") != undefined) {
-                var keys = value.get("JSONkeys");
-                console.log("JSONkeys", keys);
-                var remapping = new Map();
-                for (var i = 0; i < keys.length; i++) {
-                    remapping.set(keys[i], value[keys[i]]);
->>>>>>> master
                 }
             }
             return value;
@@ -2245,7 +2034,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.mimic = new Mimic_1.Mimic(this);
             this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
             Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
-            this.sounds.playcontinuously("game", 0.2);
+            this.sounds.playcontinuously("soundtrack", 0.3);
             this.soundsarr.push(this.sounds);
         };
         Game.prototype.step = function () {
@@ -2626,8 +2415,6 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
                 pos.y > 0 &&
                 pos.x < this.gridSize.x * this.tileSize &&
                 pos.y < this.gridSize.y * this.tileSize;
-<<<<<<< HEAD
-=======
         };
         Level.prototype.isCellInBounds = function (pos) {
             return pos.x >= 0 &&
@@ -2668,504 +2455,6 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             this.CollisionMesh = prototype.CollisionMesh;
             this.PathMatrix = prototype.PathMatrix;
             this.lightSources = prototype.Lights;
-        };
-        Level.prototype.display = function (draw, advanced) {
-            if (advanced === void 0) { advanced = false; }
-            for (var i = 0; i < this.gridSize.x; i++) {
-                for (var j = 0; j < this.gridSize.y; j++) {
-                    var size = new geom.Vector(this.tileSize, this.tileSize);
-                    draw.image(this.Grid[i][j].image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, 0, 0);
-                    if (this.Grid[i][j].sub_image) {
-                        draw.image(this.Grid[i][j].sub_image, (new geom.Vector(this.tileSize * i, this.tileSize * j))
-                            .add(size.mul(1 / 2)), size, 0, 0);
-                    }
-                    if (advanced)
-                        draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                            .add(size.mul(1 / 2)), size, new Draw_10.Color(0, 0, 0), 0.03);
-                }
-            }
-        };
-        Level.prototype.displayColisionGrid = function (draw) {
-            for (var i = 0; i < this.gridSize.x; i++) {
-                for (var j = 0; j < this.gridSize.y; j++)
-                    if (this.Grid[i][j].colision == Tile_3.CollisionType.Full) {
-                        draw.fillRect(new geom.Vector(i * this.tileSize + 0.5, j * this.tileSize + 0.5), new geom.Vector(1 * this.tileSize, 1 * this.tileSize), new Draw_10.Color(0, 255, 0, 0.5 * Math.sin(aux.getMilliCount() * 0.005) + 0.5));
-                    }
-            }
-        };
-        Level.prototype.displayLighting = function (draw) {
-            if (!this.showLighting) {
-                return;
-            }
-            var cellSize = 1;
-            var buffer = document.createElement('canvas');
-            buffer.width = this.gridSize.x * cellSize;
-            buffer.height = this.gridSize.y * cellSize;
-            var imgCtx = buffer.getContext('2d');
-            for (var x = 0; x < this.gridSize.x; x++) {
-                for (var y = 0; y < this.gridSize.y; y++) {
-                    var alpha = 1 - this.Grid[x][y].light / 10;
-                    imgCtx.fillStyle = new Draw_10.Color(0, 0, 0, alpha).toString();
-                    imgCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                }
-            }
-            draw.ctx.imageSmoothingEnabled = true;
-            var box = new geom.Vector(this.gridSize.x, this.gridSize.y);
-            draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
-        };
-        Level.prototype.generateLighting = function () {
-            for (var i = 0; i < this.gridSize.x; i++)
-                for (var j = 0; j < this.gridSize.y; j++)
-                    this.Grid[i][j].light = 0;
-            var queue = new Queue_2.Queue();
-            var dirs = [
-                new geom.Vector(0, 1),
-                new geom.Vector(0, -1),
-                new geom.Vector(1, 0),
-                new geom.Vector(-1, 0),
-            ];
-            for (var _i = 0, _a = this.lightSources; _i < _a.length; _i++) {
-                var source = _a[_i];
-                queue.push(source.pos);
-                this.getTile(source.pos).light = source.power;
-            }
-            var decay = 1;
-            while (queue.length()) {
-                var pos = queue.pop();
-                for (var _b = 0, dirs_1 = dirs; _b < dirs_1.length; _b++) {
-                    var dir = dirs_1[_b];
-                    var posNext = pos.add(dir);
-                    if (!this.isCellInBounds(posNext) ||
-                        this.getTile(pos).colision && !this.getTile(posNext).colision ||
-                        this.getTile(posNext).light > this.getTile(pos).light - decay)
-                        continue;
-                    this.getTile(posNext).light = this.getTile(pos).light - decay;
-                    queue.push(posNext);
-                }
-            }
-        };
-        Level.prototype.processLighting = function () {
-            this.lightSources.forEach(function (lightSource) { return lightSource.step(); });
-            this.generateLighting();
-        };
-        return Level;
-    }());
-    exports.Level = Level;
-});
-define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Commands_2, aux, Debug_3, Draw_11) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var AI = (function () {
-        function AI(game, body) {
-            this.destination = new geom.Vector(0, 0);
-            this.activationTime = 0;
-            this.game = game;
-            this.body = body;
-            this.commands = new Commands_2.Commands();
-            this.Path = [];
-        }
-        AI.prototype.stop = function () {
-            this.commands.active["MoveRight"] = false;
-            this.commands.active["MoveLeft"] = false;
-            this.commands.active["MoveDown"] = false;
-            this.commands.active["MoveUp"] = false;
-        };
-        AI.prototype.go = function (point) {
-            var eps = 0.05;
-            if (this.body.center.x < point.x + eps) {
-                this.commands.active["MoveRight"] = true;
-            }
-            else {
-                this.commands.active["MoveRight"] = false;
-            }
-            if (this.body.center.x > point.x - eps) {
-                this.commands.active["MoveLeft"] = true;
-            }
-            else {
-                this.commands.active["MoveLeft"] = false;
-            }
-            if (this.body.center.y < point.y + eps) {
-                this.commands.active["MoveDown"] = true;
-            }
-            else {
-                this.commands.active["MoveDown"] = false;
-            }
-            if (this.body.center.y > point.y - eps) {
-                this.commands.active["MoveUp"] = true;
-            }
-            else {
-                this.commands.active["MoveUp"] = false;
-            }
-        };
-        AI.prototype.getPointCoordinate = function (place) {
-            return new geom.Vector(place.y * this.game.currentLevel.tileSize / 2, place.x * this.game.currentLevel.tileSize / 2);
-        };
-        AI.prototype.chooseMeshPoint = function (currentPoint) {
-            var CollisionMesh = this.game.levels[this.game.currentLevelName].CollisionMesh;
-            var Grid = this.game.levels[this.game.currentLevelName].Grid;
-            var posRound = new geom.Vector(Math.floor(currentPoint.x / this.game.currentLevel.tileSize), Math.floor(currentPoint.y / this.game.currentLevel.tileSize));
-            var place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
-            var answer = new geom.Vector(0, 0);
-            for (var i = -5; i <= 5; i++) {
-                for (var j = -5; j <= 5; j++) {
-                    if (place.x + i < CollisionMesh.length && place.x + i > 0) {
-                        if (place.y + j < CollisionMesh[place.x + i].length && place.y + j > 0) {
-                            if (CollisionMesh[place.x + i][place.y + j] == false &&
-                                currentPoint.sub(this.getPointCoordinate(new geom.Vector(answer.x, answer.y))).abs() >
-                                    currentPoint.sub(this.getPointCoordinate(new geom.Vector(place.x + i, place.y + j))).abs()) {
-                                answer = new geom.Vector(place.x + i, place.y + j);
-                            }
-                        }
-                    }
-                }
-            }
-            return answer;
-        };
-        AI.prototype.goToPoint = function (point) {
-            console.log("Go to point:", point);
-            var pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
-            this.destination = point;
-            this.Path = [];
-            var startMeshPoint = this.chooseMeshPoint(this.body.center);
-            var finishMeshPoint = this.chooseMeshPoint(point);
-            var currentMeshPoint = startMeshPoint.clone();
-            if (!pathMatrix.get(aux.vectorStringify(currentMeshPoint)) ||
-                !pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint))) {
-                return;
-            }
-            while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
-                console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint), pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
-                this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
-                currentMeshPoint = currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
-            }
-            this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
-            this.Path[this.Path.length] = point;
-            console.log(this.Path);
-        };
-        AI.prototype.wait = function (milliseconds) {
-            this.stop();
-            this.activationTime = aux.getMilliCount() + milliseconds;
-        };
-        AI.prototype.pursuit = function () {
-            this.goToPoint(this.game.ghost);
-        };
-        AI.prototype.getWaitingTime = function () {
-            return this.activationTime - aux.getMilliCount();
-        };
-        AI.prototype.step = function () {
-            if (this.activationTime > aux.getMilliCount()) {
-                return;
-            }
-            if (this.Path.length != 0) {
-                this.go(this.Path[0]);
-                if (this.body.center.sub(this.Path[0]).abs() < 0.2) {
-                    this.Path.shift();
-                }
-            }
-            else {
-                this.stop();
-            }
-            var CollisionMesh = this.game.currentLevel.CollisionMesh;
-            for (var i = 0; i < CollisionMesh.length; i++) {
-                for (var j = 0; j < CollisionMesh[i].length; j++) {
-                    var coordinate = this.getPointCoordinate(new geom.Vector(i, j));
-                    var color = new Draw_11.Color(0, 255, 0);
-                    if (CollisionMesh[i][j] == true) {
-                        color = new Draw_11.Color(255, 0, 0);
-                    }
-                    Debug_3.Debug.addPoint(coordinate, color);
-                }
-            }
-            Debug_3.Debug.addPoint(this.destination, new Draw_11.Color(0, 0, 255));
-        };
-        return AI;
-    }());
-    exports.AI = AI;
-});
-define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_4, AI_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Entity = (function () {
-        function Entity(game, body) {
-            this.commands = null;
-            this.alive = true;
-            this.hpMax = 15;
-            this.hp = this.hpMax;
-            this.game = game;
-            this.body = body;
-            this.myAI = new AI_1.AI(game, body);
-            this.animation = new Animation_4.Animation("Scientist", 8);
-            this.commands = this.myAI.commands;
-        }
-        Entity.prototype.die = function () {
-            this.hp = 0;
-            this.alive = false;
-        };
-        Entity.prototype.step = function () {
-            if (this.hp <= 0)
-                this.die();
-            if (!this.commands)
-                return;
-            this.myAI.step();
-            this.commands = this.myAI.commands;
-        };
-        Entity.prototype.display = function (draw) {
-            draw.image(this.animation.current_state, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, 1);
-        };
-        return Entity;
-    }());
-    exports.Entity = Entity;
-});
-define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_8) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Trigger = (function () {
-        function Trigger(lifeTime, boundEntity) {
-            this.power = 1;
-            this.timeLeft = this.lifeTime = lifeTime;
-            this.boundEntity = boundEntity;
-            this.active = true;
-            this.triggeredEntities = new Map();
-        }
-        Trigger.prototype.step = function () {
-            this.timeLeft -= Game_8.Game.dt;
-            if (this.timeLeft <= 0 || !this.boundEntity.alive)
-                this.active = false;
-        };
-        Trigger.prototype.getCoordinates = function () {
-            return this.boundEntity.body.center.clone();
-        };
-        Trigger.prototype.entityTriggered = function (entity) {
-            this.triggeredEntities[entity.entityID] = true;
-        };
-        Trigger.prototype.isEntityTriggered = function (entity) {
-            return this.triggeredEntities[entity.entityID];
-        };
-        return Trigger;
-    }());
-    exports.Trigger = Trigger;
-});
-define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_12, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_4, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_5) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var State;
-    (function (State) {
-        State[State["Waiting"] = 0] = "Waiting";
-        State[State["Game"] = 1] = "Game";
-    })(State = exports.State || (exports.State = {}));
-    ;
-    var Game = (function () {
-        function Game(draw) {
-            this.soundsarr = [];
-            this.bodies = [];
-            this.entities = [];
-            this.triggers = [];
-            this.currentLevelName = "map";
-            this.currentLevel = new Level_1.Level();
-            this.playerID = 0;
-            this.ghost = new geom.Vector(0, 0);
-            this.state = State.Waiting;
-            this.sounds = new Sounds_5.Sounds(0.01);
-            console.log("im here!!");
-            Control_2.Control.init();
-            this.draw = draw;
-            this.currentLevel.Grid = [];
-            this.mimic = new Mimic_1.Mimic(this);
-        }
-        Game.readTextFile = function (path) {
-            return __awaiter(this, void 0, void 0, function () {
-                var response, text;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0: return [4, fetch(path)];
-                        case 1:
-                            response = _a.sent();
-                            return [4, response.text()];
-                        case 2:
-                            text = _a.sent();
-                            return [2, text];
-                    }
-                });
-            });
-        };
-        Game.reviver = function (key, value) {
-            if (typeof value === 'object' && value !== null) {
-                if (value.dataType === 'Map') {
-                    return new Map(value.value);
-                }
-                if (value.dataType === 'HTMLImageElement') {
-                    return Draw_12.Draw.loadImage("./textures/tiles/" + value.value);
-                }
-                if (value.dataType === 'Vector') {
-                    return new geom.Vector(value.x, value.y);
-                }
-                if (value.dataType == 'Soldier') {
-                    var soldier = Game.currentGame.makeSoldier(value.center);
-                    soldier.behaviorModel = new BehaviorModel_3.BehaviorModel(soldier.myAI);
-                    soldier.behaviorModel = value.behaviorModel;
-                    soldier.behaviorModel.myAI = soldier.myAI;
-                    soldier.behaviorModel.changeCurrentInstruction("normal");
-                    return soldier;
-                }
-                if (value.dataType == 'Scientist') {
-                    console.log("loading scientist");
-                    var scientist = Game.currentGame.makeScientist(value.center);
-                    scientist.behaviorModel = new BehaviorModel_3.BehaviorModel(scientist.myAI);
-                    scientist.behaviorModel.instructions = value.behaviorModel.instructions;
-                    scientist.behaviorModel.changeCurrentInstruction("normal");
-                    console.log(scientist);
-                    return scientist;
-                }
-                if (value.dataType == "Monster") {
-                    var monster = Game.currentGame.makeMonster(value.center);
-                    return monster;
-                }
-                if (value.dataType == 'StationaryObject') {
-                    var stationaryObject = Game.currentGame.makeStationaryObject(value.center, value.type, "Interior");
-                    return stationaryObject;
-                }
-                if (value.dataType == 'BehaviorModel') {
-                    var behaviorModel = new BehaviorModel_3.BehaviorModel(null);
-                    behaviorModel.instructions = value.instructions;
-                    return behaviorModel;
-                }
-                if (value.dataType == 'Instruction') {
-                    var instruction = new BehaviorModel_3.Instruction();
-                    instruction.operations = value.operations;
-                    instruction.operationsData = value.operationsData;
-                    return instruction;
-                }
-                if (value.dataType == 'LightSource') {
-                    var light = new Level_1.LightSource(value.pos, value.power);
-                    return light;
-                }
-            }
-            return value;
-        };
-        Game.loadMap = function (path, name) {
-            return __awaiter(this, void 0, void 0, function () {
-                var result;
-                var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            Game.levelPaths[name] = path;
-                            console.log(aux.environment + path);
-                            return [4, this.readTextFile(aux.environment + path)
-                                    .then(function (result) {
-                                    console.log("Map loaded");
-                                    var prototype = JSON.parse(result, _this.reviver);
-                                    var level = new Level_1.Level();
-                                    level.createFromPrototype(prototype);
-                                    level.showLighting = true;
-                                    level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
-                                    Game.currentGame.levels[name] = level;
-                                })];
-                        case 1:
-                            result = _a.sent();
-                            return [2];
-                    }
-                });
-            });
-        };
-        Game.prototype.makeBody = function (coordinates, radius) {
-            var body = new Body_2.Body(coordinates, radius);
-            body.game = this;
-            return this.bodies[this.bodies.length] = body;
-        };
-        Game.prototype.makeStationaryObject = function (pos, type, category) {
-            var body = this.makeBody(pos, 1);
-            var entity = new StationaryObject_3.StationaryObject(this, body, type, category);
-            entity.entityID = this.entities.length;
-            this.entities[this.entities.length] = entity;
-            return entity;
-        };
-        Game.prototype.makeScientist = function (pos) {
-            var body = this.makeBody(pos, 1);
-            var entity = new Scientist_2.Scientist(this, body, Person_5.PersonMode.Fine);
-            entity.entityID = this.entities.length;
-            this.entities[this.entities.length] = entity;
-            return entity;
-        };
-        Game.prototype.makeSoldier = function (pos) {
-            var body = this.makeBody(pos, 1);
-            var entity = new Soldier_2.Soldier(this, body, Person_5.PersonMode.Fine);
-            entity.entityID = this.entities.length;
-            this.entities[this.entities.length] = entity;
-            return entity;
-        };
-        Game.prototype.makeMonster = function (pos) {
-            var body = this.makeBody(pos, 1);
-            var entity = new Monster_4.Monster(this, body);
-            entity.entityID = this.entities.length;
-            this.entities[this.entities.length] = entity;
-            this.makeTrigger(entity, 10, 100000);
-            return entity;
-        };
-        Game.prototype.makeCorpse = function (pos, type) {
-            var body = this.makeBody(pos, 1);
-            var entity = new Corpse_2.Corpse(this, body, type);
-            entity.entityID = this.entities.length;
-            this.entities[this.entities.length] = entity;
-            this.makeTrigger(entity, 6, 100000);
-            console.log("corpse");
-            return entity;
->>>>>>> master
-        };
-        Level.prototype.isCellInBounds = function (pos) {
-            return pos.x >= 0 &&
-                pos.y >= 0 &&
-                pos.x < this.gridSize.x &&
-                pos.y < this.gridSize.y;
-        };
-        Level.prototype.getTile = function (pos) {
-            return this.Grid[pos.x][pos.y];
-        };
-        Level.prototype.makeLightSource = function (pos, power) {
-            this.lightSources.push(new LightSource(pos.clone(), power));
-        };
-        Level.prototype.serialize = function () {
-            var newLevel;
-            var newGrid = [];
-            for (var x = 0; x < this.gridSize.x; x++) {
-                newGrid.push([]);
-                for (var y = 0; y < this.gridSize.y; y++) {
-                    newGrid[x].push(this.Grid[x][y]);
-                }
-            }
-            newLevel = { Grid: newGrid, Entities: this.Entities, CollisionMesh: [], Lights: this.lightSources, PathMatrix: new Map() };
-            console.log(newLevel.Grid);
-            PathGenerator_1.PathGenerator.generateMatrix(newLevel);
-            console.log(newLevel.CollisionMesh);
-            console.log(newLevel.PathMatrix);
-            var blob = new Blob([JSON.stringify(newLevel, replacer)], {
-                type: 'application/json'
-            });
-            console.log(Array.from(newLevel.PathMatrix.keys()));
-            var url = window.URL.createObjectURL(blob);
-            window.open(url);
-        };
-<<<<<<< HEAD
-        Level.prototype.createFromPrototype = function (prototype) {
-            this.Entities = [];
-            this.Grid = prototype.Grid;
-            this.CollisionMesh = prototype.CollisionMesh;
-            this.PathMatrix = prototype.PathMatrix;
-            this.lightSources = prototype.Lights;
-=======
-        Game.prototype.startGame = function () {
-            this.state = State.Game;
-            this.draw.cam.pos = this.mimic.controlledEntity.body.center;
-            this.bodies = [];
-            this.entities = [];
-            this.triggers = [];
-            this.mimic = new Mimic_1.Mimic(this);
-            this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
-            Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
-            this.sounds.playcontinuously("soundtrack", 0.3);
-            this.soundsarr.push(this.sounds);
->>>>>>> master
         };
         Level.prototype.display = function (draw, advanced) {
             if (advanced === void 0) { advanced = false; }
@@ -3212,7 +2501,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             var box = new geom.Vector(this.gridSize.x, this.gridSize.y);
             draw.displayBuffer(buffer, box.mul(1 / 2), box, 0, 1);
         };
-<<<<<<< HEAD
         Level.prototype.generateLighting = function () {
             for (var i = 0; i < this.gridSize.x; i++)
                 for (var j = 0; j < this.gridSize.y; j++)
@@ -3242,36 +2530,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     this.getTile(posNext).light = this.getTile(pos).light - decay;
                     queue.push(posNext);
                 }
-=======
-        Game.dt = 0.02;
-        Game.levelPaths = new Map();
-        return Game;
-    }());
-    exports.Game = Game;
-});
-define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_13, Game_9) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var AnimationState = (function () {
-        function AnimationState(pos, box, angle, opacity) {
-            if (opacity === void 0) { opacity = 1; }
-            this.pos = pos;
-            this.box = box;
-            this.angle = angle;
-            this.opacity = opacity;
-        }
-        return AnimationState;
-    }());
-    exports.AnimationState = AnimationState;
-    var SpriteAnimation = (function () {
-        function SpriteAnimation() {
-            this.time = 0;
-        }
-        SpriteAnimation.prototype.loadFrames = function (name, framesNumber) {
-            this.frames = [];
-            for (var i = 0; i < framesNumber; i++) {
-                this.frames[i] = Draw_13.Draw.loadImage("textures/" + name + "/" + i + ".png");
->>>>>>> master
             }
         };
         Level.prototype.processLighting = function () {
