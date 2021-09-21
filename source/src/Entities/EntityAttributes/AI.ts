@@ -11,12 +11,10 @@ import { Color } from "../../Draw";
 export class AI {
     private destination: geom.Vector = new geom.Vector(0, 0); // конечная точка, куда направляется персонаж(нужна для дебага)
     private activationTime: number = 0; // время, с которого объект перестаёт ждать и становится активным
-
     private body: Body; // тело объекта
     public Path: geom.Vector[]; // путь к конечной точке
     public game: Game;
     public commands: Commands; // набор команд, генерируемых AIЫ
-
     constructor(game: Game, body: Body) {
         this.game = game;
         this.body = body;
@@ -74,7 +72,6 @@ export class AI {
         );
         let place = new geom.Vector(posRound.y * 2 + 1, posRound.x * 2 + 1);
         let answer = new geom.Vector(0, 0);
-
         for (let i = -5; i <= 5; i++) {
             for (let j = -5; j <= 5; j++) {
                 if (place.x + i < CollisionMesh.length && place.x + i > 0) {
@@ -82,56 +79,38 @@ export class AI {
                         if (CollisionMesh[place.x + i][place.y + j] == false &&
                             currentPoint.sub(this.getPointCoordinate(new geom.Vector(answer.x, answer.y))).abs() >
                             currentPoint.sub(this.getPointCoordinate(new geom.Vector(place.x + i, place.y + j))).abs()) {
-
                             answer = new geom.Vector(place.x + i, place.y + j);
                         }
                     }
                 }
             }
         }
-        //console.log(currentPoint, answer)
-        return answer;
-    }
-
-    // рекурсивная функция создающая путь по точкам коллизионной сетки
-    private makePath(start: geom.Vector, finish: geom.Vector): geom.Vector[] {
-        let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
-
-        // если до точки нельзя добраться или точка начала совпадает с финальной, то возвращается пустой путь
-        if (JSON.stringify(start) == JSON.stringify(finish) || pathMatrix.get(JSON.stringify(start)) == undefined || pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == undefined) {
-            return [];
-        }
-
-        // если точки находятся рядом то путь состоит из одной финальной вершины
-        if (pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)) == JSON.stringify(finish)) {
-            let answer: geom.Vector[];
-            answer = [];
-            answer[0] = this.getPointCoordinate(finish);
-            return answer;
-        }
-
-        // middlePoint - третья точка точка лежащая на кратчайшем пути
-        let middlePoint = JSON.parse(pathMatrix.get(JSON.stringify(start)).get(JSON.stringify(finish)));
-        let a1 = this.makePath(start, middlePoint);
-        let a2 = this.makePath(middlePoint, finish);
-        let answer = a1.concat(a2);
-        //console.log("Path from ", start, " to ", finish, " is ", a1.concat(a2), answer);
-
         return answer;
     }
 
     public goToPoint(point: geom.Vector) { // функция, прокладывающая путь до точки
-        //console.log("q");
+        console.log("Go to point:", point);
+        let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
         this.destination = point;
         this.Path = [];
         let startMeshPoint = this.chooseMeshPoint(this.body.center);
         let finishMeshPoint = this.chooseMeshPoint(point);
+        let currentMeshPoint = startMeshPoint.clone();
 
-        let localPath = this.makePath(startMeshPoint, finishMeshPoint);
-        for (let i = 0; i < localPath.length; i++) {
-            this.Path[i] = localPath[i].clone();
+        if (!pathMatrix.get(aux.vectorStringify(currentMeshPoint)) ||
+         !pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint))) {
+            return;
         }
+        
+        while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
+            console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint),
+            pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
+            this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
+            currentMeshPoint = currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)))
+        }
+        this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
         this.Path[this.Path.length] = point;
+        console.log(this.Path);
     }
 
     // функция, определяющая когда активируется персонаж(чтобы сбросить время ожидания вызвать wait(0))
@@ -143,7 +122,6 @@ export class AI {
     // функция преследования мимика со всеми вытекающими
     public pursuit() {
         this.goToPoint(this.game.ghost);
-        // TODO сделать поиск в окрестности точки ghost
     }
 
     public getWaitingTime() {
@@ -155,19 +133,15 @@ export class AI {
             return;
         }
         if (this.Path.length != 0) { // если путь не пустой, то идти по направлению следующей точки
-
             this.go(this.Path[0]);
-            //console.log(this.body.center.sub(this.Path[0]).abs(), geom.eps * 150);
             if (this.body.center.sub(this.Path[0]).abs() < 0.2) {
                 this.Path.shift();
             }
         } else { // иначе остановится
             this.stop();
         }
-
         // Debug коллизионной сетки
         let CollisionMesh = this.game.currentLevel.CollisionMesh;
-
         for (let i = 0; i < CollisionMesh.length; i++) {
             for (let j = 0; j < CollisionMesh[i].length; j++) {
                 let coordinate = this.getPointCoordinate(new geom.Vector(i, j));
@@ -178,7 +152,6 @@ export class AI {
                 Debug.addPoint(coordinate, color);
             }
         }
-
         Debug.addPoint(this.destination, new Color(0, 0, 255));
     }
 }

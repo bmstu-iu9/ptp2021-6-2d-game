@@ -40,98 +40,14 @@ export class Game {
     public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
     private state = State.Waiting;
     private static levelPaths = new Map<string, string>(); // Пары уровень-путь
-
     public sounds: Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
-        const response = await fetch(path)
-        const text = await response.text()
+        const response = await fetch(path);
+        const text = await response.text();
         return text;
     }
 
-    // public static replacer(key, value) { // функция замены классов для преобразования в JSON
-    //     if (value instanceof Map) { // упаковка Map
-    //         let val: any;
-    //         if (value.get("JSONkeys") != undefined) { // гениальнейший костыль (нет)
-
-    //             let keys = value.get("JSONkeys");
-    //             console.log("JSONkeys", keys);
-    //             let remapping = new Map();
-    //             for (let i = 0; i < keys.length; i++) {
-    //                 remapping.set(keys[i], value[keys[i]]);
-    //             }
-    //             val = Array.from(remapping.entries());
-    //         } else {
-    //             val = Array.from(value.entries());
-    //         }
-    //         console.log(val);
-
-    //         return {
-    //             dataType: 'Map',
-    //             value: val, // or with spread: value: [...value]
-    //         };
-    //     }
-    //     if (value instanceof HTMLImageElement) { // упаковка HTMLImageElement
-    //         // ALARM: если в игре нет текстуры с таким же названием может возникнуть ошибка 
-    //         let name = value.src;
-    //         let nameSplit = name.split("/");
-    //         let lastSplit = nameSplit[nameSplit.length - 1];
-
-    //         return {
-    //             dataType: 'HTMLImageElement',
-    //             value: lastSplit
-    //         };
-    //     }
-    //     if (value instanceof geom.Vector) { // упаковка Vector
-    //         return {
-    //             dataType: 'Vector',
-    //             x: value.x,
-    //             y: value.y
-    //         };
-    //     }
-    //     if (value instanceof Soldier) {
-    //         return {
-    //             dataType: 'Soldier',
-    //             center: value.body.center,
-    //             behaviorModel: value.behaviorModel
-    //         }
-    //     }
-    //     if (value instanceof Scientist) {
-    //         return {
-    //             dataType: 'Scientist',
-    //             center: value.body.center,
-    //             behaviorModel: value.behaviorModel
-    //         }
-    //     }
-    //     if (value instanceof Monster) {
-    //         return {
-    //             dataType: 'Monster',
-    //             center: value.body.center
-    //         }
-    //     }
-    //     if (value instanceof StationaryObject) {
-    //         return {
-    //             dataType: 'StationaryObject',
-    //             center: value.body.center,
-    //         }
-    //     }
-    //     if (value instanceof BehaviorModel) {
-    //         return {
-    //             dataType: 'BehaviorModel',
-    //             instructions: value.instructions
-    //         }
-    //     }
-    //     if (value instanceof Instruction) {
-    //         return {
-    //             dataType: 'Instruction',
-    //             operations: value.operations,
-    //             operationsData: value.operationsData
-    //         }
-    //     }
-    //     return value;
-    // }
-
     public static reviver(key, value) { // функция обратной замены классов для преобразования из JSON
-
         if (typeof value === 'object' && value !== null) {
             if (value.dataType === 'Map') { // распаковка Map
                 return new Map(value.value);
@@ -147,6 +63,7 @@ export class Game {
                 soldier.behaviorModel = new BehaviorModel(soldier.myAI);
                 soldier.behaviorModel = value.behaviorModel;
                 soldier.behaviorModel.myAI = soldier.myAI;
+                soldier.behaviorModel.changeCurrentInstruction("normal");
                 return soldier;
             }
             if (value.dataType == 'Scientist') {
@@ -154,6 +71,8 @@ export class Game {
                 let scientist = Game.currentGame.makeScientist(value.center) as Scientist;
                 scientist.behaviorModel = new BehaviorModel(scientist.myAI);
                 scientist.behaviorModel.instructions = value.behaviorModel.instructions;
+                scientist.behaviorModel.changeCurrentInstruction("normal");
+                console.log(scientist);
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -161,12 +80,10 @@ export class Game {
                 return monster;
             }
             if (value.dataType == 'StationaryObject') {
-                let stationaryObject = new StationaryObject(this.currentGame, new Body(value.center, 1), "fine");
+                let stationaryObject = Game.currentGame.makeStationaryObject(value.center, value.type, "Interior");
                 return stationaryObject;
             }
             if (value.dataType == 'BehaviorModel') {
-                //console.log("beh mod");
-                
                 let behaviorModel = new BehaviorModel(null);
                 behaviorModel.instructions = value.instructions;
                 return behaviorModel;
@@ -175,7 +92,6 @@ export class Game {
                 let instruction = new Instruction();
                 instruction.operations = value.operations;
                 instruction.operationsData = value.operationsData;
-                //console.log("Instruction", value);
                 return instruction;
             }
             if (value.dataType == 'LightSource') {
@@ -188,17 +104,15 @@ export class Game {
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
         Game.levelPaths[name] = path;
+        console.log(aux.environment + path);
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
                 console.log("Map loaded");
-
                 let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
                 level.createFromPrototype(prototype);
                 level.showLighting = true;
                 level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
-                // level.makeLightSource(new geom.Vector(5, 5), 10);
-                // level.makeLightSource(new geom.Vector(0, 0), 10);
                 Game.currentGame.levels[name] = level;
             });
     }
@@ -217,8 +131,15 @@ export class Game {
         return this.bodies[this.bodies.length] = body;
     }
 
-    public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
+    public makeStationaryObject(pos: geom.Vector, type: string, category: string): StationaryObject {
+        let body = this.makeBody(pos, 1);
+        let entity = new StationaryObject(this, body, type, category);
+        entity.entityID = this.entities.length;
+        this.entities[this.entities.length] = entity;
+        return entity;
+    }
 
+    public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
         let body = this.makeBody(pos, 1);
         let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -299,9 +220,8 @@ export class Game {
         this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
         // TODO: перезапуск уровня
         Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
-        this.sounds.playcontinuously("game", 0.2);
-        this.soundsarr.push(this.sounds)
-
+        this.sounds.playcontinuously("soundtrack", 0.3);
+        this.soundsarr.push(this.sounds);
     }
 
     public step() {
@@ -311,7 +231,6 @@ export class Game {
                 this.startGame();
             return;
         }
-
         // Смерть
         if (this.mimic.isDead()) {
             for (; 0 < this.soundsarr.length;) {
@@ -320,18 +239,14 @@ export class Game {
             }
             this.state = State.Waiting;
         }
-
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
-                this.currentLevel = this.levels[this.currentLevelName];
-            //this.entities = this.currentLevel.Entities;
+            this.currentLevel = this.levels[this.currentLevelName];
         }
-
         this.currentLevel.generateLighting();
         this.mimic.step();
         this.attachCamToMimic();
         // Processing entities
-        this.entities.forEach(entity => entity.animation.step());
         this.entities.forEach(entity => entity.step());
         this.triggers.forEach(trigger => trigger.step());
         this.processEntities();
@@ -349,13 +264,11 @@ export class Game {
             Math.floor(pos.x / this.currentLevel.tileSize),
             Math.floor(pos.y / this.currentLevel.tileSize)
         );
-
         // If out of bounds
         if (posRound.x < 0 || posRound.y < 0 ||
             posRound.x >= this.currentLevel.Grid.length ||
             posRound.y >= this.currentLevel.Grid[0].length)
             return 0;
-
         let collisionType = this.currentLevel.Grid[posRound.x][posRound.y].colision;
         // Coordinates in particular grid cell
         let posIn = pos.sub(posRound.mul(this.currentLevel.tileSize)).mul(1 / this.currentLevel.tileSize);
@@ -393,36 +306,25 @@ export class Game {
                 this.draw.cam.center.mul(2),
                 0, Layer.HudLayer
             );
-            this.draw.getimage();
+            this.draw.getimage(this.currentLevel);
             return;
         }
-
         // Настройка камеры
         this.configureCamScale();
-
-        // Орисовка тайлов
+        // Отрисовка тайлов
         this.currentLevel.display(this.draw);
-
         // Отрисовка Entities
         for (let entity of this.entities) {
             entity.display(this.draw);
         }
-        this.draw.getimage();
-
         // Мимик
         this.mimic.display(this.draw);
-
-        // Освещение
-        this.currentLevel.displayLighting(this.draw);
-        
+        // Освещение и отрисовка персонажей
+        this.draw.getimage(this.currentLevel);
         // Анимации
         this.draw.step();
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
         Debug.clear();
     }
-
-    //public drawCollisionCheck(pos, box, color){
-    //  this.draw.fillRect(pos, box,color)
-    //}
 }

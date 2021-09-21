@@ -14,13 +14,16 @@ export class CombatProjectile extends Projectile {
     public damage = 0.1; // Урон
     private remainingTime = 0; // Сколько ещё жить
     private lifetime = 0; // Сколько всего приказано жить
+
     constructor(game: Game, body: Body, vel: geom.Vector) {
         super(game, body, vel);
         this.loadSpriteAnimation("Flame", 3);
     }
+
     public setLifetime(lifetime: number) {
         this.lifetime = this.remainingTime = lifetime;
     }
+
     public step() {
         // Время уходит
         this.remainingTime -= Game.dt;
@@ -41,6 +44,7 @@ export class CombatProjectile extends Projectile {
         }
         super.step();
     }
+
     public display(draw: Draw) {
         draw.image(
             this.spriteAnimation.getCurrentFrame(),

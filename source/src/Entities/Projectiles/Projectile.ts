@@ -36,12 +36,10 @@ export class Projectile extends Entity {
             if ((this.body.isWallNear == 1 && this.vel.x > 0) ||
                 (this.body.isWallNear == 3 && this.vel.x < 0)) {
                 this.vel.x = - this.vel.x;
-                console.log("bounce x %d", this.body.isWallNear);
             }
             if ((this.body.isWallNear == 2 && this.vel.y < 0) ||
                 (this.body.isWallNear == 4 && this.vel.y > 0)) {
                 this.vel.y = - this.vel.y;
-                console.log("bounce y %d", this.body.isWallNear);
             }
         }
         this.vel = this.vel.sub(this.vel.mul(this.viscousFriction * Game.dt));

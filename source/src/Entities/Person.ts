@@ -27,22 +27,24 @@ export class Person extends Entity {
     public direction: geom.Vector; // направление взгляда
     public awareness = 0;
     public awarenessThreshold = 10;
+    public awarenessOverflow = 15;
     public hpThresholdCorrupted = 10;
     public hpThresholdDying = 5;
     public mode: PersonMode; // маркер состояния (переименовать по необходимости)
+    public stunTime = 0; // Время оглушения
     protected type: string = null;
     public behaviorModel: BehaviorModel;
     public sound: Sounds = new Sounds(0.9);
 
     constructor(game: Game, body: Body, mode: PersonMode) {
-        super(game, body)
+        super(game, body);
         this.mode = mode;
         this.viewRadius = 5;
         this.viewingAngle = Math.PI / 4;
         this.direction = new geom.Vector(1, 0);
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
-        this.sound.playcontinuously("step", 1);
+        this.sound.playcontinuously("panic", 1);
         this.sound.current_sound.muted = true;
         if (game) {
             game.soundsarr.push(this.sound);
@@ -57,15 +59,16 @@ export class Person extends Entity {
     }
 
     public die() {
+        this.sound.stop();
         if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
         super.die();
 
     }
 
-    public isPointVisible(pos : geom.Vector) : boolean {
-        return (geom.dist(this.body.center, pos) <= this.viewRadius 
-        && Ray.wallIntersection(this.body.center, pos, this.game) != false); // я не уверен, что Vector считается за true, за сим сравнение с false уместно
+    public isPointVisible(pos: geom.Vector): boolean {
+        return (geom.dist(this.body.center, pos) <= this.viewRadius
+            && !Ray.wallIntersection(this.body.center, pos, this.game));
     }
 
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
@@ -79,6 +82,8 @@ export class Person extends Entity {
                 if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                     this.game.ghost = this.game.mimic.controlledEntity.body.center;
                 }
+                // Применение триггера
+                this.sound.current_sound.volume = 0.5;
                 if (!this.game.triggers[i].isEntityTriggered(this)) {
                     this.awareness += this.game.triggers[i].power;
                     this.game.triggers[i].entityTriggered(this);
@@ -122,31 +127,30 @@ export class Person extends Entity {
     }
 
     public changedirection(x: number, y: number) {
-        let currentdist: geom.Vector = this.body.center.sub(this.game.mimic.controlledEntity.body.center) // Получаем расстояние до Мумука
-        let dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2))
-        let volume = 1 / dist;
-        if (volume > 1)
-            volume = 1;
-        this.sound.current_sound.volume = volume;
+        let currentdist: geom.Vector = this.body.center.sub(this.game.mimic.controlledEntity.body.center); // Получаем расстояние до Мумука
+        let dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2));
+        if (dist == 0) {
+            this.sound.current_sound.volume = 0;
+        } else {
+            let volume = 1 / dist;
+            if (volume > 1)
+                volume = 1;
+            this.sound.current_sound.volume = volume;
+        }
         if (x == 0 && y == 0) {
-            this.animation.changedirection("stand", this.modeToString())
-            this.sound.current_sound.muted = true;
+            this.animation.changedirection("stand", this.modeToString());
         }
         if (x == 1) {
-            this.animation.changedirection("right", this.modeToString())
-            this.sound.current_sound.muted = false;
+            this.animation.changedirection("right", this.modeToString());
         }
         if (x == -1) {
-            this.animation.changedirection("left", this.modeToString())
-            this.sound.current_sound.muted = false;
+            this.animation.changedirection("left", this.modeToString());
         }
         if (x == 0 && y == 1) {
-            this.animation.changedirection("top", this.modeToString())
-            this.sound.current_sound.muted = false;
+            this.animation.changedirection("top", this.modeToString());
         }
         if (x == 0 && y == -1) {
-            this.animation.changedirection("down", this.modeToString())
-            this.sound.current_sound.muted = false;
+            this.animation.changedirection("down", this.modeToString());
         }
     }
 
@@ -170,12 +174,10 @@ export class Person extends Entity {
         console.log("stop");
     }
 
-    public step() {
+    private move() {
         let x = 0;
         let y = 0;
         let vel = this.body.velocity;
-
-        // перемещение согласно commands
         if (!this.commands)
             return;
         if (this.commands.active["MoveUp"]) {
@@ -195,18 +197,41 @@ export class Person extends Entity {
             this.body.move(new geom.Vector(-vel, 0));
         }
         this.changedirection(x, y); // измененниие напрвления для анимаций
-        this.checkTriggers();
         this.direction = new geom.Vector(x, y);
+    }
+
+    public step() {
+
+        if (this.behaviorModel.getCurrentInstruction() != Behavior.Panic) {
+            this.sound.current_sound.muted = true;
+        }
+        // перемещение согласно commands
+        this.move();
 
         // Проверка на awareness
         if (this.awareness >= this.awarenessThreshold) {
+            if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
+                this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-            this.awareness = this.awarenessThreshold;
+            this.sound.current_sound.volume = 1;
+            this.sound.current_sound.muted = false;
         }
+        if (this.awareness < this.awarenessThreshold) {
+            this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
+        }
+        if (this.awareness < 0) {
+            this.awareness = 0;
+        }
+        this.awareness -= Game.dt * 0.5;
 
         this.updateMode();
-        this.behaviorModel.step();
-
+        if (this.stunTime <= 0) {
+            this.checkTriggers();
+            this.behaviorModel.step();
+        }
+        else
+            this.stop();
+        this.stunTime -= Game.dt;
         super.step();
     }
 
@@ -222,6 +247,7 @@ export class Person extends Entity {
     }
 
     public display(draw: Draw) {
+        this.animation.step();
         super.display(draw);
         draw.bar(
             this.body.center.clone().add(new geom.Vector(0, -1)), // Pos

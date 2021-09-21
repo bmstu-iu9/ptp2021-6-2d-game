@@ -1,9 +1,15 @@
+import { stringify } from "querystring";
 import { setEnvironmentData } from "worker_threads";
 import { Draw } from "./Draw";
 import * as geom from "./Geom";
 
 export let environment: string;
 export let editorMode = false;
+
+export function vectorStringify(v: geom.Vector) {
+    let ans = "x:" + String(v.x).valueOf() + "y:" + String(v.y);
+    return ans;
+}
 
 export function setEditorMode(newEditorMode: boolean) {
     editorMode = newEditorMode;
@@ -18,13 +24,6 @@ export function swap(a, b: any) {
 }
 
 export function arrayMove(arr, old_index, new_index) {
-    // if (new_index >= arr.length) {
-    //     let k = new_index - arr.length + 1;
-    //     while (k--) {
-    //         arr.push(undefined);
-    //     }
-    // }
-    // arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
     let elem = arr[old_index];
     if (old_index < new_index) {
         new_index--;
@@ -33,7 +32,7 @@ export function arrayMove(arr, old_index, new_index) {
     arr.splice(new_index, 0, elem);
 };
 
-export function mergeArray(arr1, arr2, func : (a, b) => number) {
+export function mergeArray(arr1, arr2, func: (a, b) => number) {
     if (arr1.length == 0) {
         return arr2;
     }
@@ -67,7 +66,6 @@ export function replacer(key, value) { // функция замены класс
         let name = value.src;
         let nameSplit = name.split("/");
         let lastSplit = nameSplit[nameSplit.length - 1];
-
         return {
             dataType: 'HTMLImageElement',
             value: lastSplit
@@ -80,26 +78,6 @@ export function replacer(key, value) { // функция замены класс
             y: value.y
         };
     }
-    // if (value instanceof Soldier) {
-    //   return {
-    //     dataType: 'Soldier',
-    //     place: value.body.center,
-    //     behaviorModel: value.behaviorModel
-    //   }
-    // }
-    // if (value instanceof Scientist) {
-    //   return {
-    //     dataType: 'Scientist',
-    //     place: value.body.center,
-    //     behaviorModel: value.behaviorModel
-    //   }
-    // }
-    // if (value instanceof StationaryObject) {
-    //   return {
-    //     dataType: 'StationaryObject',
-    //     place: value.body.center,
-    //   }
-    // }
     return value;
 }
 
@@ -114,19 +92,6 @@ export function reviver(key, value) { // функция обратной зам�
         if (value.dataType === 'Vector') { // распаковка Vector
             return JSON.stringify(new geom.Vector(value.x, value.y));
         }
-        // if (value.dataType == 'Soldier') {
-        //   let soldier = game.makeSoldier(value.place) as Soldier;
-        //   soldier.behaviorModel = value.behaviorModel;
-        //   return soldier;
-        // }
-        // if (value.dataType == 'Scientist') {
-        //   let scientist = game.makeScientist(value.place) as Scientist;
-        //   scientist.behaviorModel = value.behaviorModel;
-        //   return scientist;
-        // }
-        // if (value.dataType == 'StationaryObject') {
-        //   let stationaryObject = new StationaryObject(game, new Body(value.place, 1), "fine");
-        // }
     }
     return value;
 }

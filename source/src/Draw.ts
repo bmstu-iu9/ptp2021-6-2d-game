@@ -1,4 +1,5 @@
 import * as geom from "./Geom";
+import { Level } from "./Level";
 import { AnimationState, SpriteAnimation } from "./SpriteAnimation";
 
 export class Camera {
@@ -28,14 +29,17 @@ export class Color {
         return new Color(this.r, this.g, this.b, a);
     }
 }
+
 export enum Layer { // Индентификатор текстуры (тайл или персонаж)
     TileLayer,
     EntityLayer,
     HudLayer
 }
+
 type hashimages = {
     [key: string]: HTMLImageElement; // Хеш таблица с изображениями
 };
+
 interface queue { // Для правильной отрисовки слоев
     image?: HTMLImageElement,
     pos?: geom.Vector,
@@ -44,6 +48,7 @@ interface queue { // Для правильной отрисовки слоев
     layer?: Layer,
     transparency?: number,
 }
+
 interface bar_queue { // Для отрисовки Hp бара
 
     pos?: geom.Vector,
@@ -57,11 +62,13 @@ interface bar_queue { // Для отрисовки Hp бара
 export class Draw {
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
-    private imagequeue: queue[] = []; // Очередь для изображений
+    private imagequeueEntity: queue[] = []; // Очередь для изображений
+    private imagequeueHud: queue[] = []; // Очередь для изображений
     private hpqueue: bar_queue[] = []; // Очередь для hp бара
     public cam = new Camera();
     private spriteAnimations: SpriteAnimation[] = [];
     private static images: hashimages = { }; // Хеш таблица с изображениями
+
     constructor(canvas: HTMLCanvasElement, size: geom.Vector = null) {
         this.canvas = canvas;
         if (size) {
@@ -78,6 +85,7 @@ export class Draw {
         this.cam.pos = new geom.Vector();
         this.cam.center = size.mul(1 / 2);
     }
+
     public static loadImage(src: string): HTMLImageElement {
         if (this.images[src]) {
             return this.images[src]; // Извлекаем из хеш таблицы
@@ -140,12 +148,16 @@ export class Draw {
     }
     // Изображение (обработка)
     public image(image: HTMLImageElement, pos: geom.Vector, box: geom.Vector, angle: number, layer: Layer, transparency = 1) {
-        if (layer == 0) { // Отрисовка сразу
+        if (layer == Layer.TileLayer ) { // Отрисовка сразу
             this.drawimage(image, pos, box, angle, transparency);
-        } else { // Отрисовка после сортировки
-            let curqueue: queue = { image, pos, box, angle, layer, transparency};
-            this.imagequeue.push(curqueue);
-
+        } else {
+            if ( Layer.HudLayer == layer) {// Отрисовка после сортировки
+                let curqueue: queue = { image, pos, box, angle, layer, transparency};
+                this.imagequeueHud.push(curqueue);
+            } else {
+                let curqueue: queue = { image, pos, box, angle, layer, transparency};
+                this.imagequeueEntity.push(curqueue);
+            }
         }
     }
     // Отрисовка HTMLCanvasElement
@@ -173,9 +185,9 @@ export class Draw {
         this.ctx.globalAlpha = 1;
     }
     // Обработка слоев изображения
-    public getimage() {
-        if (this.imagequeue.length > 0) { // Отрисовка изображений
-            this.imagequeue.sort(function (a, b) { // Сортировка
+    public getimage(curlevel : Level) {
+        if (this.imagequeueEntity.length > 0) { // Отрисовка изображений
+            this.imagequeueEntity.sort(function (a, b) { // Сортировка
                 if (a.layer > b.layer)
                     return -1;
                 if (a.layer < b.layer)
@@ -186,11 +198,12 @@ export class Draw {
                     return 1;
                 return 0;
             });
-            for (; this.imagequeue.length > 0;) {
-                let temp = this.imagequeue.pop(); //Извлечение
+            for (; this.imagequeueEntity.length > 0;) {
+                let temp = this.imagequeueEntity.pop(); //Извлечение
                 this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency)
             }
         }
+        curlevel.displayLighting(this);
         for (; this.hpqueue.length > 0;) { // Отрисовка hp бара
             let temp = this.hpqueue.pop();
             let pos = temp.pos;
@@ -213,6 +226,23 @@ export class Draw {
                 posNew = pos.clone();
                 posNew.x += box.x * marks[i];
                 this.fillRect(posNew, bar, backColor);
+            }
+        }
+        if (this.imagequeueHud.length > 0) { // Отрисовка изображений
+            this.imagequeueHud.sort(function (a, b) { // Сортировка
+                if (a.layer > b.layer)
+                    return -1;
+                if (a.layer < b.layer)
+                    return 1;
+                if (a.pos.y > b.pos.y)
+                    return -1;
+                if (a.pos.y < b.pos.y)
+                    return 1;
+                return 0;
+            });
+            for (; this.imagequeueHud.length > 0;) {
+                let temp = this.imagequeueHud.pop(); //Извлечение
+                this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency);
             }
         }
     }
@@ -277,7 +307,6 @@ export class Draw {
             this.ctx.lineTo(posNew.x, posNew.y);
             this.ctx.lineWidth = lineWidth * this.cam.scale; //ширина контура
         }
-
         this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.stroke();
     }
@@ -306,14 +335,12 @@ export class Draw {
         finalState: AnimationState,
         duration: number,
         frameDuration: number) {
-
         let animation = new SpriteAnimation();
         animation.loadFrames(name, framesNumber);
         animation.initialState = initialState;
         animation.finalState = finalState;
         animation.duration = duration;
         animation.frameDuration = frameDuration;
-
         this.spriteAnimations.push(animation);
     }
     // Step
@@ -330,11 +357,16 @@ export class Draw {
         // Отрисовка
         this.spriteAnimations.forEach(animation => animation.display(this));
     }
+    
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }
     // hp бар 
     public bar(pos: geom.Vector, box: geom.Vector, percentage: number, backColor: Color, frontColor: Color, marks: number[]) {
+        if (percentage > 1)
+            percentage = 1;
+        if (percentage < 0)
+            percentage = 0;
         let queue: bar_queue = { pos, box, percentage, frontColor, backColor, marks };
         this.hpqueue.push(queue); // Добавляем в очередь на отрисовку
 

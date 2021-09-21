@@ -13,6 +13,7 @@ import { BehaviorModel } from "../BehaviorModel";
 import * as aux from "../AuxLib";
 import { ListOfPads } from "./ListOfPads";
 import { url } from "inspector";
+import { StationaryObject } from "../Entities/StationaryObject";
 
 export enum ToolType {
     GoToPoint,
@@ -27,7 +28,7 @@ export enum Mode {
     Selector,
     PosPicking,
     Light
-  }
+}
 
 // Курсор для редактора уровней. Хранит в себе позицию и
 // информацию о том, как должен вести себя в случае клика
@@ -38,8 +39,8 @@ export class Cursor {
     public gridPos = new geom.Vector();
     public tile = new Tile(CollisionType.Full);
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
-    public selectedEntity : Entity = null;
-    public drawPreview : Draw;
+    public selectedEntity: Entity = null;
+    public drawPreview: Draw;
     private mode = Mode.Wall;
     private mouseLeftButtonClicked = true;
     private entityLocations: Map<any, number> = new Map();
@@ -75,6 +76,12 @@ export class Cursor {
             let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
             this.level.Entities[currentLocation] = new Monster(null, new Body(pos, 1));
         }
+        if (this.entity instanceof StationaryObject) {
+            let pos = this.gridPos.add(new geom.Vector(this.level.tileSize, this.level.tileSize).mul(1 / 2));
+            this.level.Entities[currentLocation] = new StationaryObject(null, new Body(pos, 1), "0", "Interior");
+            let x = this.level.Entities[currentLocation] as StationaryObject;
+            x.image = this.entity.image;
+        }
     }
 
     public setLight() {
@@ -82,7 +89,7 @@ export class Cursor {
         this.level.generateLighting();
     }
 
-    public changeMode(mode : Mode) {
+    public changeMode(mode: Mode) {
         this.mode = mode;
         switch (mode) {
             case Mode.Eraser: {
@@ -118,8 +125,8 @@ export class Cursor {
     public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
-        if(Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
-            switch(this.mode) {
+        if (Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
+            switch (this.mode) {
                 case Mode.Eraser: {
                     if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
                         console.log(this.level.Entities);
@@ -178,7 +185,6 @@ export class Cursor {
         this.drawPreview.clear();
         switch (this.mode) {
             case Mode.Wall: {
-                //console.log(this.tile)
                 this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 if (this.tile.sub_image) {
                     this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
@@ -186,7 +192,10 @@ export class Cursor {
                 break;
             }
             case Mode.Entity: {
-                this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                if (this.entity instanceof Person)
+                    this.drawPreview.image(this.entity.animation.getDefaultImage(), new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
+                if (this.entity instanceof StationaryObject)
+                    this.drawPreview.image(this.entity.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 break;
             }
         }
