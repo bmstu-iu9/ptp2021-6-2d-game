@@ -49,12 +49,6 @@ function step() {
             //     }
             // }
             //------------------------------------------------------------------
-            //console.log(game.entities);
-            //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
-            //for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
-            //    console.log(game.entities[1].myAI.Path[i]);
-            //    
-            //}
         }
         draw.clear();
         game.step();
