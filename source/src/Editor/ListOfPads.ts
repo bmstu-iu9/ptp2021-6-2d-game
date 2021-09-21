@@ -107,7 +107,6 @@ export class ListOfPads {
 
         pad.id = "pad_" + this.amountOfPads;
         label.id = "padLabel_" + this.amountOfPads;
-
         additionalElement.className = "behaviorPad_additionalElement";
 
         switch (tool) {
@@ -115,8 +114,6 @@ export class ListOfPads {
                 label.innerHTML = "Go to ";
                 additionalElement.innerHTML = "(0, 0)";
                 let posPick = () => {
-                    console.log("clicked");
-
                     additionalElement.classList.add("selected");
                     this.cursor.changeMode(Mode.PosPicking);
                     this.currentPad = additionalElement.parentElement;
@@ -131,17 +128,12 @@ export class ListOfPads {
                 additionalElement.innerHTML = "1000";
                 additionalElement.contentEditable = "true";
                 let changeVal = (evt) => {
-                    //console.log("changed");
-
                     let elem = evt.target as HTMLObjectElement;
                     let val = new Number(elem.innerHTML);
                     console.log("val is ", val, " is integer ", Number.isInteger(val.valueOf()))
                     let instruction = this.behaviorModel.instructions[this.instructionType];
                     if (Number.isInteger(val.valueOf())) {
-                        //elem.innerHTML = new String(val.valueOf()).valueOf();
                         instruction.operationsData[this.getPadPlace(elem.parentElement)] = val.valueOf();
-                    } else {
-                        //elem.innerHTML = new String(instruction.operationsData[this.getPadPlace(elem.parentElement)]).valueOf();
                     }
                     this.updateInstructionCopy();
                 }
@@ -172,13 +164,8 @@ export class ListOfPads {
             pad.appendChild(additionalElement);
         }
         pad.appendChild(exitButton);
-
-        //let palette = document.getElementById("palette6");        
-
         document.getElementById("mainListPads").append(pad);
-        //palette.appendChild(pad);
         this.amountOfPads += 1;
-
         this.updateInstructionCopy();
         return pad;
     }
@@ -194,8 +181,6 @@ export class ListOfPads {
     }
 
     public static GUIstep() {
-        //console.log(this.instructionCopy);
-        
         if (this.instructionCopy == null) {
             return;
         }
@@ -206,17 +191,14 @@ export class ListOfPads {
             switch (this.instructionCopy.operations[i]) {
                 case Operations.goToPoint: {
                     console.log(currentPos, this.instructionCopy.operationsData[i]);
-
                     let oldPos = currentPos;
                     EditorGUI.addLine(currentPos, this.instructionCopy.operationsData[i], new Color(0, 255, 0, 1));
                     currentPos = this.instructionCopy.operationsData[i];
-
                     for (let j = 0; j < imageMas.length; j++) {
                         EditorGUI.addImage(oldPos.add(new Vector((-imageMas.length * 0.5 + 0.5 + j) * imageSize, 0)),
                             imageMas[j], new Vector(imageSize, imageSize));
                     }
                     imageMas = [];
-
                     break;
                 }
                 case Operations.wait: {

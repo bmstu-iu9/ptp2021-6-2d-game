@@ -19,8 +19,6 @@ class GUIImage extends GUIElement {
     }
 
     public display(draw: Draw) {
-        console.log("drawed");
-
         draw.drawimage(this.image, this.pos, this.box, 0, 1);
     }
 }
@@ -53,13 +51,10 @@ export class EditorGUI {
         return this.GUIelements[this.GUIelements.length] = new GUILine(begin, end, color);
     }
 
-    public static display(draw : Draw) {
-        //console.log(this.GUIelements.length);
-        
+    public static display(draw: Draw) {
         for (let i = 0; i < this.GUIelements.length; i++) {
             this.GUIelements[i].display(draw);
         }
-
         this.GUIelements = [];
     }
 }
