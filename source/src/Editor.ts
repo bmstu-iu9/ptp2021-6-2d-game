@@ -306,7 +306,7 @@ export class Editor {
         this.createEntityButton("Monster", "4");
 
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 24; i++) {
             this.createEntityButton(String(i).valueOf(), "8");
         }
 

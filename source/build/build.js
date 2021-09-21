@@ -3715,7 +3715,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createEntityButton("Scientist", "4");
             this.createEntityButton("Soldier", "4");
             this.createEntityButton("Monster", "4");
-            for (var i = 0; i < 2; i++) {
+            for (var i = 0; i < 24; i++) {
                 this.createEntityButton(String(i).valueOf(), "8");
             }
             this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
@@ -3871,7 +3871,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_18, Game_10, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("http://127.0.0.1:8000/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
@@ -3895,6 +3895,11 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
                 x = true;
             }
             if (t % 100 == 0) {
+                for (var i = 0; i < game.levels["map"].Grid.length; i++) {
+                    for (var j = 0; j < game.levels["map"].Grid[i].length; j++) {
+                        game.levels["map"].makeLightSource(new geom.Vector(i, j), 10);
+                    }
+                }
             }
             draw.clear();
             game.step();

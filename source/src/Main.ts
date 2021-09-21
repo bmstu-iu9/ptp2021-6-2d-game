@@ -11,8 +11,8 @@ import { Behavior } from "./Entities/Person";
 import { Ray } from "./RayCasting";
 import { Verify } from "crypto";
 
-aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
-//aux.setEnvironment("http://127.0.0.1:8001/"); // Если локальный сервер
+//aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/"); // Если с Гита
+aux.setEnvironment("http://127.0.0.1:8000/"); // Если локальный сервер
 
 // Флаг режима редактора уровней
 let levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
@@ -41,7 +41,9 @@ function step() {
     if (game.levels["map"] != undefined) {
         t++;
         //Ray.wallIntersection(game.mimic.controlledEntity.body.center, new geom.Vector(0, 0), game);
+
         if (x == false) {
+
             // console.log(game.entities[1]);
 
             // let person = game.entities[1] as Scientist;
@@ -56,6 +58,11 @@ function step() {
             x = true;
         }
         if (t % 100 == 0) {
+            for (let i = 0; i < game.levels["map"].Grid.length; i++) {
+                for (let j = 0; j < game.levels["map"].Grid[i].length; j++) {
+                    game.levels["map"].makeLightSource(new geom.Vector(i, j), 10);
+                }
+            }
             //console.log(game.entities);
             //console.log(game.entities[1].body.center, game.entities[1].myAI.Path);
             //for (let i = 0; i < game.entities[1].myAI.Path.length; i++) {
