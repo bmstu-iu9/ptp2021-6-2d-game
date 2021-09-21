@@ -262,6 +262,13 @@ export class Level {
         console.log(Array.from(newLevel.PathMatrix.keys()));
 
         const url = window.URL.createObjectURL(blob);
+        const anchor = window.document.createElement('a');
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.download = "map.json";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        window.URL.revokeObjectURL(anchor.href);
         window.open(url);
     }
 

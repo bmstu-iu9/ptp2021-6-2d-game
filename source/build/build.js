@@ -1940,6 +1940,13 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             });
             console.log(Array.from(newLevel.PathMatrix.keys()));
             var url = window.URL.createObjectURL(blob);
+            var anchor = window.document.createElement('a');
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.download = "map.json";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(anchor.href);
             window.open(url);
         };
         Level.prototype.createFromPrototype = function (prototype) {
