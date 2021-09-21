@@ -25,10 +25,12 @@ export class Entity {
         this.animation = new Animation("Scientist", 8); // создание анимации персонажа
         this.commands = this.myAI.commands;
     }
+
     public die() {
         this.hp = 0;
         this.alive = false;
     }
+
     public step() {
         if (this.hp <= 0)
             this.die();
@@ -38,6 +40,7 @@ export class Entity {
         // Восстанавливаем комманды
         this.commands = this.myAI.commands;
     }
+
     public display(draw: Draw) {
         draw.image(this.animation.current_state, this.body.center.sub(new geom.Vector(0, 0.5 - this.body.collisionBox.y / 2)), new geom.Vector(1, 1), 0, 1);
     }

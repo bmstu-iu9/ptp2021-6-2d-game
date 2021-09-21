@@ -21,8 +21,8 @@ export class Control {
     public static commands: Commands;
 
     private static async readTextFile(path) {
-        const response = await fetch(path)
-        const text = await response.text()
+        const response = await fetch(path);
+        const text = await response.text();
         return text;
     }
 
@@ -34,7 +34,6 @@ export class Control {
                     localStorage.setItem("commands", result);
                 })
                 .then(result => {
-
                     let vals = Array.from(Control.keyMapping.values());
                     for (let i = 0; i < vals.length; i++) {
                         for (let j = 0; j < vals[i].length; j++) {
@@ -44,7 +43,6 @@ export class Control {
                     }
                 });
         } else {
-
             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
             let vals = Array.from(Control.keyMapping.values());
             for (let i = 0; i < vals.length; i++) {
@@ -72,8 +70,6 @@ export class Control {
         window.addEventListener("mouseup", Control.onMouseUp);
         // Блокировка контекстного меню по ПКМ
         window.addEventListener("contextmenu", e => e.preventDefault());
-
-
         Control.keyMapping = new Map<number, string[]>();
         Control.commandsCounter = new Map<string, number>();
         Control.commands = new Commands();

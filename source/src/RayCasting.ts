@@ -14,7 +14,6 @@ export class Ray {
     public static pointGenerator(begin: Vector, end: Vector) {
         let angle = end.sub(begin).angle();
         let stepVec = new Vector(Math.cos(angle), Math.sin(angle));
-
         let xPoints: Vector[] = [];
         xPoints[0] = begin.clone();
         if (!this.isBetween(-eps, stepVec.x, eps)) {
@@ -28,7 +27,6 @@ export class Ray {
         } else {
             xPoints[1] = end.clone();
         }
-
         let yPoints: Vector[] = [];
         yPoints[0] = begin.clone();
         if (!this.isBetween(-eps, stepVec.y, eps)) {
@@ -42,7 +40,6 @@ export class Ray {
         } else {
             yPoints[1] = end.clone();
         }
-
         for (let i = 1; this.isBetween(begin.x, xPoints[i].x, end.x); i++) {
             if (this.isBetween(-eps, stepVec.x, eps)) {
                 break;
@@ -56,7 +53,6 @@ export class Ray {
             }
         }
         xPoints[xPoints.length - 1] = end.clone();
-
         for (let i = 1; this.isBetween(begin.y, yPoints[i].y, end.y); i++) {
             if (this.isBetween(-eps, stepVec.y, eps)) {
                 break;
@@ -74,22 +70,22 @@ export class Ray {
         return points;
     }
 
-    public static wallIntersection(begin : Vector, end : Vector, game : Game) {
+    public static wallIntersection(begin: Vector, end: Vector, game: Game) {
         let points = Ray.pointGenerator(begin, end);
         let midPoints = [];
         for (let i = 1; i < points.length; i++) {
-            midPoints[midPoints.length] = (points[i - 1].add(points[i])).mul(1/2); 
+            midPoints[midPoints.length] = (points[i - 1].add(points[i])).mul(1 / 2);
         }
         for (let i = 0; i < midPoints.length; i++) {
             Debug.addPoint(midPoints[i], new Color(256, 0, 0));
         }
-        let answer : any = false;
+        let answer: any = false;
         for (let i = 0; i < midPoints.length; i++) {
             if (game.checkWall(midPoints[i])) {
                 if (answer == false || points[i].sub(begin).abs() < answer.sub(begin).abs())
                     answer = points[i];
                 if (answer == false || points[i + 1].sub(begin).abs() < answer.sub(begin).abs())
-                    answer = points[i + 1];    
+                    answer = points[i + 1];
             }
         }
         if (answer instanceof Vector) {

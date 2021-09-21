@@ -22,7 +22,6 @@ export class SpriteAnimation {
     public duration: number; // длительноссть анимации
     private time = 0; // текушее время
     public frameDuration: number; // длительность одного кадра
-
     // Загружает кадры
     public loadFrames(name: string, framesNumber: number) {
         this.frames = [];
@@ -30,7 +29,6 @@ export class SpriteAnimation {
             this.frames[i] = Draw.loadImage("textures/" + name + "/" + i + ".png");
         }
     }
-
     // Вычисляет промежуточное состояние
     private getCurrentState(): AnimationState {
         let multB = this.time / this.duration;

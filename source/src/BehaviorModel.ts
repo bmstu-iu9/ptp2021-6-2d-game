@@ -77,13 +77,11 @@ export class BehaviorModel {
         this.changeCurrentInstruction(this.currentInstruction, true);
     }
 
-    public getCurrentInstruction() : string {
+    public getCurrentInstruction(): string {
         return this.currentInstruction + "";
     }
 
     public step() {
-        //console.log("here?");
-        
         if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions.get(this.currentInstruction)) {
             console.log("here?");
             this.operationNum++;

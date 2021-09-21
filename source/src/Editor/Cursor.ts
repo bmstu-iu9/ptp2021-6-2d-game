@@ -28,7 +28,7 @@ export enum Mode {
     Selector,
     PosPicking,
     Light
-  }
+}
 
 // Курсор для редактора уровней. Хранит в себе позицию и
 // информацию о том, как должен вести себя в случае клика
@@ -39,8 +39,8 @@ export class Cursor {
     public gridPos = new geom.Vector();
     public tile = new Tile(CollisionType.Full);
     public entity = new Entity(null, new Body(new geom.Vector(0, 0), 1));
-    public selectedEntity : Entity = null;
-    public drawPreview : Draw;
+    public selectedEntity: Entity = null;
+    public drawPreview: Draw;
     private mode = Mode.Wall;
     private mouseLeftButtonClicked = true;
     private entityLocations: Map<any, number> = new Map();
@@ -89,7 +89,7 @@ export class Cursor {
         this.level.generateLighting();
     }
 
-    public changeMode(mode : Mode) {
+    public changeMode(mode: Mode) {
         this.mode = mode;
         switch (mode) {
             case Mode.Eraser: {
@@ -125,8 +125,8 @@ export class Cursor {
     public step() {
         this.pos = this.draw.transformBack(Control.mousePos());
         this.gridPos = this.level.gridCoordinates(this.pos);
-        if(Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
-            switch(this.mode) {
+        if (Control.isMouseLeftPressed() && this.level.isInBounds(this.pos)) {
+            switch (this.mode) {
                 case Mode.Eraser: {
                     if (this.entityLocations[JSON.stringify(this.gridPos, aux.replacer)] != null) {
                         console.log(this.level.Entities);
@@ -185,7 +185,6 @@ export class Cursor {
         this.drawPreview.clear();
         switch (this.mode) {
             case Mode.Wall: {
-                //console.log(this.tile)
                 this.drawPreview.image(this.tile.image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);
                 if (this.tile.sub_image) {
                     this.drawPreview.image(this.tile.sub_image, new geom.Vector(25, 25), new geom.Vector(50, 50), 0, 0);

@@ -58,8 +58,8 @@ export class PathGenerator {
         }
     }
 
-    private static findNearestWays(collisionMesh: boolean[][], place: Vector, was : Map<string, boolean>) {
-        let vertices : Vector[] = [];
+    private static findNearestWays(collisionMesh: boolean[][], place: Vector, was: Map<string, boolean>) {
+        let vertices: Vector[] = [];
         for (let i = -1; i <= 1; i++) {
             if (place.x + i < 0 || place.x + i >= collisionMesh.length || i == 0) {
                 continue;
@@ -101,10 +101,10 @@ export class PathGenerator {
             for (let j = 0; j < collisionMesh[i].length; j++) {
                 let queue = new Queue();
                 let was = new Map;
-                let curPlace = new Vector(i, j); 
+                let curPlace = new Vector(i, j);
                 queue.push(curPlace);
                 was[JSON.stringify(curPlace)] = true;
-                while(queue.length() != 0) {
+                while (queue.length() != 0) {
                     let top = queue.pop();
                     let vertices = this.findNearestWays(collisionMesh, top, was);
                     for (let k = 0; k < vertices.length; k++) {
@@ -165,9 +165,7 @@ export class PathGenerator {
             }
             console.log(x);
         }
-        
         let correctPath = this.bfsPathsFinder(collisionMesh);
-
         MimicMap.PathMatrix = correctPath;
         MimicMap.CollisionMesh = collisionMesh;
     }
