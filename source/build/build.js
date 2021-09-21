@@ -38,10 +38,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -50,6 +52,7 @@ var __extends = (this && this.__extends) || (function () {
 define("Geom", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.dist = exports.vectorFromAngle = exports.vectorComparison = exports.Vector = exports.eps = void 0;
     exports.eps = 1e-4;
     var Vector = (function () {
         function Vector(x, y) {
@@ -133,6 +136,7 @@ define("Geom", ["require", "exports"], function (require, exports) {
 define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], function (require, exports, Geom_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Commands = void 0;
     var Commands = (function () {
         function Commands() {
             this.active = new Map();
@@ -145,6 +149,7 @@ define("Entities/EntityAttributes/Commands", ["require", "exports", "Geom"], fun
 define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Commands"], function (require, exports, geom, aux, Commands_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Control = exports.Keys = void 0;
     var Keys;
     (function (Keys) {
         Keys[Keys["LeftArrow"] = 37] = "LeftArrow";
@@ -332,6 +337,7 @@ define("Control", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttri
 define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Tile = exports.CollisionType = void 0;
     var CollisionType;
     (function (CollisionType) {
         CollisionType[CollisionType["Empty"] = 0] = "Empty";
@@ -393,6 +399,7 @@ define("Tile", ["require", "exports", "Draw"], function (require, exports, Draw_
 define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"], function (require, exports, geom, Tile_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Body = exports.Direction = void 0;
     var Direction;
     (function (Direction) {
         Direction[Direction["Right"] = 1] = "Right";
@@ -484,6 +491,7 @@ define("Entities/EntityAttributes/Body", ["require", "exports", "Geom", "Tile"],
 define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "AuxLib"], function (require, exports, Draw_2, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Animation = void 0;
     var Animation = (function () {
         function Animation(person, states) {
             this.counter = 0;
@@ -554,6 +562,7 @@ define("Entities/EntityAttributes/Animation", ["require", "exports", "Draw", "Au
 define("Queue", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Queue = void 0;
     var Queue = (function () {
         function Queue() {
             this.data = [];
@@ -576,6 +585,7 @@ define("Queue", ["require", "exports"], function (require, exports) {
 define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile", "AuxLib"], function (require, exports, Geom_2, Queue_1, Tile_2, aux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.PathGenerator = void 0;
     var PathGenerator = (function () {
         function PathGenerator() {
         }
@@ -744,6 +754,7 @@ define("Editor/PathGenerator", ["require", "exports", "Geom", "Queue", "Tile", "
 define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Debug = void 0;
     var Point = (function () {
         function Point(place, color) {
             this.place = place;
@@ -777,6 +788,7 @@ define("Debug", ["require", "exports", "Geom"], function (require, exports, Geom
 define("BehaviorModel", ["require", "exports", "Geom"], function (require, exports, Geom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BehaviorModel = exports.Instruction = exports.Operations = void 0;
     var Operations;
     (function (Operations) {
         Operations[Operations["goToPoint"] = 0] = "goToPoint";
@@ -877,6 +889,7 @@ define("BehaviorModel", ["require", "exports", "Geom"], function (require, expor
 define("Entities/Monster", ["require", "exports", "Entities/Person", "Game", "Entities/EntityAttributes/Animation"], function (require, exports, Person_1, Game_1, Animation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Monster = void 0;
     var Monster = (function (_super) {
         __extends(Monster, _super);
         function Monster(game, body) {
@@ -897,6 +910,7 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Game", "En
 define("Sounds", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Sounds = void 0;
     var Sounds = (function () {
         function Sounds(volume) {
             this.currentstate = false;
@@ -949,6 +963,7 @@ define("Sounds", ["require", "exports"], function (require, exports) {
 define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "Draw", "Geom", "SpriteAnimation"], function (require, exports, Entity_1, Draw_3, geom, SpriteAnimation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StationaryObject = void 0;
     var StationaryObject = (function (_super) {
         __extends(StationaryObject, _super);
         function StationaryObject(game, body, type, category) {
@@ -974,6 +989,7 @@ define("Entities/StationaryObject", ["require", "exports", "Entities/Entity", "D
 define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "Sounds"], function (require, exports, StationaryObject_1, Sounds_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Corpse = void 0;
     var Corpse = (function (_super) {
         __extends(Corpse, _super);
         function Corpse(game, body, type) {
@@ -989,6 +1005,7 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "S
 define("Entities/Projectiles/Projectile", ["require", "exports", "Entities/Entity", "Geom", "Game", "SpriteAnimation", "Draw"], function (require, exports, Entity_2, geom, Game_2, SpriteAnimation_2, Draw_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Projectile = void 0;
     var Projectile = (function (_super) {
         __extends(Projectile, _super);
         function Projectile(game, body, vel) {
@@ -1035,6 +1052,7 @@ define("Entities/Projectiles/Projectile", ["require", "exports", "Entities/Entit
 define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projectiles/Projectile", "Geom", "Entities/Corpse"], function (require, exports, Projectile_1, geom, Corpse_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Biomass = void 0;
     var Biomass = (function (_super) {
         __extends(Biomass, _super);
         function Biomass(game, body, vel) {
@@ -1064,6 +1082,7 @@ define("Entities/Projectiles/Biomass", ["require", "exports", "Entities/Projecti
 define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Person", "Entities/Monster", "Draw", "SpriteAnimation", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, Game_3, geom, Control_1, Person_2, Monster_1, Draw_5, SpriteAnimation_3, Biomass_1, Sounds_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Mimic = exports.Aim = void 0;
     var Aim = (function () {
         function Aim() {
             this.vel = 0;
@@ -1180,6 +1199,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
 define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], function (require, exports, AuxLib_1, Debug_1, Draw_6, Geom_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Ray = void 0;
     var Ray = (function () {
         function Ray() {
         }
@@ -1281,6 +1301,7 @@ define("RayCasting", ["require", "exports", "AuxLib", "Debug", "Draw", "Geom"], 
 define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geom", "Debug", "Draw", "BehaviorModel", "SpriteAnimation", "RayCasting", "Sounds"], function (require, exports, Entity_3, Game_4, geom, Debug_2, Draw_7, BehaviorModel_1, SpriteAnimation_4, RayCasting_1, Sounds_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Person = exports.Behavior = exports.PersonMode = void 0;
     var PersonMode;
     (function (PersonMode) {
         PersonMode[PersonMode["Fine"] = 0] = "Fine";
@@ -1490,6 +1511,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
 define("Random", ["require", "exports", "Geom"], function (require, exports, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Random = void 0;
     var Random = (function () {
         function Random() {
         }
@@ -1532,6 +1554,7 @@ define("Random", ["require", "exports", "Geom"], function (require, exports, geo
 define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "Entities/Projectiles/Projectile", "Geom", "Draw"], function (require, exports, Game_5, Projectile_2, geom, Draw_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CombatProjectile = void 0;
     var CombatProjectile = (function (_super) {
         __extends(CombatProjectile, _super);
         function CombatProjectile(game, body, vel) {
@@ -1571,6 +1594,7 @@ define("Entities/Projectiles/CombatProjectile", ["require", "exports", "Game", "
 define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entities/EntityAttributes/Body", "Geom", "Random", "Entities/Projectiles/CombatProjectile", "Draw"], function (require, exports, Game_6, Body_1, geom, Random_1, CombatProjectile_1, Draw_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Weapon = void 0;
     var Weapon = (function () {
         function Weapon(owner) {
             this.magazineCapacity = 50;
@@ -1645,6 +1669,7 @@ define("Entities/EntityAttributes/Weapon", ["require", "exports", "Game", "Entit
 define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/Weapon", "Geom", "Entities/Monster", "Sounds"], function (require, exports, Person_3, Animation_2, Weapon_1, geom, Monster_2, Sounds_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Soldier = void 0;
     var Soldier = (function (_super) {
         __extends(Soldier, _super);
         function Soldier(game, body, mode) {
@@ -1697,6 +1722,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
 define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities/EntityAttributes/Animation"], function (require, exports, Person_4, Animation_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Scientist = void 0;
     var Scientist = (function (_super) {
         __extends(Scientist, _super);
         function Scientist(game, body, mode) {
@@ -1716,6 +1742,7 @@ define("Entities/Scientist", ["require", "exports", "Entities/Person", "Entities
 define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGenerator", "Entities/Soldier", "Entities/Scientist", "Entities/Monster", "Entities/StationaryObject", "BehaviorModel", "AuxLib", "Queue", "Random", "Game"], function (require, exports, Tile_3, geom, Draw_10, PathGenerator_1, Soldier_1, Scientist_1, Monster_3, StationaryObject_2, BehaviorModel_2, aux, Queue_2, Random_2, Game_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Level = exports.LightSource = exports.LevelJSON = void 0;
     function replacer(key, value) {
         if (value instanceof Map) {
             var val = void 0;
@@ -1920,6 +1947,13 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
             });
             console.log(Array.from(newLevel.PathMatrix.keys()));
             var url = window.URL.createObjectURL(blob);
+            var anchor = window.document.createElement('a');
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.download = "map.json";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(anchor.href);
             window.open(url);
         };
         Level.prototype.createFromPrototype = function (prototype) {
@@ -2016,6 +2050,7 @@ define("Level", ["require", "exports", "Tile", "Geom", "Draw", "Editor/PathGener
 define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/EntityAttributes/Commands", "AuxLib", "Debug", "Draw"], function (require, exports, geom, Commands_2, aux, Debug_3, Draw_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.AI = void 0;
     var AI = (function () {
         function AI(game, body) {
             this.destination = new geom.Vector(0, 0);
@@ -2146,6 +2181,7 @@ define("Entities/EntityAttributes/AI", ["require", "exports", "Geom", "Entities/
 define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttributes/Animation", "Entities/EntityAttributes/AI"], function (require, exports, geom, Animation_4, AI_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Entity = void 0;
     var Entity = (function () {
         function Entity(game, body) {
             this.commands = null;
@@ -2180,6 +2216,7 @@ define("Entities/Entity", ["require", "exports", "Geom", "Entities/EntityAttribu
 define("Trigger", ["require", "exports", "Game"], function (require, exports, Game_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Trigger = void 0;
     var Trigger = (function () {
         function Trigger(lifeTime, boundEntity) {
             this.power = 1;
@@ -2209,6 +2246,7 @@ define("Trigger", ["require", "exports", "Game"], function (require, exports, Ga
 define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttributes/Body", "Entities/Person", "Control", "Draw", "Tile", "Mimic", "Level", "Trigger", "Debug", "Entities/Scientist", "Entities/Soldier", "Entities/Monster", "Entities/Corpse", "Entities/StationaryObject", "BehaviorModel", "Entities/Projectiles/Biomass", "Sounds"], function (require, exports, geom, aux, Body_2, Person_5, Control_2, Draw_12, Tile_4, Mimic_1, Level_1, Trigger_1, Debug_4, Scientist_2, Soldier_2, Monster_4, Corpse_2, StationaryObject_3, BehaviorModel_3, Biomass_2, Sounds_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Game = exports.State = void 0;
     var State;
     (function (State) {
         State[State["Waiting"] = 0] = "Waiting";
@@ -2495,6 +2533,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
 define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (require, exports, Draw_13, Game_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.SpriteAnimation = exports.AnimationState = void 0;
     var AnimationState = (function () {
         function AnimationState(pos, box, angle, opacity) {
             if (opacity === void 0) { opacity = 1; }
@@ -2544,6 +2583,7 @@ define("SpriteAnimation", ["require", "exports", "Draw", "Game"], function (requ
 define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (require, exports, geom, SpriteAnimation_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Draw = exports.Layer = exports.Color = exports.Camera = void 0;
     var Camera = (function () {
         function Camera() {
         }
@@ -2835,6 +2875,7 @@ define("Draw", ["require", "exports", "Geom", "SpriteAnimation"], function (requ
 define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, exports, Draw_14, geom) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.reviver = exports.replacer = exports.getMilliCount = exports.mergeArray = exports.arrayMove = exports.swap = exports.setEnvironment = exports.setEditorMode = exports.vectorStringify = exports.editorMode = exports.environment = void 0;
     exports.editorMode = false;
     function vectorStringify(v) {
         var ans = "x:" + String(v.x).valueOf() + "y:" + String(v.y);
@@ -2930,6 +2971,7 @@ define("AuxLib", ["require", "exports", "Draw", "Geom"], function (require, expo
 define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.EditorGUI = void 0;
     var GUIElement = (function () {
         function GUIElement() {
         }
@@ -2988,6 +3030,7 @@ define("Editor/EditorGUI", ["require", "exports"], function (require, exports) {
 define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Cursor", "BehaviorModel", "AuxLib", "Geom", "Editor/EditorGUI", "Draw"], function (require, exports, BehaviorModel_4, Cursor_1, BehaviorModel_5, aux, Geom_6, EditorGUI_1, Draw_15) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ListOfPads = void 0;
     var ListOfPads = (function () {
         function ListOfPads() {
         }
@@ -3227,6 +3270,7 @@ define("Editor/ListOfPads", ["require", "exports", "BehaviorModel", "Editor/Curs
 define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Entity", "Entities/EntityAttributes/Body", "Entities/Monster", "Entities/Person", "Entities/Scientist", "Entities/Soldier", "Geom", "Tile", "AuxLib", "Editor/ListOfPads", "Entities/StationaryObject"], function (require, exports, Control_3, Draw_16, Entity_4, Body_3, Monster_5, Person_6, Scientist_3, Soldier_3, geom, Tile_5, aux, ListOfPads_1, StationaryObject_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Cursor = exports.Mode = exports.ToolType = void 0;
     var ToolType;
     (function (ToolType) {
         ToolType[ToolType["GoToPoint"] = 0] = "GoToPoint";
@@ -3409,6 +3453,7 @@ define("Editor/Cursor", ["require", "exports", "Control", "Draw", "Entities/Enti
 define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Editor/Cursor", "Tile", "Entities/EntityAttributes/Body", "Entities/Soldier", "Entities/Scientist", "Entities/Person", "Entities/Monster", "Entities/EntityAttributes/Animation", "BehaviorModel", "Editor/ListOfPads", "Editor/EditorGUI", "Entities/StationaryObject"], function (require, exports, Control_4, Draw_17, Level_2, geom, Cursor_2, Tile_6, Body_4, Soldier_4, Scientist_4, Person_7, Monster_6, Animation_5, BehaviorModel_6, ListOfPads_2, EditorGUI_2, StationaryObject_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Editor = void 0;
     var Editor = (function () {
         function Editor() {
             this.level = new Level_2.Level(new geom.Vector(10, 10));
@@ -3684,7 +3729,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createEntityButton("Scientist", "4");
             this.createEntityButton("Soldier", "4");
             this.createEntityButton("Monster", "4");
-            for (var i = 0; i < 2; i++) {
+            for (var i = 0; i < 24; i++) {
                 this.createEntityButton(String(i).valueOf(), "8");
             }
             this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
