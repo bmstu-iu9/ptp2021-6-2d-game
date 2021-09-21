@@ -3722,7 +3722,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
             this.createEntityButton("Scientist", "4");
             this.createEntityButton("Soldier", "4");
             this.createEntityButton("Monster", "4");
-            for (var i = 0; i < 2; i++) {
+            for (var i = 0; i < 24; i++) {
                 this.createEntityButton(String(i).valueOf(), "8");
             }
             this.createToolButton(Cursor_2.ToolType.GoToPoint, "5");
