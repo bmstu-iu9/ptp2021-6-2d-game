@@ -3,13 +3,12 @@ import * as aux from "../../AuxLib";
 
 export class Animation {
     public current_state: HTMLImageElement;
-    private counter: number;
+    private counter: number; // номер кадра
     public name: string; // имя анимации
     private states: number; // кол-во анимаций на 1 состояние
-    public mode: string;
+    public mode: string; // имя режима
     public direction: string; //направление движения
     public cycles: number;
-
 
     constructor(person: string, states: number) {
         this.counter = 0;

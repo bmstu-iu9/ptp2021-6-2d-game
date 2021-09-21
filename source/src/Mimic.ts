@@ -35,7 +35,6 @@ export class Aim {
 }
 
 export class Mimic {
-
     public sounds: Sounds;
     public controlledEntity: Entity = null;
     public infectionRadius = 100;
@@ -64,10 +63,10 @@ export class Mimic {
                 0.5, 0.5 / 6
             );
             if (this.controlledEntity instanceof Monster) {
-                if (this.controlledEntity){
+                if (this.controlledEntity) {
                     let cur = this.controlledEntity as Person;
                     if (cur)
-                        cur.sound.current_sound.muted=true
+                        cur.sound.current_sound.muted = true
                 }
                 this.game.draw.spriteAnimation(
                     "MonsterDisappearance", 8,
@@ -88,7 +87,6 @@ export class Mimic {
         }
         this.controlledEntity = entity;
     }
-
     // Выход из тела и создание монстра
     private escape() {
         let monster = this.game.makeMonster(this.controlledEntity.body.center);
@@ -119,13 +117,11 @@ export class Mimic {
                 this.escape();
             }
         }
-
         // Если мышка нажата, мы производим переселение
         if (!Control.isMouseLeftPressed() && this.aim.charge && !(this.controlledEntity instanceof Biomass)) {
             // Пересчитываем координаты на экране в игровые координаты
             let biomass = this.ejectBiomass(this.aim.getVel());
         }
-
         // Переселение через биомассу
         if (this.controlledEntity instanceof Biomass) {
             let target = this.controlledEntity.checkTarget();
@@ -137,7 +133,6 @@ export class Mimic {
                 this.escape();
             }
         }
-
         this.aim.step();
     }
 

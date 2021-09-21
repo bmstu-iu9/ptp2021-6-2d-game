@@ -24,6 +24,7 @@ export class Editor {
     public draw: Draw;
     private showCollisionGrid = false;
     private hideGrid = false;
+
     constructor() {
         this.mousePrev = Control.mousePos();
         this.initHTML();
@@ -39,6 +40,7 @@ export class Editor {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
         0, 0];
+
     private palette2_bitmap: number[] = [0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
@@ -52,6 +54,7 @@ export class Editor {
         1, 1, 1, 1, 0,
         0, 0, 0, 0, 0,
         1, 1, 1, 1];
+
     private palette3_bitmap: number[] = [0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
@@ -92,7 +95,6 @@ export class Editor {
         palette.appendChild(button);
         let applyTile = () => {
             this.cursor.changeMode(Mode.Wall);
-
             if (type.length > 0) {
                 let prep = new Number(type);
                 if (this.isTileSubImage(prep.valueOf())) {
@@ -156,14 +158,13 @@ export class Editor {
             button.onclick = applyEntity;
             let obj = new StationaryObject(null, new Body(new geom.Vector(0, 0), 1), entityType, "Interior");
             console.log(obj.image.src);
-            
+
             button.src = obj.image.src;
 
         }
         button.className = "entityButton";
         let palette = document.getElementById("palette" + type);
         console.log(button);
-
         palette.appendChild(button);
     }
 
@@ -225,8 +226,6 @@ export class Editor {
                     }
                     let pad = ListOfPads.createBehaviorPad(src, toolType);
                     ListOfPads.updateInstructionCopy();
-                    //console.log(behaviorModel, behaviorModel.instructions.);
-
                 }
             }
         }
@@ -246,11 +245,11 @@ export class Editor {
             button.src = "textures/Editor/Cursors/Bulb.png";
         }
         let palette = document.getElementById("palette" + type);
-            palette.appendChild(button);
-            let applyCursor = () => {
-                this.cursor.changeMode(cursorType);
-            }
-            button.onclick = applyCursor;
+        palette.appendChild(button);
+        let applyCursor = () => {
+            this.cursor.changeMode(cursorType);
+        }
+        button.onclick = applyCursor;
     }
 
     // Инициализирует взаимодействие с HTML
@@ -260,7 +259,7 @@ export class Editor {
         let generate = () => { this.level.serialize(); }
         document.getElementById("generate").onclick = generate;
         let showcollision = () => {
-            let chboxxx = <HTMLInputElement> document.getElementById("showcolision");
+            let chboxxx = <HTMLInputElement>document.getElementById("showcolision");
             this.showCollisionGrid = chboxxx.checked;
             let b = document.getElementById("button_col");
             if (b["style"].backgroundColor == "lime") {
@@ -271,7 +270,7 @@ export class Editor {
         }
         document.getElementById("showcolision").onclick = showcollision;
         let hidegrid = () => {
-            let chboxxx = <HTMLInputElement> document.getElementById("hidegrid");
+            let chboxxx = <HTMLInputElement>document.getElementById("hidegrid");
             this.hideGrid = chboxxx.checked;
             let b = document.getElementById("button_grid");
             if (b["style"].backgroundColor == "red") {
@@ -282,7 +281,7 @@ export class Editor {
         }
         document.getElementById("hidegrid").onclick = hidegrid;
         let showlight = () => {
-            let chboxxx = <HTMLInputElement> document.getElementById("showShadows");
+            let chboxxx = <HTMLInputElement>document.getElementById("showShadows");
             this.level.showLighting = chboxxx.checked;
             this.level.generateLighting();
             let b = document.getElementById("button_shadows");
@@ -332,7 +331,6 @@ export class Editor {
         document.getElementById("palette6")["style"].height = 2 * Math.round(window.innerHeight / 3) - 35 + "px";
         document.getElementById("palette7")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
         document.getElementById("palette8")["style"].height = Math.round((window.innerHeight - 30) / 3) - 40 + "px";
-
         document.getElementById("palette")["style"].top = "24px";
         document.getElementById("palette2")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette3")["style"].top = 2 * Math.round(window.innerHeight / 3) + "px";
@@ -341,7 +339,6 @@ export class Editor {
         document.getElementById("palette6")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("palette7")["style"].top = "24px";
         document.getElementById("palette8")["style"].top = "24px";
-
         document.getElementById("w8")["style"].top = "0px";
         document.getElementById("w7")["style"].top = "0px";
         document.getElementById("w6")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
@@ -350,28 +347,10 @@ export class Editor {
         document.getElementById("w3")["style"].top = 2 * Math.round(window.innerHeight / 3) - 25 + "px";
         document.getElementById("w2")["style"].top = Math.round(window.innerHeight / 3) - 20 + "px";
         document.getElementById("w1")["style"].top = "0px"
-
         document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
         document.getElementById("panicMode")["style"].top = Math.round(window.innerHeight / 3) + 30 + "px";
-
-        //document.getElementById("normalMode")["style"].top = Math.round(window.innerHeight / 3) + 5 + "px";
-
-        /*document.getElementById("button_col")["style"].top = "0px";
-        document.getElementById("button_col")["style"].left = document.getElementById("gameCanvas").clientWidth + 15 + "px";
-        
-        document.getElementById("button_grid")["style"].top = "25px";
-        document.getElementById("button_grid")["style"].left = document.getElementById("gameCanvas").clientWidth + 15 + "px";
-        
-        document.getElementById("preview")["style"].top = "50px";
-        document.getElementById("preview")["style"].left = document.getElementById("gameCanvas").clientWidth + 15 + "px";
-
-        document.getElementById("generate")["style"].top = "112px";
-        document.getElementById("generate")["style"].left = document.getElementById("gameCanvas").clientWidth + 15 + "px";*/
-
         document.getElementById("prev_menu")["style"].left = window.innerHeight + 20 + "px";
         document.getElementById("range_menu")["style"].left = window.innerHeight - 20 + "px";
-
-
         let normal = () => {
             if (ListOfPads.instructionType == "normal") {
                 return;
@@ -387,9 +366,7 @@ export class Editor {
             panicButton.classList.add("selected");
             ListOfPads.updateInstructionCopy();
         };
-
         document.getElementById("normalMode").onclick = normal;
-
         let panic = () => {
             if (ListOfPads.instructionType == "panic") {
                 return;
@@ -405,12 +382,8 @@ export class Editor {
             normalButton.classList.add("selected");
             ListOfPads.updateInstructionCopy();
         };
-
         document.getElementById("panicMode").onclick = panic;
-
         normal();
-        /*console.log(window.innerHeight)
-        console.log(window.outerHeight)*/
     }
 
     private isInCanvas(mouseCoords: geom.Vector): boolean {
@@ -427,7 +400,6 @@ export class Editor {
     private moveCamera() {
         // Сохраняем текущие координаты мыши
         let mouseCoords = Control.mousePos().clone();
-
         // Двигаем камеру
         // console.log(document.getElementById("gameCanvas").clientTop)
         if (this.isInCanvas(mouseCoords)) {
@@ -439,7 +411,6 @@ export class Editor {
             let delta = mouseCoords.sub(this.mousePrev);
             this.draw.cam.pos = this.draw.cam.pos.sub(delta.mul(1 / this.draw.cam.scale));
         }
-
         // Сохраняем предыдущие координаты мыши
         this.mousePrev = mouseCoords.clone();
     }
@@ -450,8 +421,6 @@ export class Editor {
     }
 
     public step() {
-        //ListOfPads.clear();
-
         if (this.cursor.selectedEntity == null) {
             document.getElementById("palette6")["style"].display = "none";
             document.getElementById("palette6")["style"].animationPlayState = "pause";
@@ -465,16 +434,14 @@ export class Editor {
             document.getElementById("normalMode")["style"].display = "block";
             document.getElementById("panicMode")["style"].display = "block";
         }
-
-        let range_x = <HTMLInputElement> document.getElementById("range_menu_x");
-        let range_y = <HTMLInputElement> document.getElementById("range_menu_y");
+        let range_x = <HTMLInputElement>document.getElementById("range_menu_x");
+        let range_y = <HTMLInputElement>document.getElementById("range_menu_y");
         range_x.oninput = () => {
             this.level.setNewDrawX(range_x.valueAsNumber);
         }
         range_y.oninput = () => {
             this.level.setNewDrawY(range_y.valueAsNumber);
         }
-
         this.moveCamera();
         this.cursor.step();
     }
@@ -499,7 +466,6 @@ export class Editor {
                 this.draw.drawimage(curEntity.image,
                     this.level.Entities[i].body.center, new geom.Vector(this.level.tileSize, this.level.tileSize), 0, 1);
         }
-
         ListOfPads.GUIstep();
         EditorGUI.display(this.draw);
     }

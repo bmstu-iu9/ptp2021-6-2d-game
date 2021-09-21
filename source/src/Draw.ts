@@ -29,14 +29,17 @@ export class Color {
         return new Color(this.r, this.g, this.b, a);
     }
 }
+
 export enum Layer { // Индентификатор текстуры (тайл или персонаж)
     TileLayer,
     EntityLayer,
     HudLayer
 }
+
 type hashimages = {
     [key: string]: HTMLImageElement; // Хеш таблица с изображениями
 };
+
 interface queue { // Для правильной отрисовки слоев
     image?: HTMLImageElement,
     pos?: geom.Vector,
@@ -45,6 +48,7 @@ interface queue { // Для правильной отрисовки слоев
     layer?: Layer,
     transparency?: number,
 }
+
 interface bar_queue { // Для отрисовки Hp бара
 
     pos?: geom.Vector,
@@ -64,6 +68,7 @@ export class Draw {
     public cam = new Camera();
     private spriteAnimations: SpriteAnimation[] = [];
     private static images: hashimages = { }; // Хеш таблица с изображениями
+
     constructor(canvas: HTMLCanvasElement, size: geom.Vector = null) {
         this.canvas = canvas;
         if (size) {
@@ -80,6 +85,7 @@ export class Draw {
         this.cam.pos = new geom.Vector();
         this.cam.center = size.mul(1 / 2);
     }
+
     public static loadImage(src: string): HTMLImageElement {
         if (this.images[src]) {
             return this.images[src]; // Извлекаем из хеш таблицы
@@ -152,7 +158,6 @@ export class Draw {
                 let curqueue: queue = { image, pos, box, angle, layer, transparency};
                 this.imagequeueEntity.push(curqueue);
             }
-
         }
     }
     // Отрисовка HTMLCanvasElement
@@ -355,6 +360,7 @@ export class Draw {
         // Отрисовка
         this.spriteAnimations.forEach(animation => animation.display(this));
     }
+    
     public clear() {
         this.ctx.clearRect(-1000, -1000, 10000, 10000);
     }

@@ -26,7 +26,6 @@ export class Weapon {
 
     constructor(owner: Person) {
         this.owner = owner;
-        
     }
 
     // Перезарядить обойму

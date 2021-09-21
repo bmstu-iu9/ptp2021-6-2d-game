@@ -40,7 +40,6 @@ export class Game {
     public ghost: geom.Vector = new geom.Vector(0, 0); // место где последний раз видели мимика (|| триггер?)
     private state = State.Waiting;
     private static levelPaths = new Map<string, string>(); // Пары уровень-путь
-
     public sounds: Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path)
@@ -49,7 +48,6 @@ export class Game {
     }
 
     public static reviver(key, value) { // функция обратной замены классов для преобразования из JSON
-
         if (typeof value === 'object' && value !== null) {
             if (value.dataType === 'Map') { // распаковка Map
                 return new Map(value.value);
@@ -75,7 +73,6 @@ export class Game {
                 scientist.behaviorModel.instructions = value.behaviorModel.instructions;
                 scientist.behaviorModel.changeCurrentInstruction("normal");
                 console.log(scientist);
-                
                 return scientist;
             }
             if (value.dataType == "Monster") {
@@ -87,8 +84,6 @@ export class Game {
                 return stationaryObject;
             }
             if (value.dataType == 'BehaviorModel') {
-                //console.log("beh mod");
-                
                 let behaviorModel = new BehaviorModel(null);
                 behaviorModel.instructions = value.instructions;
                 return behaviorModel;
@@ -97,7 +92,6 @@ export class Game {
                 let instruction = new Instruction();
                 instruction.operations = value.operations;
                 instruction.operationsData = value.operationsData;
-                //console.log("Instruction", value);
                 return instruction;
             }
             if (value.dataType == 'LightSource') {
@@ -111,18 +105,14 @@ export class Game {
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
         Game.levelPaths[name] = path;
         console.log(aux.environment + path);
-        
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
                 console.log("Map loaded");
-
                 let prototype = JSON.parse(result, this.reviver);
                 let level = new Level();
                 level.createFromPrototype(prototype);
                 level.showLighting = true;
                 level.gridSize = new geom.Vector(level.Grid.length, level.Grid[0].length);
-                // level.makeLightSource(new geom.Vector(5, 5), 10);
-                // level.makeLightSource(new geom.Vector(0, 0), 10);
                 Game.currentGame.levels[name] = level;
             });
     }
@@ -141,7 +131,7 @@ export class Game {
         return this.bodies[this.bodies.length] = body;
     }
 
-    public makeStationaryObject(pos : geom.Vector, type: string, category: string) : StationaryObject {
+    public makeStationaryObject(pos: geom.Vector, type: string, category: string): StationaryObject {
         let body = this.makeBody(pos, 1);
         let entity = new StationaryObject(this, body, type, category);
         entity.entityID = this.entities.length;
@@ -150,7 +140,6 @@ export class Game {
     }
 
     public makeScientist(pos: geom.Vector): Scientist { // создаёт персонажа и возвращает ссылку
-
         let body = this.makeBody(pos, 1);
         let entity = new Scientist(this, body, PersonMode.Fine);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -243,7 +232,6 @@ export class Game {
                 this.startGame();
             return;
         }
-
         // Смерть
         if (this.mimic.isDead()) {
             for (; 0 < this.soundsarr.length;) {
@@ -252,13 +240,11 @@ export class Game {
             }
             this.state = State.Waiting;
         }
-
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
-                this.currentLevel = this.levels[this.currentLevelName];
+            this.currentLevel = this.levels[this.currentLevelName];
             //this.entities = this.currentLevel.Entities;
         }
-
         this.currentLevel.generateLighting();
         this.mimic.step();
         this.attachCamToMimic();
@@ -280,13 +266,11 @@ export class Game {
             Math.floor(pos.x / this.currentLevel.tileSize),
             Math.floor(pos.y / this.currentLevel.tileSize)
         );
-
         // If out of bounds
         if (posRound.x < 0 || posRound.y < 0 ||
             posRound.x >= this.currentLevel.Grid.length ||
             posRound.y >= this.currentLevel.Grid[0].length)
             return 0;
-
         let collisionType = this.currentLevel.Grid[posRound.x][posRound.y].colision;
         // Coordinates in particular grid cell
         let posIn = pos.sub(posRound.mul(this.currentLevel.tileSize)).mul(1 / this.currentLevel.tileSize);
@@ -327,34 +311,22 @@ export class Game {
             this.draw.getimage(this.currentLevel);
             return;
         }
-
         // Настройка камеры
         this.configureCamScale();
-
-        // Орисовка тайлов
+        // Отрисовка тайлов
         this.currentLevel.display(this.draw);
-
         // Отрисовка Entities
         for (let entity of this.entities) {
             entity.display(this.draw);
         }
-        
-
         // Мимик
         this.mimic.display(this.draw);
-
         // Освещение и отрисовка персонажей
-        
         this.draw.getimage(this.currentLevel);
-        
         // Анимации
         this.draw.step();
         // Отрисовка графического дебага
         //Debug.drawPoints(this);
         Debug.clear();
     }
-
-    //public drawCollisionCheck(pos, box, color){
-    //  this.draw.fillRect(pos, box,color)
-    //}
 }

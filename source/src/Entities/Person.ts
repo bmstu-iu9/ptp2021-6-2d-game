@@ -66,9 +66,9 @@ export class Person extends Entity {
 
     }
 
-    public isPointVisible(pos : geom.Vector) : boolean {
-        return (geom.dist(this.body.center, pos) <= this.viewRadius 
-        && !Ray.wallIntersection(this.body.center, pos, this.game));
+    public isPointVisible(pos: geom.Vector): boolean {
+        return (geom.dist(this.body.center, pos) <= this.viewRadius
+            && !Ray.wallIntersection(this.body.center, pos, this.game));
     }
 
     public checkTriggers() { // Проверка всех триггеров на попадание в сектор видимости
@@ -83,7 +83,7 @@ export class Person extends Entity {
                     this.game.ghost = this.game.mimic.controlledEntity.body.center;
                 }
                 // Применение триггера
-                this.sound.current_sound.volume=0.5;
+                this.sound.current_sound.volume = 0.5;
                 if (!this.game.triggers[i].isEntityTriggered(this)) {
                     this.awareness += this.game.triggers[i].power;
                     this.game.triggers[i].entityTriggered(this);
@@ -129,8 +129,8 @@ export class Person extends Entity {
     public changedirection(x: number, y: number) {
         let currentdist: geom.Vector = this.body.center.sub(this.game.mimic.controlledEntity.body.center) // Получаем расстояние до Мумука
         let dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2))
-        if (dist == 0 ){
-            this.sound.current_sound.volume=0
+        if (dist == 0) {
+            this.sound.current_sound.volume = 0
         } else {
             let volume = 1 / dist;
             if (volume > 1)
@@ -200,10 +200,10 @@ export class Person extends Entity {
         this.direction = new geom.Vector(x, y);
     }
 
-    public step() {  
-        
+    public step() {
+
         if (this.behaviorModel.getCurrentInstruction() != Behavior.Panic) {
-            this.sound.current_sound.muted=true
+            this.sound.current_sound.muted = true
         }
         // перемещение согласно commands
         this.move();
@@ -213,8 +213,8 @@ export class Person extends Entity {
             if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
                 this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-            this.sound.current_sound.volume=1
-            this.sound.current_sound.muted=false
+            this.sound.current_sound.volume = 1
+            this.sound.current_sound.muted = false
         }
         if (this.awareness < this.awarenessThreshold) {
             this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
