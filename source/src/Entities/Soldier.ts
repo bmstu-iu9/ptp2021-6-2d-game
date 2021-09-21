@@ -15,7 +15,7 @@ export class Soldier extends Person {
         super(game, body, mode);
         this.animation = new Animation("Soldier", 8);
         this.type = "Soldier";
-        this.soundweapon.playcontinuously("firemashine", 1)
+        this.soundweapon.playcontinuously("flamethrower", 1)
         this.soundweapon.current_sound.muted = true;
         if (this.game)
             this.game.soundsarr.push(this.soundweapon)

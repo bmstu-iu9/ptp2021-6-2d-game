@@ -914,7 +914,7 @@ define("Sounds", ["require", "exports"], function (require, exports) {
     var Sounds = (function () {
         function Sounds(volume) {
             this.currentstate = false;
-            this.current_sound = new Audio('./sounds/alarm.mp3');
+            this.current_sound = new Audio('./sounds/muted.mp3');
             this.current_sound.volume = volume;
             this.time = 0;
         }
@@ -995,7 +995,7 @@ define("Entities/Corpse", ["require", "exports", "Entities/StationaryObject", "S
         function Corpse(game, body, type) {
             var _this = _super.call(this, game, body, type, "Corpses") || this;
             _this.sounds = new Sounds_1.Sounds(1);
-            _this.sounds.play("dying");
+            _this.sounds.play("death");
             return _this;
         }
         return Corpse;
@@ -1119,14 +1119,14 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
         }
         Mimic.prototype.takeControl = function (entity) {
             if (this.controlledEntity) {
-                this.sounds.playimposition("alarm");
+                this.sounds.playimposition("transfer");
                 this.game.draw.spriteAnimation("MimicTransfer", 3, new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0), new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(0.3, 0.3), 0), 0.2, 0.2 / 3);
                 this.game.draw.spriteAnimation("Blood", 6, new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_3.AnimationState(entity.body.center, new geom.Vector(1, 1), 0), 0.5, 0.5 / 6);
                 if (this.controlledEntity instanceof Monster_1.Monster) {
                     if (this.controlledEntity) {
                         var cur = this.controlledEntity;
                         if (cur)
-                            cur.sound.stop();
+                            cur.sound.current_sound.muted = true;
                     }
                     this.game.draw.spriteAnimation("MonsterDisappearance", 8, new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), new SpriteAnimation_3.AnimationState(this.controlledEntity.body.center, new geom.Vector(1, 1), 0), 0.4, 0.4 / 8);
                 }
@@ -1332,7 +1332,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             _this.direction = new geom.Vector(1, 0);
             _this.behaviorModel = new BehaviorModel_1.BehaviorModel(_this.myAI);
             _this.setModeTimings(10, 5, 5);
-            _this.sound.playcontinuously("step", 1);
+            _this.sound.playcontinuously("panic", 1);
             _this.sound.current_sound.muted = true;
             if (game) {
                 game.soundsarr.push(_this.sound);
@@ -1346,6 +1346,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             this.hp = this.hpMax;
         };
         Person.prototype.die = function () {
+            this.sound.stop();
             if (this.type && this.alive)
                 this.game.makeCorpse(this.body.center, this.type);
             _super.prototype.die.call(this);
@@ -1365,6 +1366,7 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                     if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                         this.game.ghost = this.game.mimic.controlledEntity.body.center;
                     }
+                    this.sound.current_sound.volume = 0.5;
                     if (!this.game.triggers[i].isEntityTriggered(this)) {
                         this.awareness += this.game.triggers[i].power;
                         this.game.triggers[i].entityTriggered(this);
@@ -1397,29 +1399,29 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
         Person.prototype.changedirection = function (x, y) {
             var currentdist = this.body.center.sub(this.game.mimic.controlledEntity.body.center);
             var dist = Math.sqrt(Math.pow(currentdist.x, 2) + Math.pow(currentdist.y, 2));
-            var volume = 1 / dist;
-            if (volume > 1)
-                volume = 1;
-            this.sound.current_sound.volume = volume;
+            if (dist == 0) {
+                this.sound.current_sound.volume = 0;
+            }
+            else {
+                var volume = 1 / dist;
+                if (volume > 1)
+                    volume = 1;
+                this.sound.current_sound.volume = volume;
+            }
             if (x == 0 && y == 0) {
                 this.animation.changedirection("stand", this.modeToString());
-                this.sound.current_sound.muted = true;
             }
             if (x == 1) {
                 this.animation.changedirection("right", this.modeToString());
-                this.sound.current_sound.muted = false;
             }
             if (x == -1) {
                 this.animation.changedirection("left", this.modeToString());
-                this.sound.current_sound.muted = false;
             }
             if (x == 0 && y == 1) {
                 this.animation.changedirection("top", this.modeToString());
-                this.sound.current_sound.muted = false;
             }
             if (x == 0 && y == -1) {
                 this.animation.changedirection("down", this.modeToString());
-                this.sound.current_sound.muted = false;
             }
         };
         Person.prototype.updateMode = function () {
@@ -1466,11 +1468,16 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             this.direction = new geom.Vector(x, y);
         };
         Person.prototype.step = function () {
+            if (this.behaviorModel.getCurrentInstruction() != Behavior.Panic) {
+                this.sound.current_sound.muted = true;
+            }
             this.move();
             if (this.awareness >= this.awarenessThreshold) {
                 if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
                     this.awareness = this.awarenessOverflow;
                 this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
+                this.sound.current_sound.volume = 1;
+                this.sound.current_sound.muted = false;
             }
             if (this.awareness < this.awarenessThreshold) {
                 this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
@@ -1671,7 +1678,7 @@ define("Entities/Soldier", ["require", "exports", "Entities/Person", "Entities/E
             _this.soundweapon = new Sounds_4.Sounds(1);
             _this.animation = new Animation_2.Animation("Soldier", 8);
             _this.type = "Soldier";
-            _this.soundweapon.playcontinuously("firemashine", 1);
+            _this.soundweapon.playcontinuously("flamethrower", 1);
             _this.soundweapon.current_sound.muted = true;
             if (_this.game)
                 _this.game.soundsarr.push(_this.soundweapon);
@@ -2441,7 +2448,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.mimic = new Mimic_1.Mimic(this);
             this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
             Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
-            this.sounds.playcontinuously("game", 0.2);
+            this.sounds.playcontinuously("soundtrack", 0.3);
             this.soundsarr.push(this.sounds);
         };
         Game.prototype.step = function () {
