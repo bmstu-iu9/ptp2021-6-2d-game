@@ -26,8 +26,6 @@ let game = new Game(draw);
 game.levels = new Map();
 Game.currentGame = game;
 Game.loadMap("map.json", "map");
-game.makeSoldier(new geom.Vector(1, 1));
-game.mimic.takeControl(game.entities[0]);
 let x = false;
 let t = 0;
 

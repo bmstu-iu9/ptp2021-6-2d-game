@@ -77,6 +77,7 @@ export class Game {
             }
             if (value.dataType == "Monster") {
                 let monster = Game.currentGame.makeMonster(value.center) as Monster;
+                Game.currentGame.mimic.takeControl(monster);
                 return monster;
             }
             if (value.dataType == 'StationaryObject') {

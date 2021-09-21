@@ -1920,6 +1920,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 }
                 if (value.dataType == "Monster") {
                     var monster = Game.currentGame.makeMonster(value.center);
+                    Game.currentGame.mimic.takeControl(monster);
                     return monster;
                 }
                 if (value.dataType == 'StationaryObject') {
@@ -3893,7 +3894,7 @@ define("Editor", ["require", "exports", "Control", "Draw", "Level", "Geom", "Edi
 define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"], function (require, exports, geom, aux, Draw_18, Game_10, Editor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    aux.setEnvironment("https://raw.githubusercontent.com/bmstu-iu9/ptp2021-6-2d-game/master/source/env/");
+    aux.setEnvironment("http://127.0.0.1:8000/");
     var levelEditorMode = (document.getElementById("mode").innerHTML == "editor");
     aux.setEditorMode(levelEditorMode);
     var canvas = document.getElementById('gameCanvas');
@@ -3905,8 +3906,6 @@ define("Main", ["require", "exports", "Geom", "AuxLib", "Draw", "Game", "Editor"
     game.levels = new Map();
     Game_10.Game.currentGame = game;
     Game_10.Game.loadMap("map.json", "map");
-    game.makeSoldier(new geom.Vector(1, 1));
-    game.mimic.takeControl(game.entities[0]);
     var x = false;
     var t = 0;
     function step() {
