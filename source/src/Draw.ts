@@ -242,7 +242,7 @@ export class Draw {
             });
             for (; this.imagequeueHud.length > 0;) {
                 let temp = this.imagequeueHud.pop(); //Извлечение
-                this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency)
+                this.drawimage(temp.image, temp.pos, temp.box, temp.angle, temp.transparency);
             }
         }
     }
@@ -307,7 +307,6 @@ export class Draw {
             this.ctx.lineTo(posNew.x, posNew.y);
             this.ctx.lineWidth = lineWidth * this.cam.scale; //ширина контура
         }
-
         this.ctx.strokeStyle = color.toString(); // цвет контура
         this.ctx.stroke();
     }
@@ -336,14 +335,12 @@ export class Draw {
         finalState: AnimationState,
         duration: number,
         frameDuration: number) {
-
         let animation = new SpriteAnimation();
         animation.loadFrames(name, framesNumber);
         animation.initialState = initialState;
         animation.finalState = finalState;
         animation.duration = duration;
         animation.frameDuration = frameDuration;
-
         this.spriteAnimations.push(animation);
     }
     // Step

@@ -42,8 +42,8 @@ export class Game {
     private static levelPaths = new Map<string, string>(); // Пары уровень-путь
     public sounds: Sounds = new Sounds(0.01);
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
-        const response = await fetch(path)
-        const text = await response.text()
+        const response = await fetch(path);
+        const text = await response.text();
         return text;
     }
 
@@ -221,8 +221,7 @@ export class Game {
         // TODO: перезапуск уровня
         Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
         this.sounds.playcontinuously("soundtrack", 0.3);
-        this.soundsarr.push(this.sounds)
-
+        this.soundsarr.push(this.sounds);
     }
 
     public step() {
@@ -243,7 +242,6 @@ export class Game {
         // Ксотыль
         if (this.levels[this.currentLevelName]) {
             this.currentLevel = this.levels[this.currentLevelName];
-            //this.entities = this.currentLevel.Entities;
         }
         this.currentLevel.generateLighting();
         this.mimic.step();

@@ -158,9 +158,7 @@ export class Editor {
             button.onclick = applyEntity;
             let obj = new StationaryObject(null, new Body(new geom.Vector(0, 0), 1), entityType, "Interior");
             console.log(obj.image.src);
-
             button.src = obj.image.src;
-
         }
         button.className = "entityButton";
         let palette = document.getElementById("palette" + type);
@@ -299,12 +297,9 @@ export class Editor {
             this.createTileButton("textures/tiles/walls/wall" + i + ".png", CollisionType.Full, "2");
         for (let i = 0; i < 76; i++)
             this.createTileButton("textures/tiles/floors/floor" + i + ".png", CollisionType.Empty, "3");
-
         this.createEntityButton("Scientist", "4");
         this.createEntityButton("Soldier", "4");
         this.createEntityButton("Monster", "4");
-
-
         for (let i = 0; i < 24; i++) {
             this.createEntityButton(String(i).valueOf(), "8");
         }
@@ -320,9 +315,7 @@ export class Editor {
         this.cursor.drawPreview = new Draw(
             document.getElementById("preview") as HTMLCanvasElement,
             new geom.Vector(50, 50));
-
         let pal_standart_h = Math.round((window.innerHeight - 30) / 3);
-
         document.getElementById("palette")["style"].height = Math.round((window.innerHeight - 30) / 3) - 50 + "px";
         document.getElementById("palette2")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";
         document.getElementById("palette3")["style"].height = Math.round((window.innerHeight - 30) / 3) - 37 + "px";

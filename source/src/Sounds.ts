@@ -19,7 +19,7 @@ export class Sounds {
         this.current_sound.play();
         this.current_sound.addEventListener("ended", function () {
             this.play();
-        })
+        });
     }
 
     public play(track: String, volume = 1) { // Воспроизведение (до окончания трека)
@@ -27,7 +27,7 @@ export class Sounds {
             this.current_sound = new Audio('./sounds/' + track + '.mp3');
         this.current_sound.volume = volume;
         this.current_sound.play();
-        this.time = this.current_sound.currentTime
+        this.time = this.current_sound.currentTime;
     }
 
     public playimposition(track: String, volume = 1) { // Воспроизведение (до окончания трека)

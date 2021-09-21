@@ -64,6 +64,6 @@ export class Animation {
             this.direction + "_" +
             this.mode + "_" +
             frame + ".png");
-        this.direction = "stand"
+        this.direction = "stand";
     }
 }

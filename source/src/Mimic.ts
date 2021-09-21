@@ -44,12 +44,12 @@ export class Mimic {
     constructor(game: Game) {
         this.game = game;
         this.aim.mimic = this;
-        this.sounds = new Sounds(1)
+        this.sounds = new Sounds(1);
     }
 
     public takeControl(entity: Entity) {
         if (this.controlledEntity) {
-            this.sounds.playimposition("transfer")
+            this.sounds.playimposition("transfer");
             this.game.draw.spriteAnimation(
                 "MimicTransfer", 3,
                 new AnimationState(this.controlledEntity.body.center, new geom.Vector(0.3, 0.3), 0),
@@ -66,7 +66,7 @@ export class Mimic {
                 if (this.controlledEntity) {
                     let cur = this.controlledEntity as Person;
                     if (cur)
-                        cur.sound.current_sound.muted = true
+                        cur.sound.current_sound.muted = true;
                 }
                 this.game.draw.spriteAnimation(
                     "MonsterDisappearance", 8,

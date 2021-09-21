@@ -73,7 +73,7 @@ function replacer(key, value) { // функция замены классов д
     }
     if (value instanceof StationaryObject) {
         let type = value.image.src.split(".")[0];
-        type = type.split("/")[type.split("/").length - 1]
+        type = type.split("/")[type.split("/").length - 1];
         return {
             dataType: 'StationaryObject',
             center: value.body.center,
@@ -273,7 +273,7 @@ export class Level {
                 // Отрисовка сетки в расширенном режиме
                 if (advanced)
                     draw.strokeRect((new geom.Vector(this.tileSize * i, this.tileSize * j))
-                        .add(size.mul(1 / 2)), size, new Color(0, 0, 0), 0.03)
+                        .add(size.mul(1 / 2)), size, new Color(0, 0, 0), 0.03);
             }
         }
     }

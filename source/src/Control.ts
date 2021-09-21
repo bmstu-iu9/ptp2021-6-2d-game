@@ -21,8 +21,8 @@ export class Control {
     public static commands: Commands;
 
     private static async readTextFile(path) {
-        const response = await fetch(path)
-        const text = await response.text()
+        const response = await fetch(path);
+        const text = await response.text();
         return text;
     }
 
@@ -43,7 +43,6 @@ export class Control {
                     }
                 });
         } else {
-
             Control.keyMapping = JSON.parse(localStorage.getItem("commands"), aux.reviver);
             let vals = Array.from(Control.keyMapping.values());
             for (let i = 0; i < vals.length; i++) {
