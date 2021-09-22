@@ -160,7 +160,6 @@ export class Game {
     }
 
     public makeMonster(pos: geom.Vector): Monster { // создаёт персонажа и возвращает ссылку
-        console.log("this.triggers.length");
         let body = this.makeBody(pos, 1);
         let entity = new Monster(this, body);//последнее - маркер состояния
         entity.entityID = this.entities.length;

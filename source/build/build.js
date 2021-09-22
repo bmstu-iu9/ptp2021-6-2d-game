@@ -1395,11 +1395,6 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             _this.direction = new geom.Vector(1, 0);
             _this.behaviorModel = new BehaviorModel_1.BehaviorModel(_this.myAI);
             _this.setModeTimings(10, 5, 5);
-            _this.sound.playcontinuously("panic", 1);
-            _this.sound.current_sound.muted = true;
-            if (game) {
-                game.soundsarr.push(_this.sound);
-            }
             return _this;
         }
         Person.prototype.setModeTimings = function (fine, corrupted, dying) {
@@ -1429,7 +1424,6 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
                     if (this.game.mimic.controlledEntity.entityID == this.game.triggers[i].boundEntity.entityID) {
                         this.game.ghost = this.game.mimic.controlledEntity.body.center;
                     }
-                    this.sound.current_sound.volume = 0.5;
                     if (!this.game.triggers[i].isEntityTriggered(this)) {
                         this.awareness += this.game.triggers[i].power;
                         this.game.triggers[i].entityTriggered(this);
@@ -1531,16 +1525,11 @@ define("Entities/Person", ["require", "exports", "Entities/Entity", "Game", "Geo
             this.direction = new geom.Vector(x, y);
         };
         Person.prototype.step = function () {
-            if (this.behaviorModel.getCurrentInstruction() != Behavior.Panic) {
-                this.sound.current_sound.muted = true;
-            }
             this.move();
             if (this.awareness >= this.awarenessThreshold && this.behaviorModel.getCurrentInstruction() == Behavior.Normal) {
                 if (this.awareness > this.awarenessOverflow)
                     this.awareness = this.awarenessOverflow;
                 this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-                this.sound.current_sound.volume = 1;
-                this.sound.current_sound.muted = false;
             }
             if (this.awareness < this.awarenessThreshold && this.behaviorModel.getCurrentInstruction() == Behavior.Panic) {
                 this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
@@ -1987,7 +1976,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return entity;
         };
         Game.prototype.makeMonster = function (pos) {
-            console.log("this.triggers.length");
             var body = this.makeBody(pos, 1);
             var entity = new Monster_3.Monster(this, body);
             entity.entityID = this.entities.length;
@@ -2052,7 +2040,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     this.startGame();
                 return;
             }
-            console.log(this.frags + 1, this.entities.length);
             if (this.mimic.isDead() || (this.frags != 0 && this.frags >= this.entities.length)) {
                 for (; 0 < this.soundsarr.length;) {
                     var cursound = this.soundsarr.pop();
