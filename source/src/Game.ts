@@ -157,6 +157,7 @@ export class Game {
     }
 
     public makeMonster(pos: geom.Vector): Monster { // создаёт персонажа и возвращает ссылку
+        console.log("this.triggers.length");
         let body = this.makeBody(pos, 1);
         let entity = new Monster(this, body);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -218,14 +219,13 @@ export class Game {
         this.entities = [];
         this.triggers = [];
         this.mimic = new Mimic(this);
-        this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
         // TODO: перезапуск уровня
         Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
         this.sounds.playcontinuously("soundtrack", 0.3);
         this.soundsarr.push(this.sounds);
     }
 
-    public step() {
+    public step() {        
         // Экран загрузки
         if (this.state == State.Waiting) { // Если в режиме ожидания
             if (Control.isMouseLeftPressed() || Control.isMouseRightPressed())

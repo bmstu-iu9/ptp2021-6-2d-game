@@ -1204,6 +1204,7 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.controlledEntity = entity;
         };
         Mimic.prototype.escape = function () {
+            console.log("im stupid");
             var monster = this.game.makeMonster(this.controlledEntity.body.center);
             this.controlledEntity = monster;
         };
@@ -1982,6 +1983,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return entity;
         };
         Game.prototype.makeMonster = function (pos) {
+            console.log("this.triggers.length");
             var body = this.makeBody(pos, 1);
             var entity = new Monster_3.Monster(this, body);
             entity.entityID = this.entities.length;
@@ -2034,7 +2036,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.entities = [];
             this.triggers = [];
             this.mimic = new Mimic_1.Mimic(this);
-            this.mimic.controlledEntity = this.makeMonster(new geom.Vector(0, 0));
             Game.loadMap(Game.levelPaths[this.currentLevelName], this.currentLevelName);
             this.sounds.playcontinuously("soundtrack", 0.3);
             this.soundsarr.push(this.sounds);
