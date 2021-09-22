@@ -41,6 +41,7 @@ export class Game {
     private state = State.Waiting;
     private static levelPaths = new Map<string, string>(); // Пары уровень-путь
     public sounds: Sounds = new Sounds(0.01);
+    public frags = 0;
     private static async readTextFile(path) { // функция считывания файла по внешней ссылке | почему именно в game?
         const response = await fetch(path);
         const text = await response.text();
@@ -75,9 +76,7 @@ export class Game {
                 console.log(scientist);
                 return scientist;
             }
-            if (value.dataType == "Monster") {
-                console.log("?");
-                
+            if (value.dataType == "Monster") {                
                 let monster = Game.currentGame.makeMonster(value.center) as Monster;
                 Game.currentGame.mimic.takeControl(monster);
                 return monster;
@@ -107,6 +106,7 @@ export class Game {
 
     public static async loadMap(path: string, name: string) { // загрузка карты по ссылке и названию
         Game.levelPaths[name] = path;
+        Game.currentGame.frags = 0;
         console.log(aux.environment + path);
         let result = await this.readTextFile(aux.environment + path)
             .then(result => {
@@ -135,6 +135,7 @@ export class Game {
     }
 
     public makeStationaryObject(pos: geom.Vector, type: string, category: string): StationaryObject {
+        this.frags++;
         let body = this.makeBody(pos, 1);
         let entity = new StationaryObject(this, body, type, category);
         entity.entityID = this.entities.length;
@@ -169,6 +170,7 @@ export class Game {
     }
 
     public makeCorpse(pos: geom.Vector, type: string): Entity { // создаёт персонажа и возвращает ссылку
+        this.frags++;
         let body = this.makeBody(pos, 1);
         let entity = new Corpse(this, body, type);//последнее - маркер состояния
         entity.entityID = this.entities.length;
@@ -236,8 +238,9 @@ export class Game {
                 this.startGame();
             return;
         }
+        
         // Смерть
-        if (this.mimic.isDead()) {
+        if (this.mimic.isDead() || (this.frags != 0 && this.frags >= this.entities.length)) {
             for (; 0 < this.soundsarr.length;) {
                 let cursound = this.soundsarr.pop()
                 cursound.stop();
@@ -303,6 +306,8 @@ export class Game {
         if (this.state == State.Waiting) { // Если в режиме ожидания
             this.draw.attachToCanvas();
             let image = Draw.loadImage("textures/Screens/Start.png");
+            if (this.frags >= this.entities.length)
+                image = Draw.loadImage("textures/Screens/Win.png");
             if (this.mimic.isDead())
                 image = Draw.loadImage("textures/Screens/Death.png");
             this.draw.image(

@@ -15,4 +15,8 @@ export class Monster extends Person {
     public step() {
         super.step();
     }
+    
+    public die() {
+        super.die();
+    }
 }

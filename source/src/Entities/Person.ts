@@ -63,7 +63,6 @@ export class Person extends Entity {
         if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
         super.die();
-
     }
 
     public isPointVisible(pos: geom.Vector): boolean {

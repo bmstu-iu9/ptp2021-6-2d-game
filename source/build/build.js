@@ -975,6 +975,9 @@ define("Entities/Monster", ["require", "exports", "Entities/Person", "Entities/E
         Monster.prototype.step = function () {
             _super.prototype.step.call(this);
         };
+        Monster.prototype.die = function () {
+            _super.prototype.die.call(this);
+        };
         return Monster;
     }(Person_1.Person));
     exports.Monster = Monster;
@@ -1851,6 +1854,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             this.ghost = new geom.Vector(0, 0);
             this.state = State.Waiting;
             this.sounds = new Sounds_5.Sounds(0.01);
+            this.frags = 0;
             console.log("im here!!");
             Control_2.Control.init();
             this.draw = draw;
@@ -1902,7 +1906,6 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     return scientist;
                 }
                 if (value.dataType == "Monster") {
-                    console.log("?");
                     var monster = Game.currentGame.makeMonster(value.center);
                     Game.currentGame.mimic.takeControl(monster);
                     return monster;
@@ -1937,6 +1940,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     switch (_a.label) {
                         case 0:
                             Game.levelPaths[name] = path;
+                            Game.currentGame.frags = 0;
                             console.log(aux.environment + path);
                             return [4, this.readTextFile(aux.environment + path)
                                     .then(function (result) {
@@ -1961,6 +1965,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return this.bodies[this.bodies.length] = body;
         };
         Game.prototype.makeStationaryObject = function (pos, type, category) {
+            this.frags++;
             var body = this.makeBody(pos, 1);
             var entity = new StationaryObject_2.StationaryObject(this, body, type, category);
             entity.entityID = this.entities.length;
@@ -1991,6 +1996,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             return entity;
         };
         Game.prototype.makeCorpse = function (pos, type) {
+            this.frags++;
             var body = this.makeBody(pos, 1);
             var entity = new Corpse_2.Corpse(this, body, type);
             entity.entityID = this.entities.length;
@@ -2046,7 +2052,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                     this.startGame();
                 return;
             }
-            if (this.mimic.isDead()) {
+            console.log(this.frags + 1, this.entities.length);
+            if (this.mimic.isDead() || (this.frags != 0 && this.frags >= this.entities.length)) {
                 for (; 0 < this.soundsarr.length;) {
                     var cursound = this.soundsarr.pop();
                     cursound.stop();
@@ -2095,6 +2102,8 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
             if (this.state == State.Waiting) {
                 this.draw.attachToCanvas();
                 var image = Draw_11.Draw.loadImage("textures/Screens/Start.png");
+                if (this.frags >= this.entities.length)
+                    image = Draw_11.Draw.loadImage("textures/Screens/Win.png");
                 if (this.mimic.isDead())
                     image = Draw_11.Draw.loadImage("textures/Screens/Death.png");
                 this.draw.image(image, this.draw.cam.center, new geom.Vector(this.draw.cam.center.mul(2).y, this.draw.cam.center.mul(2).y), 0, Draw_11.Layer.HudLayer);
