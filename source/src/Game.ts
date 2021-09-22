@@ -76,6 +76,8 @@ export class Game {
                 return scientist;
             }
             if (value.dataType == "Monster") {
+                console.log("?");
+                
                 let monster = Game.currentGame.makeMonster(value.center) as Monster;
                 Game.currentGame.mimic.takeControl(monster);
                 return monster;
@@ -187,6 +189,8 @@ export class Game {
     }
 
     public makeTrigger(boundEntity: Entity, power: number, lifeTime: number) { // создаёт триггер и возвращает ссылку
+        console.log("triggered");
+        
         let trigger = new Trigger(lifeTime, boundEntity);
         trigger.power = power;
         return this.triggers[this.triggers.length] = trigger;

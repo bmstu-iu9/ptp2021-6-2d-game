@@ -13,7 +13,6 @@ export class Monster extends Person {
     }
 
     public step() {
-        this.game.makeTrigger(this, 10, Game.dt);
         super.step();
     }
 }
