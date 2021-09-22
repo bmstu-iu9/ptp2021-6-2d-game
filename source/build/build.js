@@ -1204,7 +1204,6 @@ define("Mimic", ["require", "exports", "Game", "Geom", "Control", "Entities/Pers
             this.controlledEntity = entity;
         };
         Mimic.prototype.escape = function () {
-            console.log("im stupid");
             var monster = this.game.makeMonster(this.controlledEntity.body.center);
             this.controlledEntity = monster;
         };
@@ -2097,7 +2096,7 @@ define("Game", ["require", "exports", "Geom", "AuxLib", "Entities/EntityAttribut
                 var image = Draw_11.Draw.loadImage("textures/Screens/Start.png");
                 if (this.mimic.isDead())
                     image = Draw_11.Draw.loadImage("textures/Screens/Death.png");
-                this.draw.image(image, this.draw.cam.center, this.draw.cam.center.mul(2), 0, Draw_11.Layer.HudLayer);
+                this.draw.image(image, this.draw.cam.center, new geom.Vector(this.draw.cam.center.mul(2).y, this.draw.cam.center.mul(2).y), 0, Draw_11.Layer.HudLayer);
                 this.draw.getimage(this.currentLevel);
                 return;
             }

@@ -304,7 +304,7 @@ export class Game {
             this.draw.image(
                 image,
                 this.draw.cam.center,
-                this.draw.cam.center.mul(2),
+                new geom.Vector(this.draw.cam.center.mul(2).y, this.draw.cam.center.mul(2).y),
                 0, Layer.HudLayer
             );
             this.draw.getimage(this.currentLevel);
