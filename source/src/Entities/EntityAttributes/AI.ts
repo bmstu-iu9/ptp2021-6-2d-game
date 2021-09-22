@@ -89,7 +89,6 @@ export class AI {
     }
 
     public goToPoint(point: geom.Vector) { // функция, прокладывающая путь до точки
-        console.log("Go to point:", point);
         let pathMatrix = this.game.levels[this.game.currentLevelName].PathMatrix;
         this.destination = point;
         this.Path = [];
@@ -103,14 +102,11 @@ export class AI {
         }
         
         while (aux.vectorStringify(currentMeshPoint) != aux.vectorStringify(finishMeshPoint)) {
-            console.log(aux.vectorStringify(currentMeshPoint), aux.vectorStringify(finishMeshPoint),
-            pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)));
             this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
             currentMeshPoint = currentMeshPoint.add(pathMatrix.get(aux.vectorStringify(currentMeshPoint)).get(aux.vectorStringify(finishMeshPoint)))
         }
         this.Path.push(this.getPointCoordinate(currentMeshPoint.clone()));
         this.Path[this.Path.length] = point;
-        console.log(this.Path);
     }
 
     // функция, определяющая когда активируется персонаж(чтобы сбросить время ожидания вызвать wait(0))
@@ -140,18 +136,5 @@ export class AI {
         } else { // иначе остановится
             this.stop();
         }
-        // Debug коллизионной сетки
-        let CollisionMesh = this.game.currentLevel.CollisionMesh;
-        for (let i = 0; i < CollisionMesh.length; i++) {
-            for (let j = 0; j < CollisionMesh[i].length; j++) {
-                let coordinate = this.getPointCoordinate(new geom.Vector(i, j));
-                let color = new Color(0, 255, 0);
-                if (CollisionMesh[i][j] == true) {
-                    color = new Color(255, 0, 0);
-                }
-                Debug.addPoint(coordinate, color);
-            }
-        }
-        Debug.addPoint(this.destination, new Color(0, 0, 255));
     }
 }

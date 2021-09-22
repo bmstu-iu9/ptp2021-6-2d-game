@@ -209,14 +209,14 @@ export class Person extends Entity {
         this.move();
 
         // Проверка на awareness
-        if (this.awareness >= this.awarenessThreshold) {
-            if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
+        if (this.awareness >= this.awarenessThreshold && this.behaviorModel.getCurrentInstruction() == Behavior.Normal) {
+            if (this.awareness > this.awarenessOverflow)
                 this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
             this.sound.current_sound.volume = 1;
             this.sound.current_sound.muted = false;
         }
-        if (this.awareness < this.awarenessThreshold) {
+        if (this.awareness < this.awarenessThreshold && this.behaviorModel.getCurrentInstruction() == Behavior.Panic) {
             this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
         }
         if (this.awareness < 0) {

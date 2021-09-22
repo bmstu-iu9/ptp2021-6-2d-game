@@ -83,7 +83,6 @@ export class BehaviorModel {
 
     public step() {
         if (this.myAI.Path.length == 0 && this.myAI.getWaitingTime() < eps && this.instructions.get(this.currentInstruction)) {
-            console.log("here?");
             this.operationNum++;
             this.operationNum %= this.instructions.get(this.currentInstruction).operations.length;
             let operation = this.instructions.get(this.currentInstruction).operations[this.operationNum];
