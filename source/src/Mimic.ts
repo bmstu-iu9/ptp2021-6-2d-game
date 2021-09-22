@@ -88,7 +88,7 @@ export class Mimic {
         this.controlledEntity = entity;
     }
     // Выход из тела и создание монстра
-    private escape() {
+    private escape() {        
         let monster = this.game.makeMonster(this.controlledEntity.body.center);
         this.controlledEntity = monster;
     }

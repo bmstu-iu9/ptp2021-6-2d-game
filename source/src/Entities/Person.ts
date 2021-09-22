@@ -44,11 +44,6 @@ export class Person extends Entity {
         this.direction = new geom.Vector(1, 0);
         this.behaviorModel = new BehaviorModel(this.myAI);
         this.setModeTimings(10, 5, 5);
-        this.sound.playcontinuously("panic", 1);
-        this.sound.current_sound.muted = true;
-        if (game) {
-            game.soundsarr.push(this.sound);
-        }
     }
 
     public setModeTimings(fine: number, corrupted: number, dying: number) {
@@ -63,7 +58,6 @@ export class Person extends Entity {
         if (this.type && this.alive)
             this.game.makeCorpse(this.body.center, this.type);
         super.die();
-
     }
 
     public isPointVisible(pos: geom.Vector): boolean {
@@ -83,7 +77,6 @@ export class Person extends Entity {
                     this.game.ghost = this.game.mimic.controlledEntity.body.center;
                 }
                 // Применение триггера
-                this.sound.current_sound.volume = 0.5;
                 if (!this.game.triggers[i].isEntityTriggered(this)) {
                     this.awareness += this.game.triggers[i].power;
                     this.game.triggers[i].entityTriggered(this);
@@ -202,21 +195,16 @@ export class Person extends Entity {
 
     public step() {
 
-        if (this.behaviorModel.getCurrentInstruction() != Behavior.Panic) {
-            this.sound.current_sound.muted = true;
-        }
         // перемещение согласно commands
         this.move();
 
         // Проверка на awareness
-        if (this.awareness >= this.awarenessThreshold) {
-            if (this.behaviorModel.getCurrentInstruction() == Behavior.Normal || this.awareness > this.awarenessOverflow)
+        if (this.awareness >= this.awarenessThreshold && this.behaviorModel.getCurrentInstruction() == Behavior.Normal) {
+            if (this.awareness > this.awarenessOverflow)
                 this.awareness = this.awarenessOverflow;
             this.behaviorModel.changeCurrentInstruction(Behavior.Panic);
-            this.sound.current_sound.volume = 1;
-            this.sound.current_sound.muted = false;
         }
-        if (this.awareness < this.awarenessThreshold) {
+        if (this.awareness < this.awarenessThreshold && this.behaviorModel.getCurrentInstruction() == Behavior.Panic) {
             this.behaviorModel.changeCurrentInstruction(Behavior.Normal);
         }
         if (this.awareness < 0) {
